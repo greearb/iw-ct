@@ -89,6 +89,7 @@ static int handle_scan(struct nl80211_state *state,
 	} parse = NONE;
 	int freq;
 	bool passive = false, have_ssids = false, have_freqs = false;
+	bool can_scan_one = false;
 	size_t tmp;
 	unsigned char *ies;
 	int flags = 0;
@@ -129,6 +130,10 @@ static int handle_scan(struct nl80211_state *state,
 				parse = SSID;
 				have_ssids = true;
 				break;
+			} else if (strcmp(argv[i], "can_scan_one") == 0) {
+				can_scan_one = true;
+				parse = NONE;
+				break;
 			} else if (strcmp(argv[i], "passive") == 0) {
 				parse = DONE;
 				passive = true;
@@ -164,7 +169,13 @@ static int handle_scan(struct nl80211_state *state,
 		NLA_PUT(ssids, 1, 0, "");
 	if (!passive)
 		nla_put_nested(msg, NL80211_ATTR_SCAN_SSIDS, ssids);
-
+	if (can_scan_one) {
+		/* HACK:  Use freq of -1 to mean 'scan only active channel
+		 * if any other VIFS on this phy are active.
+		 */
+		NLA_PUT_U32(freqs, i, -1);
+		have_freqs = true;
+	}
 	if (have_freqs)
 		nla_put_nested(msg, NL80211_ATTR_SCAN_FREQUENCIES, freqs);
 	if (flags)
@@ -1518,7 +1529,7 @@ static int handle_scan_combined(struct nl80211_state *state,
 	dump_argv[0] = argv[0];
 	return handle_cmd(state, id, dump_argc, dump_argv);
 }
-TOPLEVEL(scan, "[-u] [freq <freq>*] [ies <hex as 00:11:..>] [lowpri,flush,ap-force] [ssid <ssid>*|passive]", 0, 0,
+TOPLEVEL(scan, "[-u] [freq <freq>*] [ies <hex as 00:11:..>] [lowpri,flush,ap-force] [ssid <ssid>*|passive|can_scan_one]", 0, 0,
 	 CIB_NETDEV, handle_scan_combined,
 	 "Scan on the given frequencies and probe for the given SSIDs\n"
 	 "(or wildcard if not given) unless passive scanning is requested.\n"
@@ -1528,7 +1539,7 @@ COMMAND(scan, dump, "[-u]",
 	NL80211_CMD_GET_SCAN, NLM_F_DUMP, CIB_NETDEV, handle_scan_dump,
 	"Dump the current scan results. If -u is specified, print unknown\n"
 	"data in scan results.");
-COMMAND(scan, trigger, "[freq <freq>*] [ies <hex as 00:11:..>] [lowpri,flush,ap-force] [ssid <ssid>*|passive]",
+COMMAND(scan, trigger, "[freq <freq>*] [ies <hex as 00:11:..>] [lowpri,flush,ap-force] [ssid <ssid>*|passive|scan_scan_one]",
 	NL80211_CMD_TRIGGER_SCAN, 0, CIB_NETDEV, handle_scan,
 	 "Trigger a scan on the given frequencies with probing for the given\n"
 	 "SSIDs (or wildcard if not given) unless passive scanning is requested.");
