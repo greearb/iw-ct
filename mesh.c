@@ -11,6 +11,9 @@
 #include "nl80211.h"
 #include "iw.h"
 
+SECTION(mesh);
+
+
 typedef struct _any_t {
 	union {
 		uint32_t as_32;
@@ -144,6 +147,9 @@ const static struct mesh_param_descr _mesh_param_descrs[] =
 	{"mesh_ttl",
 	NL80211_MESHCONF_TTL,
 	_my_nla_put_u8, _parse_u8, _print_u8},
+	{"mesh_element_ttl",
+	NL80211_MESHCONF_ELEMENT_TTL,
+	_my_nla_put_u8, _parse_u8, _print_u8},
 	{"mesh_auto_open_plinks",
 	NL80211_MESHCONF_AUTO_OPEN_PLINKS,
 	_my_nla_put_u8, _parse_u8_as_bool, _print_u8},
@@ -179,23 +185,14 @@ static void print_all_mesh_param_descr(void)
 		printf(" - %s\n", _mesh_param_descrs[i].name);
 }
 
-static const struct mesh_param_descr* find_mesh_param(int argc, char **argv,
-						const char *action_name)
+static const struct mesh_param_descr *find_mesh_param(const char *name)
 {
 	int i;
-	const struct mesh_param_descr *mdescr;
-
-	if (argc < 1) {
-		printf("You must specify which mesh parameter to %s.\n",
-		       action_name);
-		print_all_mesh_param_descr();
-		return NULL;
-	}
+	const struct mesh_param_descr *mdescr = NULL;
 
 	/* Find out what mesh parameter we want to change. */
-	mdescr = NULL;
 	for (i = 0; i < ARRAY_SIZE(_mesh_param_descrs); i++) {
-		if (!strcmp(_mesh_param_descrs[i].name, argv[0]))
+		if (!strcmp(_mesh_param_descrs[i].name, name))
 			return _mesh_param_descrs + i;
 	}
 
@@ -212,40 +209,65 @@ static int set_interface_meshparam(struct nl80211_state *state,
 				   struct nl_msg *msg,
 				   int argc, char **argv)
 {
-	int err;
-	uint32_t ret;
 	const struct mesh_param_descr *mdescr;
 	struct nlattr *container;
-	_any any;
+	uint32_t ret;
+	int err;
 
-	mdescr = find_mesh_param(argc, argv, "change");
-	if (!mdescr)
-		return 2;
-	if (argc != 2) {
-		printf("Must specify a value for %s.\n", mdescr->name);
-		return 2;
-	}
-
-	/* Parse the new value */
-	memset(&any, 0, sizeof(_any));
-	ret = mdescr->parse_fn(argv[1], &any);
-	if (ret != 0) {
-		printf("%s must be set to a number "
-		       "between 0 and %u\n", mdescr->name, ret);
-		return 2;
-	}
-
-	/* Construct a netlink message */
 	container = nla_nest_start(msg, NL80211_ATTR_MESH_PARAMS);
 	if (!container)
 		return -ENOBUFS;
-	err = mdescr->nla_put_fn(msg, mdescr->mesh_param_num, &any);
+
+	if (!argc)
+		return 1;
+
+	while (argc) {
+		const char *name;
+		char *value;
+		_any any;
+
+		memset(&any, 0, sizeof(_any));
+
+		name = argv[0];
+		value = strchr(name, '=');
+		if (value) {
+			*value = '\0';
+			value++;
+			argc--;
+			argv++;
+		} else {
+			/* backward compat -- accept w/o '=' */
+			if (argc < 2) {
+				printf("Must specify a value for %s.\n", name);
+				return 2;
+			}
+			value = argv[1];
+			argc -= 2;
+			argv += 2;
+		}
+
+		mdescr = find_mesh_param(name);
+		if (!mdescr)
+			return 2;
+
+		/* Parse the new value */
+		ret = mdescr->parse_fn(value, &any);
+		if (ret != 0) {
+			printf("%s must be set to a number "
+			       "between 0 and %u\n", mdescr->name, ret);
+			return 2;
+		}
+
+		err = mdescr->nla_put_fn(msg, mdescr->mesh_param_num, &any);
+		if (err)
+			return err;
+	}
 	nla_nest_end(msg, container);
 
 	return err;
 }
 
-COMMAND(set, mesh_param, "<param> <value>",
+COMMAND(set, mesh_param, "<param>=<value> [<param>=<value>]*",
 	NL80211_CMD_SET_MESH_PARAMS, 0, CIB_NETDEV, set_interface_meshparam,
 	"Set mesh parameter (run command without any to see available ones).");
 
@@ -267,8 +289,20 @@ static int print_mesh_param_handler(struct nl_msg *msg, void *arg)
 
 	/* unpack the mesh parameters */
 	if (nla_parse_nested(mesh_params, NL80211_MESHCONF_ATTR_MAX,
-				parent_attr, NULL))
+			     parent_attr, NULL))
 		return -EINVAL;
+
+	if (!mdescr) {
+		int i;
+
+		for (i = 0; i < ARRAY_SIZE(_mesh_param_descrs); i++) {
+			mdescr = &_mesh_param_descrs[i];
+			printf("%s = ", mdescr->name);
+			mdescr->nla_print_fn(mesh_params[mdescr->mesh_param_num]);
+			printf("\n");
+		}
+		return NL_SKIP;
+	}
 
 	/* print out the mesh parameter */
 	mdescr->nla_print_fn(mesh_params[mdescr->mesh_param_num]);
@@ -281,17 +315,53 @@ static int get_interface_meshparam(struct nl80211_state *state,
 				   struct nl_msg *msg,
 				   int argc, char **argv)
 {
-	const struct mesh_param_descr *mdescr;
+	const struct mesh_param_descr *mdescr = NULL;
 
-	mdescr = find_mesh_param(argc, argv, "get");
-	if (!mdescr)
-		return 2;
+	if (argc > 1)
+		return 1;
+
+	if (argc == 1) {
+		mdescr = find_mesh_param(argv[0]);
+		if (!mdescr)
+			return 2;
+	}
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM,
 		  print_mesh_param_handler, (void *)mdescr);
 	return 0;
 }
 
-COMMAND(get, mesh_param, "<param>",
+COMMAND(get, mesh_param, "[<param>]",
 	NL80211_CMD_GET_MESH_PARAMS, 0, CIB_NETDEV, get_interface_meshparam,
 	"Retrieve mesh parameter (run command without any to see available ones).");
+
+static int join_mesh(struct nl80211_state *state, struct nl_cb *cb,
+		     struct nl_msg *msg, int argc, char **argv)
+{
+	if (argc < 1)
+		return 1;
+
+	NLA_PUT(msg, NL80211_ATTR_MESH_ID, strlen(argv[0]), argv[0]);
+	argc--;
+	argv++;
+
+	if (!argc)
+		return 0;
+	return set_interface_meshparam(state, cb, msg, argc, argv);
+ nla_put_failure:
+	return -ENOBUFS;
+}
+COMMAND(mesh, join, "<mesh ID> [<param>=<value>]*",
+	NL80211_CMD_JOIN_MESH, 0, CIB_NETDEV, join_mesh,
+	"Join a mesh with the given mesh ID and mesh parameters.");
+
+static int leave_mesh(struct nl80211_state *state, struct nl_cb *cb,
+		      struct nl_msg *msg, int argc, char **argv)
+{
+	if (argc)
+		return 1;
+
+	return 0;
+}
+COMMAND(mesh, leave, NULL, NL80211_CMD_LEAVE_MESH, 0, CIB_NETDEV, leave_mesh,
+	"Leave a mesh.");

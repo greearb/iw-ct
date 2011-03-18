@@ -110,10 +110,13 @@ static int handle_scan(struct nl80211_state *state,
 			return 1;
 		case FREQ:
 			freq = strtoul(argv[i], &eptr, 10);
-			if (eptr != argv[i] + strlen(argv[i]))
-				return 1;
+			if (eptr != argv[i] + strlen(argv[i])) {
+				/* failed to parse as number -- maybe a tag? */
+				i--;
+				parse = NONE;
+				continue;
+			}
 			NLA_PUT_U32(freqs, i, freq);
-			parse = NONE;
 			break;
 		case IES:
 			ies = parse_hex(argv[i], &tmp);
@@ -233,7 +236,7 @@ static void print_country(const uint8_t type, uint8_t len, const uint8_t *data)
 		else
 			end_channel =  triplet->chans.first_channel + (4 * (triplet->chans.num_channels - 1));
 
-		printf("\t\tChannels [%d - %d]\n", triplet->chans.first_channel, end_channel);
+		printf("\t\tChannels [%d - %d] @ %d dBm\n", triplet->chans.first_channel, end_channel, triplet->chans.max_power);
 
 		data += 3;
 		len -= 3;

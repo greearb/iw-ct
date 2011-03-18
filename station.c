@@ -48,6 +48,8 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_LLID] = { .type = NLA_U16 },
 		[NL80211_STA_INFO_PLID] = { .type = NLA_U16 },
 		[NL80211_STA_INFO_PLINK_STATE] = { .type = NLA_U8 },
+		[NL80211_STA_INFO_TX_RETRIES] = { .type = NLA_U32 },
+		[NL80211_STA_INFO_TX_FAILED] = { .type = NLA_U32 },
 	};
 
 	static struct nla_policy rate_policy[NL80211_RATE_INFO_MAX + 1] = {
@@ -96,9 +98,18 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 	if (sinfo[NL80211_STA_INFO_TX_PACKETS])
 		printf("\n\ttx packets:\t%u",
 			nla_get_u32(sinfo[NL80211_STA_INFO_TX_PACKETS]));
+	if (sinfo[NL80211_STA_INFO_TX_RETRIES])
+		printf("\n\ttx retries:\t%u",
+			nla_get_u32(sinfo[NL80211_STA_INFO_TX_RETRIES]));
+	if (sinfo[NL80211_STA_INFO_TX_FAILED])
+		printf("\n\ttx failed:\t%u",
+			nla_get_u32(sinfo[NL80211_STA_INFO_TX_FAILED]));
 	if (sinfo[NL80211_STA_INFO_SIGNAL])
 		printf("\n\tsignal:  \t%d dBm",
 			(int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_SIGNAL]));
+	if (sinfo[NL80211_STA_INFO_SIGNAL_AVG])
+		printf("\n\tsignal avg:\t%d dBm",
+			(int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_SIGNAL_AVG]));
 
 	if (sinfo[NL80211_STA_INFO_TX_BITRATE]) {
 		if (nla_parse_nested(rinfo, NL80211_RATE_INFO_MAX,
@@ -196,6 +207,20 @@ COMMAND(station, del, "<MAC address>",
 	NL80211_CMD_DEL_STATION, 0, CIB_NETDEV, handle_station_get,
 	"Remove the given station entry (use with caution!)");
 
+static const struct cmd *station_set_plink;
+static const struct cmd *station_set_vlan;
+
+static const struct cmd *select_station_cmd(int argc, char **argv)
+{
+	if (argc < 2)
+		return NULL;
+	if (strcmp(argv[1], "plink_action") == 0)
+		return station_set_plink;
+	if (strcmp(argv[1], "vlan") == 0)
+		return station_set_vlan;
+	return NULL;
+}
+
 static int handle_station_set_plink(struct nl80211_state *state,
 			      struct nl_cb *cb,
 			      struct nl_msg *msg,
@@ -240,9 +265,10 @@ static int handle_station_set_plink(struct nl80211_state *state,
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(station, set, "<MAC address> plink_action <open|block>",
+COMMAND_ALIAS(station, set, "<MAC address> plink_action <open|block>",
 	NL80211_CMD_SET_STATION, 0, CIB_NETDEV, handle_station_set_plink,
-	"Set mesh peer link action for this station (peer).");
+	"Set mesh peer link action for this station (peer).",
+	select_station_cmd, station_set_plink);
 
 static int handle_station_set_vlan(struct nl80211_state *state,
 			      struct nl_cb *cb,
@@ -286,9 +312,10 @@ static int handle_station_set_vlan(struct nl80211_state *state,
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(station, set, "<MAC address> vlan <ifindex>",
+COMMAND_ALIAS(station, set, "<MAC address> vlan <ifindex>",
 	NL80211_CMD_SET_STATION, 0, CIB_NETDEV, handle_station_set_vlan,
-	"Set an AP VLAN for this station.");
+	"Set an AP VLAN for this station.",
+	select_station_cmd, station_set_vlan);
 
 
 static int handle_station_dump(struct nl80211_state *state,

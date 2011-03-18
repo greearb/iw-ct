@@ -168,10 +168,22 @@ static int print_phy_handler(struct nl_msg *msg, void *arg)
 		printf("\tCoverage class: %d (up to %dm)\n", coverage, 450 * coverage);
 	}
 
+	if (tb_msg[NL80211_ATTR_WIPHY_ANTENNA_AVAIL_TX] &&
+	    tb_msg[NL80211_ATTR_WIPHY_ANTENNA_AVAIL_RX])
+		printf("\tAvailable Antennas: TX %#x RX %#x\n",
+		       nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_ANTENNA_AVAIL_TX]),
+		       nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_ANTENNA_AVAIL_RX]));
+
+	if (tb_msg[NL80211_ATTR_WIPHY_ANTENNA_TX] &&
+	    tb_msg[NL80211_ATTR_WIPHY_ANTENNA_RX])
+		printf("\tConfigured Antennas: TX %#x RX %#x\n",
+		       nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_ANTENNA_TX]),
+		       nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_ANTENNA_RX]));
+
 	if (tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES]) {
 		printf("\tSupported interface modes:\n");
 		nla_for_each_nested(nl_mode, tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES], rem_mode)
-			printf("\t\t * %s\n", iftype_name(nl_mode->nla_type));
+			printf("\t\t * %s\n", iftype_name(nla_type(nl_mode)));
 	}
 
 	if (tb_msg[NL80211_ATTR_SUPPORTED_COMMANDS]) {
@@ -210,6 +222,10 @@ static int print_phy_handler(struct nl_msg *msg, void *arg)
 		}
 	}
 
+	if (tb_msg[NL80211_ATTR_SUPPORT_IBSS_RSN]) {
+		printf("\tDevice supports RSN-IBSS.\n");
+	}
+
 	return NL_SKIP;
 }
 
@@ -223,7 +239,7 @@ static int handle_info(struct nl80211_state *state,
 	return 0;
 }
 __COMMAND(NULL, info, "info", NULL, NL80211_CMD_GET_WIPHY, 0, 0, CIB_PHY, handle_info,
-	 "Show capabilities for the specified wireless device.");
+	 "Show capabilities for the specified wireless device.", NULL);
 TOPLEVEL(list, NULL, NL80211_CMD_GET_WIPHY, NLM_F_DUMP, CIB_NONE, handle_info,
 	 "List all wireless devices and their capabilities.");
 TOPLEVEL(phy, NULL, NL80211_CMD_GET_WIPHY, NLM_F_DUMP, CIB_NONE, handle_info, NULL);
