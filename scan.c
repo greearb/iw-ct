@@ -27,8 +27,9 @@
 #define WLAN_CAPABILITY_APSD		(1<<11)
 #define WLAN_CAPABILITY_DSSS_OFDM	(1<<13)
 
-static unsigned char wifi_oui[3]      = { 0x00, 0x50, 0xf2 };
-static unsigned char ieee80211_oui[3] = { 0x00, 0x0f, 0xac };
+static unsigned char ms_oui[3]		= { 0x00, 0x50, 0xf2 };
+static unsigned char ieee80211_oui[3]	= { 0x00, 0x0f, 0xac };
+static unsigned char wfa_oui[3]		= { 0x50, 0x6f, 0x9a };
 
 struct scan_params {
 	bool unknown;
@@ -265,7 +266,7 @@ static void print_erp(const uint8_t type, uint8_t len, const uint8_t *data)
 
 static void print_cipher(const uint8_t *data)
 {
-	if (memcmp(data, wifi_oui, 3) == 0) {
+	if (memcmp(data, ms_oui, 3) == 0) {
 		switch (data[3]) {
 		case 0:
 			printf("Use group cipher suite");
@@ -319,7 +320,7 @@ static void print_cipher(const uint8_t *data)
 
 static void print_auth(const uint8_t *data)
 {
-	if (memcmp(data, wifi_oui, 3) == 0) {
+	if (memcmp(data, ms_oui, 3) == 0) {
 		switch (data[3]) {
 		case 1:
 			printf("IEEE 802.1X");
@@ -846,6 +847,20 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data)
 			       val == 2 ? " (Configured)" : "");
 			break;
 		}
+		case 0x1047:
+			tab_on_first(&first);
+			printf("\t * UUID: ");
+			if (sublen != 16) {
+				printf("(invalid, length=%d)\n", sublen);
+				break;
+			}
+			printf("%02x%02x%02x%02x-%02x%02x-%02x%02x-"
+				"%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+				data[4], data[5], data[6], data[7],
+				data[8], data[9], data[10], data[11],
+				data[12], data[13], data[14], data[15],
+				data[16], data[17], data[18], data[19]);
+			break;
 		case 0x1054: {
 			tab_on_first(&first);
 			if (sublen != 8) {
@@ -931,6 +946,90 @@ static const struct ie_print wifiprinters[] = {
 	[4] = { "WPS", print_wifi_wps, 0, 255, BIT(PRINT_SCAN), },
 };
 
+static inline void print_p2p(const uint8_t type, uint8_t len, const uint8_t *data)
+{
+	bool first = true;
+	__u8 subtype;
+	__u16 sublen;
+
+	while (len >= 3) {
+		subtype = data[0];
+		sublen = (data[2] << 8) + data[1];
+
+		if (sublen > len - 3)
+			break;
+
+		switch (subtype) {
+		case 0x02: /* capability */
+			tab_on_first(&first);
+			if (sublen < 2) {
+				printf("\t * malformed capability\n");
+				break;
+			}
+			printf("\t * Group capa: 0x%.2x, Device capa: 0x%.2x\n",
+				data[3], data[4]);
+			break;
+		case 0x0d: /* device info */
+			if (sublen < 6 + 2 + 8 + 1) {
+				printf("\t * malformed device info\n");
+				break;
+			}
+			/* fall through for now */
+		case 0x00: /* status */
+		case 0x01: /* minor reason */
+		case 0x03: /* device ID */
+		case 0x04: /* GO intent */
+		case 0x05: /* configuration timeout */
+		case 0x06: /* listen channel */
+		case 0x07: /* group BSSID */
+		case 0x08: /* ext listen timing */
+		case 0x09: /* intended interface address */
+		case 0x0a: /* manageability */
+		case 0x0b: /* channel list */
+		case 0x0c: /* NoA */
+		case 0x0e: /* group info */
+		case 0x0f: /* group ID */
+		case 0x10: /* interface */
+		case 0x11: /* operating channel */
+		case 0x12: /* invitation flags */
+		case 0xdd: /* vendor specific */
+		default: {
+			const __u8 *subdata = data + 4;
+			__u16 tmplen = sublen;
+
+			tab_on_first(&first);
+			printf("\t * Unknown TLV (%#.2x, %d bytes):",
+			       subtype, tmplen);
+			while (tmplen) {
+				printf(" %.2x", *subdata);
+				subdata++;
+				tmplen--;
+			}
+			printf("\n");
+			break;
+		}
+		}
+
+		data += sublen + 3;
+		len -= sublen + 3;
+	}
+
+	if (len != 0) {
+		tab_on_first(&first);
+		printf("\t * bogus tail data (%d):", len);
+		while (len) {
+			printf(" %.2x", *data);
+			data++;
+			len--;
+		}
+		printf("\n");
+	}
+}
+
+static const struct ie_print wfa_printers[] = {
+	[9] = { "P2P", print_p2p, 2, 255, BIT(PRINT_SCAN), },
+};
+
 static void print_vendor(unsigned char len, unsigned char *data,
 			 bool unknown, enum print_ie_type ptype)
 {
@@ -944,7 +1043,7 @@ static void print_vendor(unsigned char len, unsigned char *data,
 		return;
 	}
 
-	if (len >= 4 && memcmp(data, wifi_oui, 3) == 0) {
+	if (len >= 4 && memcmp(data, ms_oui, 3) == 0) {
 		if (data[3] < ARRAY_SIZE(wifiprinters) &&
 		    wifiprinters[data[3]].name &&
 		    wifiprinters[data[3]].flags & BIT(ptype)) {
@@ -953,7 +1052,23 @@ static void print_vendor(unsigned char len, unsigned char *data,
 		}
 		if (!unknown)
 			return;
-		printf("\tWiFi OUI %#.2x, data:", data[3]);
+		printf("\tMS/WiFi %#.2x, data:", data[3]);
+		for(i = 0; i < len - 4; i++)
+			printf(" %.02x", data[i + 4]);
+		printf("\n");
+		return;
+	}
+
+	if (len >= 4 && memcmp(data, wfa_oui, 3) == 0) {
+		if (data[3] < ARRAY_SIZE(wfa_printers) &&
+		    wfa_printers[data[3]].name &&
+		    wfa_printers[data[3]].flags & BIT(ptype)) {
+			print_ie(&wfa_printers[data[3]], data[3], len - 4, data + 4);
+			return;
+		}
+		if (!unknown)
+			return;
+		printf("\tWFA %#.2x, data:", data[3]);
 		for(i = 0; i < len - 4; i++)
 			printf(" %.02x", data[i + 4]);
 		printf("\n");
