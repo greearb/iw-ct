@@ -5,6 +5,14 @@
 #include "iw.h"
 #include "nl80211.h"
 
+unsigned short cpu_to_le16(unsigned short v)
+{
+	unsigned short nv = htons(v);
+	/* and now swap this to get litte-endian */
+	return ((nv & 0xff) << 8) | ((nv & 0xff00) >> 8);
+}
+
+
 void mac_addr_n2a(char *mac_addr, unsigned char *arg)
 {
 	int i, l;

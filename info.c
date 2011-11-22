@@ -400,6 +400,39 @@ broken_combination:
 	if (tb_msg[NL80211_ATTR_SUPPORT_AP_UAPSD])
 		printf("\tDevice supports AP-side u-APSD.\n");
 
+	if (tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK]) {
+		struct ieee80211_ht_cap *cm;
+		printf("\tHT Capabilities over-rides:\n");
+		if (nla_len(tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK]) >=
+		    sizeof(*cm)) {
+			cm = nla_data(tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK]);
+			printf("\t\t * MCS: %02hx %02hx %02hx %02hx %02hx %02hx"
+			       " %02hx %02hx %02hx %02hx\n",
+			       cm->mcs.rx_mask[0], cm->mcs.rx_mask[1],
+			       cm->mcs.rx_mask[2], cm->mcs.rx_mask[3],
+			       cm->mcs.rx_mask[4], cm->mcs.rx_mask[5],
+			       cm->mcs.rx_mask[6], cm->mcs.rx_mask[7],
+			       cm->mcs.rx_mask[8], cm->mcs.rx_mask[9]);
+			printf("\t\t * MAX-AMSDU:     %s\n"
+			       "\t\t * WIDTH-20-40:   %s\n"
+			       "\t\t * SGI-40:        %s\n"
+			       "\t\t * AMPDU-Factor:  %s\n"
+			       "\t\t * AMPDU-Density: %s\n",
+			       cm->cap_info & cpu_to_le16(IEEE80211_HT_CAP_MAX_AMSDU) ? "Yes" : "No",
+			       cm->cap_info & cpu_to_le16(IEEE80211_HT_CAP_SUP_WIDTH_20_40) ? "Yes" : "No",
+			       cm->cap_info & cpu_to_le16(IEEE80211_HT_CAP_SGI_40) ? "Yes" : "No",
+			       cm->ampdu_params_info & IEEE80211_HT_AMPDU_PARM_FACTOR ? "Yes" : "No",
+			       cm->ampdu_params_info & IEEE80211_HT_AMPDU_PARM_DENSITY ? "Yes" : "No");
+		} else {
+			printf("\tERROR:  capabilities mask is too short, expected: %d"
+			       ", received: %d\n",
+			       (int)(sizeof(*cm)),
+			       (int)(nla_len(tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK])));
+		}
+	} else {
+		printf("\tHT Capabilities over-rides are NOT supported.\n");
+	}
+
 	return NL_SKIP;
 }
 
