@@ -19,6 +19,13 @@ static void print_flag(const char *name, int *open)
 	*open = 1;
 }
 
+static unsigned short cpu_to_le16(unsigned short v)
+{
+	unsigned short nv = htons(v);
+	/* and now swap this to get litte-endian */
+	return ((nv & 0xff) << 8) | ((nv & 0xff00) >> 8);
+}
+
 static char *cipher_name(__u32 c)
 {
 	static char buf[20];
@@ -535,11 +542,11 @@ broken_combination:
 			       cm->mcs.rx_mask[4], cm->mcs.rx_mask[5],
 			       cm->mcs.rx_mask[6], cm->mcs.rx_mask[7],
 			       cm->mcs.rx_mask[8], cm->mcs.rx_mask[9]);
-			if (cm->cap_info & htole16(IEEE80211_HT_CAP_MAX_AMSDU))
+			if (cm->cap_info & cpu_to_le16(IEEE80211_HT_CAP_MAX_AMSDU))
 				printf("\t\t * maximum A-MSDU length\n");
-			if (cm->cap_info & htole16(IEEE80211_HT_CAP_SUP_WIDTH_20_40))
+			if (cm->cap_info & cpu_to_le16(IEEE80211_HT_CAP_SUP_WIDTH_20_40))
 				printf("\t\t * supported channel width\n");
-			if (cm->cap_info & htole16(IEEE80211_HT_CAP_SGI_40))
+			if (cm->cap_info & cpu_to_le16(IEEE80211_HT_CAP_SGI_40))
 				printf("\t\t * short GI for 40 MHz\n");
 			if (cm->ampdu_params_info & IEEE80211_HT_AMPDU_PARM_FACTOR)
 				printf("\t\t * max A-MPDU length exponent\n");
