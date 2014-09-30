@@ -558,6 +558,8 @@ broken_combination:
 			printf("\tDevice supports scan flush.\n");
 		if (features & NL80211_FEATURE_AP_SCAN)
 			printf("\tDevice supports AP scan.\n");
+		if (features & NL80211_FEATURE_MAC_ON_CREATE)
+			printf("\tDevice supports configuring vdev MAC-addr on create.\n");
 	}
 
 	if (tb_msg[NL80211_ATTR_TDLS_SUPPORT])
