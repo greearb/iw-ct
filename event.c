@@ -325,15 +325,22 @@ static int print_event(struct nl_msg *msg, void *arg)
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
 		  genlmsg_attrlen(gnlh, 0), NULL);
 
-	if (tb[NL80211_ATTR_IFINDEX] && tb[NL80211_ATTR_WIPHY]) {
+	ifname[0] = 0;
+	if (tb[NL80211_ATTR_IFNAME]) {
+		memset(ifname, 0, sizeof(ifname));
+		strncpy(ifname, nla_data(tb[NL80211_ATTR_IFNAME]), IFNAMSIZ);
+	}
+	else if (tb[NL80211_ATTR_IFINDEX]) {
 		if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), ifname);
+	}
+
+	if (ifname[0] && tb[NL80211_ATTR_WIPHY]) {
 		printf("%s (phy #%d): ", ifname, nla_get_u32(tb[NL80211_ATTR_WIPHY]));
 	} else if (tb[NL80211_ATTR_WDEV] && tb[NL80211_ATTR_WIPHY]) {
 		printf("wdev 0x%llx (phy #%d): ",
 			(unsigned long long)nla_get_u64(tb[NL80211_ATTR_WDEV]),
 			nla_get_u32(tb[NL80211_ATTR_WIPHY]));
-	} else if (tb[NL80211_ATTR_IFINDEX]) {
-		if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), ifname);
+	} else if (ifname[0]) {
 		printf("%s: ", ifname);
 	} else if (tb[NL80211_ATTR_WDEV]) {
 		printf("wdev 0x%llx: ", (unsigned long long)nla_get_u64(tb[NL80211_ATTR_WDEV]));
@@ -617,6 +624,14 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_DEL_WIPHY:
 		printf("delete wiphy\n");
+	case NL80211_CMD_STOP_AP:
+		printf("stop AP\n");
+		break;
+	case NL80211_CMD_NEW_INTERFACE:
+		printf("new interface\n");
+		break;
+	case NL80211_CMD_DEL_INTERFACE:
+		printf("delete interface\n");
 		break;
 	default:
 		printf("unknown event %d (%s)\n",
