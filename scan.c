@@ -408,6 +408,8 @@ static int handle_scan(struct nl80211_state *state,
 				break;
 			}
 		case DONE:
+			nlmsg_free(ssids);
+			nlmsg_free(freqs);
 			return 1;
 		case FREQ:
 			freq = strtoul(argv[i], &eptr, 10);
