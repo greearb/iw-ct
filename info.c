@@ -645,7 +645,6 @@ broken_combination:
 static bool nl80211_has_split_wiphy = false;
 
 static int handle_info(struct nl80211_state *state,
-		       struct nl_cb *cb,
 		       struct nl_msg *msg,
 		       int argc, char **argv,
 		       enum id_input id)
@@ -659,7 +658,7 @@ static int handle_info(struct nl80211_state *state,
 		nlmsg_hdr(msg)->nlmsg_flags |= NLM_F_DUMP;
 	}
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_phy_handler, NULL);
+	register_handler(print_phy_handler, NULL);
 
 	return 0;
 }
@@ -669,8 +668,7 @@ TOPLEVEL(list, NULL, NL80211_CMD_GET_WIPHY, NLM_F_DUMP, CIB_NONE, handle_info,
 	 "List all wireless devices and their capabilities.");
 TOPLEVEL(phy, NULL, NL80211_CMD_GET_WIPHY, NLM_F_DUMP, CIB_NONE, handle_info, NULL);
 
-static int handle_commands(struct nl80211_state *state,
-			   struct nl_cb *cb, struct nl_msg *msg,
+static int handle_commands(struct nl80211_state *state, struct nl_msg *msg,
 			   int argc, char **argv, enum id_input id)
 {
 	int i;
@@ -705,12 +703,11 @@ static int print_feature_handler(struct nl_msg *msg, void *arg)
 	return NL_SKIP;
 }
 
-static int handle_features(struct nl80211_state *state,
-			   struct nl_cb *cb, struct nl_msg *msg,
+static int handle_features(struct nl80211_state *state, struct nl_msg *msg,
 			   int argc, char **argv, enum id_input id)
 {
 	unsigned long print = argc == 0 || strcmp(argv[0], "-q");
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_feature_handler, (void *)print);
+	register_handler(print_feature_handler, (void *)print);
 	return 0;
 }
 

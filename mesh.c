@@ -293,7 +293,6 @@ static const struct mesh_param_descr *find_mesh_param(const char *name)
 
 /* Setter */
 static int set_interface_meshparam(struct nl80211_state *state,
-				   struct nl_cb *cb,
 				   struct nl_msg *msg,
 				   int argc, char **argv,
 				   enum id_input id)
@@ -407,7 +406,6 @@ static int print_mesh_param_handler(struct nl_msg *msg, void *arg)
 }
 
 static int get_interface_meshparam(struct nl80211_state *state,
-				   struct nl_cb *cb,
 				   struct nl_msg *msg,
 				   int argc, char **argv,
 				   enum id_input id)
@@ -423,8 +421,7 @@ static int get_interface_meshparam(struct nl80211_state *state,
 			return 2;
 	}
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM,
-		  print_mesh_param_handler, (void *)mdescr);
+	register_handler(print_mesh_param_handler, (void *)mdescr);
 	return 0;
 }
 
@@ -432,7 +429,7 @@ COMMAND(get, mesh_param, "[<param>]",
 	NL80211_CMD_GET_MESH_PARAMS, 0, CIB_NETDEV, get_interface_meshparam,
 	"Retrieve mesh parameter (run command without any to see available ones).");
 
-static int join_mesh(struct nl80211_state *state, struct nl_cb *cb,
+static int join_mesh(struct nl80211_state *state,
 		     struct nl_msg *msg, int argc, char **argv,
 		     enum id_input id)
 {
@@ -598,7 +595,7 @@ static int join_mesh(struct nl80211_state *state, struct nl_cb *cb,
 
 	if (!argc)
 		return 0;
-	return set_interface_meshparam(state, cb, msg, argc, argv, id);
+	return set_interface_meshparam(state, msg, argc, argv, id);
  nla_put_failure:
 	return -ENOBUFS;
 }
@@ -611,7 +608,7 @@ COMMAND(mesh, join, "<mesh ID> [[freq <freq in MHz> <HT20|HT40+|HT40-|NOHT>]"
 	"mcast-rate and mesh parameters. Basic-rates are applied only if\n"
 	"frequency is provided.");
 
-static int leave_mesh(struct nl80211_state *state, struct nl_cb *cb,
+static int leave_mesh(struct nl80211_state *state,
 		      struct nl_msg *msg, int argc, char **argv,
 		      enum id_input id)
 {

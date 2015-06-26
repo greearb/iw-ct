@@ -13,7 +13,7 @@
 
 SECTION(roc);
 
-static int handle_roc_start(struct nl80211_state *state, struct nl_cb *cb,
+static int handle_roc_start(struct nl80211_state *state,
 			    struct nl_msg *msg, int argc, char **argv,
 			    enum id_input id)
 {

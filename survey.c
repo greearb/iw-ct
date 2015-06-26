@@ -69,12 +69,11 @@ static int print_survey_handler(struct nl_msg *msg, void *arg)
 }
 
 static int handle_survey_dump(struct nl80211_state *state,
-			      struct nl_cb *cb,
 			      struct nl_msg *msg,
 			      int argc, char **argv,
 			      enum id_input id)
 {
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_survey_handler, NULL);
+	register_handler(print_survey_handler, NULL);
 	return 0;
 }
 COMMAND(survey, dump, NULL,

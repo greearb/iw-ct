@@ -45,7 +45,7 @@ static int read_hex(int argc, char **argv, char *buf, size_t size)
 	return argc;
 }
 
-static int handle_vendor(struct nl80211_state *state, struct nl_cb *cb,
+static int handle_vendor(struct nl80211_state *state,
 			 struct nl_msg *msg, int argc, char **argv,
 			 enum id_input id)
 {

@@ -703,14 +703,15 @@ __u32 __do_listen_events(struct nl80211_state *state,
 
 	/* no sequence checking for multicast messages */
 	nl_cb_set(cb, NL_CB_SEQ_CHECK, NL_CB_CUSTOM, no_seq_check, NULL);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, valid_handler, NULL);
 
 	if (n_waits && waits) {
 		wait_ev.cmds = waits;
 		wait_ev.n_cmds = n_waits;
 		wait_ev.pargs = args;
-		nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, wait_event, &wait_ev);
+		register_handler(wait_event, &wait_ev);
 	} else
-		nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_event, args);
+		register_handler(print_event, args);
 
 	wait_ev.cmd = 0;
 
@@ -735,7 +736,6 @@ __u32 listen_events(struct nl80211_state *state,
 }
 
 static int print_events(struct nl80211_state *state,
-			struct nl_cb *cb,
 			struct nl_msg *msg,
 			int argc, char **argv,
 			enum id_input id)

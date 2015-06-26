@@ -9,7 +9,7 @@
 #include "nl80211.h"
 #include "iw.h"
 
-static int iw_cqm_rssi(struct nl80211_state *state, struct nl_cb *cb,
+static int iw_cqm_rssi(struct nl80211_state *state,
 		       struct nl_msg *msg, int argc, char **argv,
 		       enum id_input id)
 {

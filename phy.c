@@ -16,7 +16,6 @@
 #include "iw.h"
 
 static int handle_name(struct nl80211_state *state,
-		       struct nl_cb *cb,
 		       struct nl_msg *msg,
 		       int argc, char **argv,
 		       enum id_input id)
@@ -144,8 +143,7 @@ static int handle_freqchan(struct nl_msg *msg, bool chan,
 	return -ENOBUFS;
 }
 
-static int handle_freq(struct nl80211_state *state,
-		       struct nl_cb *cb, struct nl_msg *msg,
+static int handle_freq(struct nl80211_state *state, struct nl_msg *msg,
 		       int argc, char **argv,
 		       enum id_input id)
 {
@@ -159,8 +157,7 @@ COMMAND(set, freq, "<freq> [HT20|HT40+|HT40-]\n"
 		   "<control freq> [20|40|80|80+80|160] [<center freq 1>] [<center freq 2>]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_freq, NULL);
 
-static int handle_chan(struct nl80211_state *state,
-		       struct nl_cb *cb, struct nl_msg *msg,
+static int handle_chan(struct nl80211_state *state, struct nl_msg *msg,
 		       int argc, char **argv,
 		       enum id_input id)
 {
@@ -172,7 +169,7 @@ COMMAND(set, channel, "<channel> [HT20|HT40+|HT40-]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_chan, NULL);
 
 static int handle_fragmentation(struct nl80211_state *state,
-				struct nl_cb *cb, struct nl_msg *msg,
+				struct nl_msg *msg,
 				int argc, char **argv,
 				enum id_input id)
 {
@@ -204,7 +201,7 @@ COMMAND(set, frag, "<fragmentation threshold|off>",
 	"Set fragmentation threshold.");
 
 static int handle_rts(struct nl80211_state *state,
-		      struct nl_cb *cb, struct nl_msg *msg,
+		      struct nl_msg *msg,
 		      int argc, char **argv,
 		      enum id_input id)
 {
@@ -236,7 +233,7 @@ COMMAND(set, rts, "<rts threshold|off>",
 	"Set rts threshold.");
 
 static int handle_retry(struct nl80211_state *state,
-			struct nl_cb *cb, struct nl_msg *msg,
+			struct nl_msg *msg,
 			int argc, char **argv, enum id_input id)
 {
 	unsigned int retry_short = 0, retry_long = 0;
@@ -318,7 +315,6 @@ int netns_get_fd(const char *name)
 }
 
 static int handle_netns(struct nl80211_state *state,
-			struct nl_cb *cb,
 			struct nl_msg *msg,
 			int argc, char **argv,
 			enum id_input id)
@@ -362,7 +358,6 @@ COMMAND(set, netns, "{ <pid> | name <nsname> }",
 	"               or by absolute path (man ip-netns)\n");
 
 static int handle_coverage(struct nl80211_state *state,
-			struct nl_cb *cb,
 			struct nl_msg *msg,
 			int argc, char **argv,
 			enum id_input id)
@@ -394,7 +389,6 @@ COMMAND(set, coverage, "<coverage class>",
 	"Valid values: 0 - 255.");
 
 static int handle_distance(struct nl80211_state *state,
-			struct nl_cb *cb,
 			struct nl_msg *msg,
 			int argc, char **argv,
 			enum id_input id)
@@ -442,7 +436,6 @@ COMMAND(set, distance, "<auto|distance>",
 	"Valid values: 0 - 114750");
 
 static int handle_txpower(struct nl80211_state *state,
-			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
 			  enum id_input id)
@@ -494,7 +487,6 @@ COMMAND(set, txpower, "<auto|fixed|limit> [<tx power in mBm>]",
 	"Specify transmit power level and setting type.");
 
 static int handle_antenna(struct nl80211_state *state,
-			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
 			  enum id_input id)

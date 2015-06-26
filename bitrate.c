@@ -77,7 +77,6 @@ static int setup_vht(struct nl80211_txrate_vht *txrate_vht,
 #define VHT_ARGC_MAX	100
 
 static int handle_bitrates(struct nl80211_state *state,
-			   struct nl_cb *cb,
 			   struct nl_msg *msg,
 			   int argc, char **argv,
 			   enum id_input id)

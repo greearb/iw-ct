@@ -91,7 +91,6 @@ static int print_mpath_handler(struct nl_msg *msg, void *arg)
 }
 
 static int handle_mpath_get(struct nl80211_state *state,
-			    struct nl_cb *cb,
 			    struct nl_msg *msg,
 			    int argc, char **argv,
 			    enum id_input id)
@@ -113,7 +112,7 @@ static int handle_mpath_get(struct nl80211_state *state,
 
 	NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN, dst);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_mpath_handler, NULL);
+	register_handler(print_mpath_handler, NULL);
 
 	return 0;
  nla_put_failure:
@@ -127,7 +126,6 @@ COMMAND(mpath, del, "<MAC address>",
 	"Remove the mesh path to the given node.");
 
 static int handle_mpath_set(struct nl80211_state *state,
-			    struct nl_cb *cb,
 			    struct nl_msg *msg,
 			    int argc, char **argv,
 			    enum id_input id)
@@ -163,7 +161,7 @@ static int handle_mpath_set(struct nl80211_state *state,
 	NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN, dst);
 	NLA_PUT(msg, NL80211_ATTR_MPATH_NEXT_HOP, ETH_ALEN, next_hop);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_mpath_handler, NULL);
+	register_handler(print_mpath_handler, NULL);
 	return 0;
  nla_put_failure:
 	return -ENOBUFS;
@@ -176,14 +174,13 @@ COMMAND(mpath, set, "<destination MAC address> next_hop <next hop MAC address>",
 	"Set an existing mesh path's next hop.");
 
 static int handle_mpath_dump(struct nl80211_state *state,
-			     struct nl_cb *cb,
 			     struct nl_msg *msg,
 			     int argc, char **argv,
 			     enum id_input id)
 {
 	printf("DEST ADDR         NEXT HOP          IFACE\tSN\tMETRIC\tQLEN\t"
 	       "EXPTIME\t\tDTIM\tDRET\tFLAGS\n");
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_mpath_handler, NULL);
+	register_handler(print_mpath_handler, NULL);
 	return 0;
 }
 COMMAND(mpath, dump, NULL,

@@ -7,7 +7,7 @@
 
 SECTION(ocb);
 
-static int join_ocb(struct nl80211_state *state, struct nl_cb *cb,
+static int join_ocb(struct nl80211_state *state,
 		    struct nl_msg *msg, int argc, char **argv,
 		    enum id_input id)
 {
@@ -63,7 +63,7 @@ COMMAND(ocb, join, "<freq in MHz> <5MHZ|10MHZ>",
 	NL80211_CMD_JOIN_OCB, 0, CIB_NETDEV, join_ocb,
 	"Join the OCB mode network.");
 
-static int leave_ocb(struct nl80211_state *state, struct nl_cb *cb,
+static int leave_ocb(struct nl80211_state *state,
 		     struct nl_msg *msg, int argc, char **argv,
 		     enum id_input id)
 {

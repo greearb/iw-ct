@@ -52,7 +52,6 @@ struct cmd {
 	 * and the usage message should and 2 otherwise.
 	 */
 	int (*handler)(struct nl80211_state *state,
-		       struct nl_cb *cb,
 		       struct nl_msg *msg,
 		       int argc, char **argv,
 		       enum id_input id);
@@ -130,6 +129,8 @@ __u32 __do_listen_events(struct nl80211_state *state,
 			 const int n_waits, const __u32 *waits,
 			 struct print_event_args *args);
 
+int valid_handler(struct nl_msg *msg, void *arg);
+void register_handler(int (*handler)(struct nl_msg *, void *), void *data);
 
 int mac_addr_a2n(unsigned char *mac_addr, char *arg);
 void mac_addr_n2a(char *mac_addr, unsigned char *arg);

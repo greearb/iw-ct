@@ -337,7 +337,6 @@ out:
 }
 
 static int handle_scan(struct nl80211_state *state,
-		       struct nl_cb *cb,
 		       struct nl_msg *msg,
 		       int argc, char **argv,
 		       enum id_input id)
@@ -1970,7 +1969,6 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 static struct scan_params scan_params;
 
 static int handle_scan_dump(struct nl80211_state *state,
-			    struct nl_cb *cb,
 			    struct nl_msg *msg,
 			    int argc, char **argv,
 			    enum id_input id)
@@ -1987,13 +1985,12 @@ static int handle_scan_dump(struct nl80211_state *state,
 
 	scan_params.type = PRINT_SCAN;
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_bss_handler,
+	register_handler(print_bss_handler,
 		  &scan_params);
 	return 0;
 }
 
 static int handle_scan_combined(struct nl80211_state *state,
-				struct nl_cb *cb,
 				struct nl_msg *msg,
 				int argc, char **argv,
 				enum id_input id)
@@ -2085,13 +2082,13 @@ COMMAND(scan, trigger, "[freq <freq>*] [ies <hex as 00:11:..>] [meshid <meshid>]
 
 
 static int handle_start_sched_scan(struct nl80211_state *state,
-				   struct nl_cb *cb, struct nl_msg *msg,
+				   struct nl_msg *msg,
 				   int argc, char **argv, enum id_input id)
 {
 	return parse_sched_scan(msg, &argc, &argv);
 }
 
-static int handle_stop_sched_scan(struct nl80211_state *state, struct nl_cb *cb,
+static int handle_stop_sched_scan(struct nl80211_state *state,
 				  struct nl_msg *msg, int argc, char **argv,
 				  enum id_input id)
 {

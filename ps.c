@@ -9,7 +9,6 @@
 #include "iw.h"
 
 static int set_power_save(struct nl80211_state *state,
-			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
 			  enum id_input id)
@@ -70,13 +69,11 @@ static int print_power_save_handler(struct nl_msg *msg, void *arg)
 }
 
 static int get_power_save(struct nl80211_state *state,
-				   struct nl_cb *cb,
-				   struct nl_msg *msg,
-				   int argc, char **argv,
-				   enum id_input id)
+			  struct nl_msg *msg,
+			  int argc, char **argv,
+			  enum id_input id)
 {
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM,
-		  print_power_save_handler, NULL);
+	register_handler(print_power_save_handler, NULL);
 	return 0;
 }
 

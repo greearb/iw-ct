@@ -16,7 +16,7 @@
 
 SECTION(coalesce);
 
-static int handle_coalesce_enable(struct nl80211_state *state, struct nl_cb *cb,
+static int handle_coalesce_enable(struct nl80211_state *state,
 				  struct nl_msg *msg, int argc, char **argv,
 				  enum id_input id)
 {
@@ -185,7 +185,7 @@ COMMAND(coalesce, enable, "<config-file>",
 	"match '43:34:00:12' after 18 bytes of offset in Rx packet.\n");
 
 static int
-handle_coalesce_disable(struct nl80211_state *state, struct nl_cb *cb,
+handle_coalesce_disable(struct nl80211_state *state,
 			struct nl_msg *msg, int argc, char **argv,
 			enum id_input id)
 {
@@ -274,12 +274,11 @@ static int print_coalesce_handler(struct nl_msg *msg, void *arg)
 	return NL_SKIP;
 }
 
-static int handle_coalesce_show(struct nl80211_state *state, struct nl_cb *cb,
+static int handle_coalesce_show(struct nl80211_state *state,
 			      struct nl_msg *msg, int argc, char **argv,
 			      enum id_input id)
 {
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM,
-		  print_coalesce_handler, NULL);
+	register_handler(print_coalesce_handler, NULL);
 
 	return 0;
 }

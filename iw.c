@@ -228,7 +228,6 @@ static void usage(int argc, char **argv)
 }
 
 static int print_help(struct nl80211_state *state,
-		      struct nl_cb *cb,
 		      struct nl_msg *msg,
 		      int argc, char **argv,
 		      enum id_input id)
@@ -291,6 +290,23 @@ static int ack_handler(struct nl_msg *msg, void *arg)
 	int *ret = arg;
 	*ret = 0;
 	return NL_STOP;
+}
+
+static int (*registered_handler)(struct nl_msg *, void *);
+static void *registered_handler_data;
+
+void register_handler(int (*handler)(struct nl_msg *, void *), void *data)
+{
+	registered_handler = handler;
+	registered_handler_data = data;
+}
+
+int valid_handler(struct nl_msg *msg, void *arg)
+{
+	if (registered_handler)
+		return registered_handler(msg, registered_handler_data);
+
+	return NL_OK;
 }
 
 static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
@@ -424,7 +440,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 	if (!cmd->cmd) {
 		argc = o_argc;
 		argv = o_argv;
-		return cmd->handler(state, NULL, NULL, argc, argv, idby);
+		return cmd->handler(state, NULL, argc, argv, idby);
 	}
 
 	msg = nlmsg_alloc();
@@ -458,7 +474,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 		break;
 	}
 
-	err = cmd->handler(state, cb, msg, argc, argv, idby);
+	err = cmd->handler(state, msg, argc, argv, idby);
 	if (err)
 		goto out;
 
@@ -473,6 +489,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 	nl_cb_err(cb, NL_CB_CUSTOM, error_handler, &err);
 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, finish_handler, &err);
 	nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, ack_handler, &err);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, valid_handler, NULL);
 
 	while (err > 0)
 		nl_recvmsgs(state->nl_sock, cb);
