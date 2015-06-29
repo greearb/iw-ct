@@ -43,6 +43,88 @@ static void print_power_mode(struct nlattr *a)
 	}
 }
 
+void parse_tid_stats(struct nlattr *tid_stats_attr)
+{
+	struct nlattr *stats_info[NL80211_TID_STATS_MAX + 1], *tidattr, *info;
+	static struct nla_policy stats_policy[NL80211_TID_STATS_MAX + 1] = {
+		[NL80211_TID_STATS_RX_MSDU] = { .type = NLA_U64 },
+		[NL80211_TID_STATS_TX_MSDU] = { .type = NLA_U64 },
+		[NL80211_TID_STATS_TX_MSDU_RETRIES] = { .type = NLA_U64 },
+		[NL80211_TID_STATS_TX_MSDU_FAILED] = { .type = NLA_U64 },
+	};
+	int rem, i = 0;
+
+	printf("\n\tMSDU:\n\t\tTID\trx\ttx\ttx retries\ttx failed");
+	nla_for_each_nested(tidattr, tid_stats_attr, rem) {
+		if (nla_parse_nested(stats_info, NL80211_TID_STATS_MAX,
+				     tidattr, stats_policy)) {
+			printf("failed to parse nested stats attributes!");
+			return;
+		}
+		printf("\n\t\t%d", i++);
+		info = stats_info[NL80211_TID_STATS_RX_MSDU];
+		if (info)
+			printf("\t%llu", (unsigned long long)nla_get_u64(info));
+		info = stats_info[NL80211_TID_STATS_TX_MSDU];
+		if (info)
+			printf("\t%llu", (unsigned long long)nla_get_u64(info));
+		info = stats_info[NL80211_TID_STATS_TX_MSDU_RETRIES];
+		if (info)
+			printf("\t%llu", (unsigned long long)nla_get_u64(info));
+		info = stats_info[NL80211_TID_STATS_TX_MSDU_FAILED];
+		if (info)
+			printf("\t\t%llu", (unsigned long long)nla_get_u64(info));
+	}
+}
+
+void parse_bss_param(struct nlattr *bss_param_attr)
+{
+	struct nlattr *bss_param_info[NL80211_STA_BSS_PARAM_MAX + 1], *info;
+	static struct nla_policy bss_poilcy[NL80211_STA_BSS_PARAM_MAX + 1] = {
+		[NL80211_STA_BSS_PARAM_CTS_PROT] = { .type = NLA_FLAG },
+		[NL80211_STA_BSS_PARAM_SHORT_PREAMBLE] = { .type = NLA_FLAG },
+		[NL80211_STA_BSS_PARAM_SHORT_SLOT_TIME] = { .type = NLA_FLAG },
+		[NL80211_STA_BSS_PARAM_DTIM_PERIOD] = { .type = NLA_U8 },
+		[NL80211_STA_BSS_PARAM_BEACON_INTERVAL] = { .type = NLA_U16 },
+	};
+
+	if (nla_parse_nested(bss_param_info, NL80211_STA_BSS_PARAM_MAX,
+			     bss_param_attr, bss_poilcy)) {
+		printf("failed to parse nested bss param attributes!");
+	}
+
+	info = bss_param_info[NL80211_STA_BSS_PARAM_DTIM_PERIOD];
+	if (info)
+		printf("\n\tDTIM period:\t%u", nla_get_u8(info));
+	info = bss_param_info[NL80211_STA_BSS_PARAM_BEACON_INTERVAL];
+	if (info)
+		printf("\n\tbeacon interval:%u", nla_get_u16(info));
+	info = bss_param_info[NL80211_STA_BSS_PARAM_CTS_PROT];
+	if (info) {
+		printf("\n\tCTS protection:");
+		if (nla_get_u16(info))
+			printf("\tyes");
+		else
+			printf("\tno");
+	}
+	info = bss_param_info[NL80211_STA_BSS_PARAM_SHORT_PREAMBLE];
+	if (info) {
+		printf("\n\tshort preamble:");
+		if (nla_get_u16(info))
+			printf("\tyes");
+		else
+			printf("\tno");
+	}
+	info = bss_param_info[NL80211_STA_BSS_PARAM_SHORT_SLOT_TIME];
+	if (info) {
+		printf("\n\tshort slot time:");
+		if (nla_get_u16(info))
+			printf("yes");
+		else
+			printf("no");
+	}
+}
+
 void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen)
 {
 	int rate = 0;
@@ -129,8 +211,11 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_INACTIVE_TIME] = { .type = NLA_U32 },
 		[NL80211_STA_INFO_RX_BYTES] = { .type = NLA_U32 },
 		[NL80211_STA_INFO_TX_BYTES] = { .type = NLA_U32 },
+		[NL80211_STA_INFO_RX_BYTES64] = { .type = NLA_U64 },
+		[NL80211_STA_INFO_TX_BYTES64] = { .type = NLA_U64 },
 		[NL80211_STA_INFO_RX_PACKETS] = { .type = NLA_U32 },
 		[NL80211_STA_INFO_TX_PACKETS] = { .type = NLA_U32 },
+		[NL80211_STA_INFO_BEACON_RX] = { .type = NLA_U64},
 		[NL80211_STA_INFO_SIGNAL] = { .type = NLA_U8 },
 		[NL80211_STA_INFO_T_OFFSET] = { .type = NLA_U64 },
 		[NL80211_STA_INFO_TX_BITRATE] = { .type = NLA_NESTED },
@@ -140,6 +225,8 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_PLINK_STATE] = { .type = NLA_U8 },
 		[NL80211_STA_INFO_TX_RETRIES] = { .type = NLA_U32 },
 		[NL80211_STA_INFO_TX_FAILED] = { .type = NLA_U32 },
+		[NL80211_STA_INFO_BEACON_LOSS] = { .type = NLA_U32},
+		[NL80211_STA_INFO_RX_DROP_MISC] = { .type = NLA_U64},
 		[NL80211_STA_INFO_STA_FLAGS] =
 			{ .minlen = sizeof(struct nl80211_sta_flag_update) },
 		[NL80211_STA_INFO_LOCAL_PM] = { .type = NLA_U32},
@@ -147,6 +234,8 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_NONPEER_PM] = { .type = NLA_U32},
 		[NL80211_STA_INFO_CHAIN_SIGNAL] = { .type = NLA_NESTED },
 		[NL80211_STA_INFO_CHAIN_SIGNAL_AVG] = { .type = NLA_NESTED },
+		[NL80211_STA_INFO_TID_STATS] = { .type = NLA_NESTED },
+		[NL80211_STA_INFO_BSS_PARAM] = { .type = NLA_NESTED },
 	};
 	char *chain;
 
@@ -177,15 +266,21 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 	if (sinfo[NL80211_STA_INFO_INACTIVE_TIME])
 		printf("\n\tinactive time:\t%u ms",
 			nla_get_u32(sinfo[NL80211_STA_INFO_INACTIVE_TIME]));
-	if (sinfo[NL80211_STA_INFO_RX_BYTES])
+	if (sinfo[NL80211_STA_INFO_RX_BYTES64])
+		printf("\n\trx bytes:\t%llu",
+		       (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_RX_BYTES64]));
+	else if (sinfo[NL80211_STA_INFO_RX_BYTES])
 		printf("\n\trx bytes:\t%u",
-			nla_get_u32(sinfo[NL80211_STA_INFO_RX_BYTES]));
+		       nla_get_u32(sinfo[NL80211_STA_INFO_RX_BYTES]));
 	if (sinfo[NL80211_STA_INFO_RX_PACKETS])
 		printf("\n\trx packets:\t%u",
 			nla_get_u32(sinfo[NL80211_STA_INFO_RX_PACKETS]));
-	if (sinfo[NL80211_STA_INFO_TX_BYTES])
+	if (sinfo[NL80211_STA_INFO_TX_BYTES64])
+		printf("\n\ttx bytes:\t%llu",
+		       (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_TX_BYTES64]));
+	else if (sinfo[NL80211_STA_INFO_TX_BYTES])
 		printf("\n\ttx bytes:\t%u",
-			nla_get_u32(sinfo[NL80211_STA_INFO_TX_BYTES]));
+		       nla_get_u32(sinfo[NL80211_STA_INFO_TX_BYTES]));
 	if (sinfo[NL80211_STA_INFO_TX_PACKETS])
 		printf("\n\ttx packets:\t%u",
 			nla_get_u32(sinfo[NL80211_STA_INFO_TX_PACKETS]));
@@ -195,6 +290,15 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 	if (sinfo[NL80211_STA_INFO_TX_FAILED])
 		printf("\n\ttx failed:\t%u",
 			nla_get_u32(sinfo[NL80211_STA_INFO_TX_FAILED]));
+	if (sinfo[NL80211_STA_INFO_BEACON_LOSS])
+		printf("\n\tbeacon loss:\t%u",
+		       nla_get_u32(sinfo[NL80211_STA_INFO_BEACON_LOSS]));
+	if (sinfo[NL80211_STA_INFO_BEACON_RX])
+		printf("\n\tbeacon rx:\t%llu",
+		       (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_BEACON_RX]));
+	if (sinfo[NL80211_STA_INFO_RX_DROP_MISC])
+		printf("\n\trx drop misc:\t%llu",
+		       (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_RX_DROP_MISC]));
 
 	chain = get_chain_signal(sinfo[NL80211_STA_INFO_CHAIN_SIGNAL]);
 	if (sinfo[NL80211_STA_INFO_SIGNAL])
@@ -208,9 +312,12 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 			(int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_SIGNAL_AVG]),
 			chain);
 
+	if (sinfo[NL80211_STA_INFO_BEACON_SIGNAL_AVG])
+		printf("\n\tbeacon signal avg:\t%d dBm",
+		       nla_get_u8(sinfo[NL80211_STA_INFO_BEACON_SIGNAL_AVG]));
 	if (sinfo[NL80211_STA_INFO_T_OFFSET])
-		printf("\n\tToffset:\t%lld us",
-			(unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_T_OFFSET]));
+		printf("\n\tToffset:\t%llu us",
+		       (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_T_OFFSET]));
 
 	if (sinfo[NL80211_STA_INFO_TX_BITRATE]) {
 		char buf[100];
@@ -305,6 +412,14 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 				printf("no");
 		}
 
+		if (sta_flags->mask & BIT(NL80211_STA_FLAG_ASSOCIATED)) {
+			printf("\n\tassociated:\t");
+			if (sta_flags->set & BIT(NL80211_STA_FLAG_ASSOCIATED))
+				printf("yes");
+			else
+				printf("no");
+		}
+
 		if (sta_flags->mask & BIT(NL80211_STA_FLAG_SHORT_PREAMBLE)) {
 			printf("\n\tpreamble:\t");
 			if (sta_flags->set & BIT(NL80211_STA_FLAG_SHORT_PREAMBLE))
@@ -338,6 +453,11 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		}
 	}
 
+	if (sinfo[NL80211_STA_INFO_TID_STATS] && arg != NULL &&
+	    !strcmp((char *)arg, "-v"))
+		parse_tid_stats(sinfo[NL80211_STA_INFO_TID_STATS]);
+	if (sinfo[NL80211_STA_INFO_BSS_PARAM])
+		parse_bss_param(sinfo[NL80211_STA_INFO_BSS_PARAM]);
 	if (sinfo[NL80211_STA_INFO_CONNECTED_TIME])
 		printf("\n\tconnected time:\t%u seconds",
 			nla_get_u32(sinfo[NL80211_STA_INFO_CONNECTED_TIME]));
@@ -552,9 +672,9 @@ static int handle_station_dump(struct nl80211_state *state,
 			       int argc, char **argv,
 			       enum id_input id)
 {
-	register_handler(print_sta_handler, NULL);
+	register_handler(print_sta_handler, *argv);
 	return 0;
 }
-COMMAND(station, dump, NULL,
+COMMAND(station, dump, "[-v]",
 	NL80211_CMD_GET_STATION, NLM_F_DUMP, CIB_NETDEV, handle_station_dump,
 	"List all stations known, e.g. the AP on managed interfaces");
