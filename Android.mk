@@ -7,7 +7,7 @@ IW_ANDROID_BUILD=y
 NO_PKG_CONFIG=y
 include $(LOCAL_PATH)/Makefile
 
-LOCAL_SRC_FILES := $(patsubst %.o,%.c,$(OBJS)) android-nl.c
+LOCAL_SRC_FILES := $(patsubst %.o,%.c,$(OBJS))
 
 LOCAL_CFLAGS += -DCONFIG_LIBNL20
 LOCAL_LDFLAGS := -Wl,--no-gc-sections
