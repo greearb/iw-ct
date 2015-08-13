@@ -49,8 +49,10 @@ static void print_frame(struct print_event_args *args, struct nlattr *attr)
 	char macbuf[6*3];
 	uint16_t tmp;
 
-	if (!attr)
+	if (!attr) {
 		printf(" [no frame]");
+		return;
+	}
 
 	frame = nla_data(attr);
 	len = nla_len(attr);
