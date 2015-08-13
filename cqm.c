@@ -34,6 +34,8 @@ static int iw_cqm_rssi(struct nl80211_state *state,
 
 	/* connection quality monitor attributes */
 	cqm = nlmsg_alloc();
+	if (!cqm)
+		return -ENOMEM;
 
 	NLA_PUT_U32(cqm, NL80211_ATTR_CQM_RSSI_THOLD, thold);
 	NLA_PUT_U32(cqm, NL80211_ATTR_CQM_RSSI_HYST, hyst);
