@@ -134,6 +134,7 @@ static const char *ifmodes[NL80211_IFTYPE_MAX + 1] = {
 	"P2P-GO",
 	"P2P-device",
 	"outside context of a BSS",
+	"NAN",
 };
 
 static char modebuf[100];

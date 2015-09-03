@@ -203,6 +203,9 @@ static int get_if_type(int *argc, char ***argv, enum nl80211_iftype *type,
 	} else if (strcmp(tpstr, "__p2pgo") == 0) {
 		*type = NL80211_IFTYPE_P2P_GO;
 		return 0;
+	} else if (strcmp(tpstr, "__nan") == 0) {
+		*type = NL80211_IFTYPE_NAN;
+		return 0;
 	}
 
 	fprintf(stderr, "invalid interface type %s\n", tpstr);
