@@ -1160,6 +1160,8 @@ static void print_capabilities(const uint8_t type, uint8_t len, const uint8_t *d
 			CAPA(46, "WNM-Notification");
 			CAPA(47, "Reserved");
 			CAPA(48, "UTF-8 SSID");
+			CAPA(70, "FTM Responder");
+			CAPA(71, "FTM Initiator");
 			default:
 				printf(" %d", bit);
 				break;
