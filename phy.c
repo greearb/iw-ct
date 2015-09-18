@@ -299,7 +299,7 @@ COMMAND(set, retry, "[short <limit>] [long <limit>]",
 #ifndef NETNS_RUN_DIR
 #define NETNS_RUN_DIR "/var/run/netns"
 #endif
-int netns_get_fd(const char *name)
+static int netns_get_fd(const char *name)
 {
 	char pathbuf[MAXPATHLEN];
 	const char *path, *ptr;
