@@ -672,7 +672,7 @@ static int handle_commands(struct nl80211_state *state, struct nl_msg *msg,
 			   int argc, char **argv, enum id_input id)
 {
 	int i;
-	for (i = 1; i < NL80211_CMD_MAX; i++)
+	for (i = 1; i <= NL80211_CMD_MAX; i++)
 		printf("%d (0x%x): %s\n", i, i, command_name(i));
 	/* don't send netlink messages */
 	return 2;
