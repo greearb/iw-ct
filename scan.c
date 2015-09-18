@@ -2009,6 +2009,7 @@ static int handle_scan_combined(struct nl80211_state *state,
 		NL80211_CMD_SCAN_ABORTED,
 	};
 	int trig_argc, dump_argc, err;
+	int i;
 
 	if (argc >= 3 && !strcmp(argv[2], "-u")) {
 		dump_argc = 4;
@@ -2026,7 +2027,7 @@ static int handle_scan_combined(struct nl80211_state *state,
 	trig_argv[0] = argv[0];
 	trig_argv[1] = "scan";
 	trig_argv[2] = "trigger";
-	int i;
+
 	for (i = 0; i < argc - 2 - (dump_argc - 3); i++)
 		trig_argv[i + 3] = argv[i + 2 + (dump_argc - 3)];
 	err = handle_cmd(state, id, trig_argc, trig_argv);
