@@ -454,7 +454,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 	if (!cb || !s_cb) {
 		fprintf(stderr, "failed to allocate netlink callbacks\n");
 		err = 2;
-		goto out_free_msg;
+		goto out;
 	}
 
 	genlmsg_put(msg, 0, 0, state->nl80211_id, 0,
@@ -495,7 +495,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 		nl_recvmsgs(state->nl_sock, cb);
  out:
 	nl_cb_put(cb);
- out_free_msg:
+	nl_cb_put(s_cb);
 	nlmsg_free(msg);
 	return err;
  nla_put_failure:
