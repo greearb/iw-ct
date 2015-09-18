@@ -260,6 +260,9 @@ static const char *commands[NL80211_CMD_MAX + 1] = {
 	[NL80211_CMD_JOIN_OCB] = "join_ocb",
 	[NL80211_CMD_LEAVE_OCB] = "leave_ocb",
 	[NL80211_CMD_CH_SWITCH_STARTED_NOTIFY] = "ch_switch_started_notify",
+	[NL80211_CMD_TDLS_CHANNEL_SWITCH] = "tdls_channel_switch",
+	[NL80211_CMD_TDLS_CANCEL_CHANNEL_SWITCH] = "tdls_cancel_channel_switch",
+	[NL80211_CMD_WIPHY_REG_CHANGE] = "wiphy_reg_change",
 };
 
 static char cmdbuf[100];
