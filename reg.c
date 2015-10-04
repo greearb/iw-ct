@@ -1,4 +1,3 @@
-#include <net/if.h>
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
