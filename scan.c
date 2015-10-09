@@ -446,8 +446,11 @@ static int handle_scan(struct nl80211_state *state,
 
 	if (ies || meshid) {
 		tmpies = (unsigned char *) malloc(ies_len + meshid_len);
-		if (!tmpies)
+		if (!tmpies) {
+			free(ies);
+			free(meshid);
 			goto nla_put_failure;
+		}
 		if (ies) {
 			memcpy(tmpies, ies, ies_len);
 			free(ies);
