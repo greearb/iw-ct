@@ -15,10 +15,8 @@ static int set_power_save(struct nl80211_state *state,
 {
 	enum nl80211_ps_state ps_state;
 
-	if (argc != 1) {
-		printf("Invalid parameters!\n");
-		return 2;
-	}
+	if (argc != 1)
+		return 1;
 
 	if (strcmp(argv[0], "on") == 0)
 		ps_state = NL80211_PS_ENABLED;
