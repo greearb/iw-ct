@@ -17,9 +17,9 @@ static int join_ocb(struct nl80211_state *state,
 		const char *name;
 		unsigned int width;
 	} *chanmode_selected, chanmode[] = {
-		{ .name = "5MHZ",
+		{ .name = "5MHz",
 		  .width = NL80211_CHAN_WIDTH_5	},
-		{ .name = "10MHZ",
+		{ .name = "10MHz",
 		  .width = NL80211_CHAN_WIDTH_10 },
 	};
 
@@ -58,7 +58,7 @@ static int join_ocb(struct nl80211_state *state,
 nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(ocb, join, "<freq in MHz> <5MHZ|10MHZ>",
+COMMAND(ocb, join, "<freq in MHz> <5MHz|10MHz>",
 	NL80211_CMD_JOIN_OCB, 0, CIB_NETDEV, join_ocb,
 	"Join the OCB mode network.");
 
