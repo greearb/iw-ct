@@ -55,15 +55,19 @@ static int handle_vendor(struct nl80211_state *state,
 	FILE *file = NULL;
 
 	if (argc < 3)
-		return -EINVAL;
+		return 1;
 
 	res = sscanf(argv[0], "0x%x", &oui);
-	if (res != 1)
-		return -EINVAL;
+	if (res != 1) {
+		printf("Vendor command must start with 0x\n");
+		return 2;
+	}
 
 	res = sscanf(argv[1], "0x%x", &subcmd);
-	if (res != 1)
-		return -EINVAL;
+	if (res != 1) {
+		printf("Sub command must start with 0x\n");
+		return 2;
+	}
 
 	if (!strcmp(argv[2], "-"))
 		file = stdin;
