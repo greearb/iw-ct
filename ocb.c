@@ -12,7 +12,7 @@ static int join_ocb(struct nl80211_state *state,
 {
 	unsigned long freq;
 	char *end;
-	int i;
+	unsigned int i;
 	static const struct {
 		const char *name;
 		unsigned int width;

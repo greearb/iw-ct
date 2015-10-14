@@ -25,8 +25,8 @@ struct chanmode {
 
 static int get_cf1(const struct chanmode *chanmode, unsigned long freq)
 {
-	int cf1 = freq, j;
-	int vht80[] = { 5180, 5260, 5500, 5580, 5660, 5745 };
+	unsigned int cf1 = freq, j;
+	unsigned int vht80[] = { 5180, 5260, 5500, 5580, 5660, 5745 };
 
 	switch (chanmode->width) {
 	case NL80211_CHAN_WIDTH_80:
@@ -61,7 +61,7 @@ static int join_ibss(struct nl80211_state *state,
 	char *value = NULL, *sptr = NULL;
 	float rate;
 	int bintval;
-	int i;
+	unsigned int i;
 	unsigned long freq;
 	const struct chanmode *chanmode_selected = NULL;
 	static const struct chanmode chanmode[] = {

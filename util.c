@@ -716,7 +716,7 @@ void print_vht_info(__u32 capa, const __u8 *mcs)
 
 void iw_hexdump(const char *prefix, const __u8 *buf, size_t size)
 {
-	int i;
+	size_t i;
 
 	printf("%s: ", prefix);
 	for (i = 0; i < size; i++) {

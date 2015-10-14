@@ -6,7 +6,7 @@
 
 static int parse_vht_chunk(const char *arg, __u8 *nss, __u16 *mcs)
 {
-	int count, i;
+	unsigned int count, i;
 	unsigned int inss, mcs_start, mcs_end, tab[10];
 
 	*nss = 0; *mcs = 0;

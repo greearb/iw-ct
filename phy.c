@@ -44,7 +44,7 @@ static int handle_freqs(struct nl_msg *msg, int argc, char **argv)
 		{ .name = "160", .val = NL80211_CHAN_WIDTH_160, },
 	};
 	uint32_t freq;
-	int i, bwval = NL80211_CHAN_WIDTH_20_NOHT;
+	unsigned int i, bwval = NL80211_CHAN_WIDTH_20_NOHT;
 	char *end;
 
 	if (argc < 1)
@@ -103,7 +103,7 @@ static int handle_freqchan(struct nl_msg *msg, bool chan,
 	};
 	unsigned int htval = NL80211_CHAN_NO_HT;
 	unsigned int freq;
-	int i;
+	unsigned int i;
 
 	if (!argc || argc > 4)
 		return 1;

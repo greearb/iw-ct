@@ -45,7 +45,7 @@ static void print_frame(struct print_event_args *args, struct nlattr *attr)
 {
 	uint8_t *frame;
 	size_t len;
-	int i;
+	unsigned int i;
 	char macbuf[6*3];
 	uint16_t tmp;
 

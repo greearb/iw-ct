@@ -14,7 +14,8 @@ SECTION(vendor);
 
 static int read_file(FILE *file, char *buf, size_t size)
 {
-	int data, count = 0;
+	size_t count = 0;
+	int data;
 
 	while ((data = fgetc(file)) != EOF) {
 		if (count >= size)
@@ -26,10 +27,10 @@ static int read_file(FILE *file, char *buf, size_t size)
 	return count;
 }
 
-static int read_hex(int argc, char **argv, char *buf, size_t size)
+static int read_hex(unsigned int argc, char **argv, char *buf, size_t size)
 {
-	int i, res;
-	unsigned int data;
+	unsigned int i, data;
+	int res;
 
 	if (argc > size)
 		return -EINVAL;

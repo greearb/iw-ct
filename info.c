@@ -493,12 +493,13 @@ broken_combination:
 			if (tb_wowlan[NL80211_WOWLAN_TRIG_MAGIC_PKT])
 				printf("\t\t * wake up on magic packet\n");
 			if (tb_wowlan[NL80211_WOWLAN_TRIG_PKT_PATTERN]) {
+				unsigned int len = nla_len(tb_wowlan[NL80211_WOWLAN_TRIG_PKT_PATTERN]);
+
 				pat = nla_data(tb_wowlan[NL80211_WOWLAN_TRIG_PKT_PATTERN]);
 				printf("\t\t * wake up on pattern match, up to %u patterns of %u-%u bytes,\n"
 					"\t\t   maximum packet offset %u bytes\n",
 					pat->max_patterns, pat->min_pattern_len, pat->max_pattern_len,
-					(nla_len(tb_wowlan[NL80211_WOWLAN_TRIG_PKT_PATTERN]) <
-					sizeof(*pat)) ? 0 : pat->max_pkt_offset);
+					len < sizeof(*pat) ? 0 : pat->max_pkt_offset);
 			}
 			if (tb_wowlan[NL80211_WOWLAN_TRIG_GTK_REKEY_SUPPORTED])
 				printf("\t\t * can do GTK rekeying\n");
@@ -526,8 +527,10 @@ broken_combination:
 
 	if (tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK]) {
 		struct ieee80211_ht_cap *cm;
+		unsigned int len = nla_len(tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK]);
+
 		printf("\tHT Capability overrides:\n");
-		if (nla_len(tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK]) >= sizeof(*cm)) {
+		if (len >= sizeof(*cm)) {
 			cm = nla_data(tb_msg[NL80211_ATTR_HT_CAPABILITY_MASK]);
 			printf("\t\t * MCS: %02hhx %02hhx %02hhx %02hhx %02hhx %02hhx"
 			       " %02hhx %02hhx %02hhx %02hhx\n",

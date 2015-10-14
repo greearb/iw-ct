@@ -268,7 +268,7 @@ const static struct mesh_param_descr _mesh_param_descrs[] =
 
 static void print_all_mesh_param_descr(void)
 {
-	int i;
+	unsigned int i;
 
 	printf("Possible mesh parameters are:\n");
 
@@ -278,7 +278,7 @@ static void print_all_mesh_param_descr(void)
 
 static const struct mesh_param_descr *find_mesh_param(const char *name)
 {
-	int i;
+	unsigned int i;
 
 	/* Find out what mesh parameter we want to change. */
 	for (i = 0; i < ARRAY_SIZE(_mesh_param_descrs); i++) {
@@ -387,7 +387,7 @@ static int print_mesh_param_handler(struct nl_msg *msg, void *arg)
 		return -EINVAL;
 
 	if (!mdescr) {
-		int i;
+		unsigned int i;
 
 		for (i = 0; i < ARRAY_SIZE(_mesh_param_descrs); i++) {
 			mdescr = &_mesh_param_descrs[i];
@@ -435,8 +435,9 @@ static int join_mesh(struct nl80211_state *state,
 	struct nlattr *container;
 	float rate;
 	unsigned char rates[NL80211_MAX_SUPP_RATES];
-	int bintval, dtim_period, i, n_rates = 0;
+	int bintval, dtim_period, n_rates = 0;
 	char *end, *value = NULL, *sptr = NULL;
+	unsigned int i;
 	unsigned long freq = 0;
 	static const struct {
 		const char *name;
