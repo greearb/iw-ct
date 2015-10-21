@@ -286,7 +286,6 @@ static const struct mesh_param_descr *find_mesh_param(const char *name)
 			return _mesh_param_descrs + i;
 	}
 
-	print_all_mesh_param_descr();
 	return NULL;
 }
 
@@ -305,8 +304,10 @@ static int set_interface_meshparam(struct nl80211_state *state,
 	if (!container)
 		return -ENOBUFS;
 
-	if (!argc)
+	if (!argc) {
+		print_all_mesh_param_descr();
 		return 1;
+	}
 
 	while (argc) {
 		const char *name;
@@ -334,8 +335,11 @@ static int set_interface_meshparam(struct nl80211_state *state,
 		}
 
 		mdescr = find_mesh_param(name);
-		if (!mdescr)
+		if (!mdescr) {
+			printf("Could not find the parameter %s.\n", name);
+			print_all_mesh_param_descr();
 			return 2;
+		}
 
 		/* Parse the new value */
 		ret = mdescr->parse_fn(value, &any);
@@ -411,13 +415,18 @@ static int get_interface_meshparam(struct nl80211_state *state,
 {
 	const struct mesh_param_descr *mdescr = NULL;
 
-	if (argc > 1)
+	if (argc == 0) {
+		print_all_mesh_param_descr();
 		return 1;
-
-	if (argc == 1) {
+	} else if (argc == 1) {
 		mdescr = find_mesh_param(argv[0]);
-		if (!mdescr)
+		if (!mdescr) {
+			printf("Could not find the parameter %s.\n", argv[0]);
+			print_all_mesh_param_descr();
 			return 2;
+		}
+	} else {
+		return 1;
 	}
 
 	register_handler(print_mesh_param_handler, (void *)mdescr);
