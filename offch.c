@@ -15,6 +15,9 @@ static int offchannel(struct nl80211_state *state,
 {
 	char *end;
 
+	if (argc < 2)
+		return 1;
+
 	/* freq */
 	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_FREQ,
 		    strtoul(argv[0], &end, 10));
