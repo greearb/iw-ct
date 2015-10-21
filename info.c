@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <errno.h>
 
 #include <netlink/genl/genl.h>
 #include <netlink/genl/family.h>

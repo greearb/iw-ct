@@ -8,8 +8,6 @@
 #include <netlink/msg.h>
 #include <netlink/attr.h>
 
-#include <arpa/inet.h>
-
 #include "nl80211.h"
 #include "iw.h"
 

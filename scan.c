@@ -1,7 +1,6 @@
 #include <net/if.h>
 #include <errno.h>
 #include <string.h>
-#include <ctype.h>
 #include <stdbool.h>
 
 #include <netlink/genl/genl.h>
