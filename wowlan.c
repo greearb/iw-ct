@@ -159,8 +159,12 @@ static int wowlan_parse_tcp_file(struct nl_msg *msg, const char *fn)
 			tok->offset = atoi(offs);
 			memcpy(tok->token_stream, stream, stream_len);
 
-			NLA_PUT(msg, NL80211_WOWLAN_TCP_DATA_PAYLOAD_TOKEN,
-				sizeof(*tok) + stream_len, tok);
+			if (nla_put(msg, NL80211_WOWLAN_TCP_DATA_PAYLOAD_TOKEN,
+				sizeof(*tok) + stream_len, tok) < 0) {
+				free(stream);
+				free(tok);
+				goto nla_put_failure;
+			}
 			free(stream);
 			free(tok);
 		} else {

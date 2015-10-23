@@ -458,7 +458,10 @@ static int handle_scan(struct nl80211_state *state,
 			memcpy(&tmpies[ies_len], meshid, meshid_len);
 			free(meshid);
 		}
-		NLA_PUT(msg, NL80211_ATTR_IE, ies_len + meshid_len, tmpies);
+		if (nla_put(msg, NL80211_ATTR_IE, ies_len + meshid_len, tmpies) < 0) {
+			free(tmpies);
+			goto nla_put_failure;
+		}
 		free(tmpies);
 	}
 
