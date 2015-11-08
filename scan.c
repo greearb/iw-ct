@@ -101,19 +101,21 @@ static int parse_random_mac_addr(struct nl_msg *msg, char *arg)
 int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 {
 	struct nl_msg *matchset = NULL, *freqs = NULL, *ssids = NULL;
-	struct nlattr *match = NULL;
+	struct nl_msg *scan_plans = NULL;
+	struct nlattr *match = NULL, *plan = NULL;
 	enum {
 		ND_TOPLEVEL,
 		ND_MATCH,
 		ND_FREQS,
 		ND_ACTIVE,
+		ND_PLANS,
 	} parse_state = ND_TOPLEVEL;
 	int c  = *argc;
 	char *end, **v = *argv;
 	int err = 0, i = 0;
-	unsigned int freq, interval = 0, delay = 0;
+	unsigned int freq, interval = 0, delay = 0, iterations = 0;
 	bool have_matchset = false, have_freqs = false, have_ssids = false;
-	bool have_active = false, have_passive = false;
+	bool have_active = false, have_passive = false, have_plans = false;
 	uint32_t flags = 0;
 
 	matchset = nlmsg_alloc();
@@ -134,6 +136,12 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 		goto out;
 	}
 
+	scan_plans = nlmsg_alloc();
+	if (!scan_plans) {
+		err = -ENOBUFS;
+		goto out;
+	}
+
 	while (c) {
 		switch (parse_state) {
 		case ND_TOPLEVEL:
@@ -144,7 +152,7 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 					goto nla_put_failure;
 				}
 
-				if (interval) {
+				if (interval || have_plans) {
 					err = -EINVAL;
 					goto nla_put_failure;
 				}
@@ -156,6 +164,15 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 				NLA_PUT_U32(msg,
 					    NL80211_ATTR_SCHED_SCAN_INTERVAL,
 					    interval);
+			} else if (!strcmp(v[0], "scan_plans")) {
+				parse_state = ND_PLANS;
+				if (have_plans || interval) {
+					err = -EINVAL;
+					goto nla_put_failure;
+				}
+
+				have_plans = true;
+				i = 0;
 			} else if (!strcmp(v[0], "delay")) {
 				c--; v++;
 				if (c == 0) {
@@ -309,6 +326,47 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 				parse_state = ND_TOPLEVEL;
 			}
 			break;
+		case ND_PLANS:
+			iterations = 0;
+			interval = strtoul(v[0], &end, 10);
+			if (*end) {
+				char *iter;
+
+				if (*end != ':') {
+					err = -EINVAL;
+					goto nla_put_failure;
+				}
+
+				iter = ++end;
+				iterations = strtoul(iter, &end, 10);
+				if (*end || !iterations) {
+					err = -EINVAL;
+					goto nla_put_failure;
+				}
+			}
+
+			plan = nla_nest_start(scan_plans, i + 1);
+			if (!plan) {
+				err = -ENOBUFS;
+				goto nla_put_failure;
+			}
+
+			NLA_PUT_U32(scan_plans,
+				    NL80211_SCHED_SCAN_PLAN_INTERVAL,
+				    interval);
+
+			if (iterations)
+				NLA_PUT_U32(scan_plans,
+					    NL80211_SCHED_SCAN_PLAN_ITERATIONS,
+					    iterations);
+			else
+				parse_state = ND_TOPLEVEL;
+
+			nla_nest_end(scan_plans, plan);
+			plan = NULL;
+			i++;
+			c--; v++;
+			break;
 		}
 	}
 
@@ -320,6 +378,8 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 		nla_put_nested(msg, NL80211_ATTR_SCAN_FREQUENCIES, freqs);
 	if (have_matchset)
 		nla_put_nested(msg, NL80211_ATTR_SCHED_SCAN_MATCH, matchset);
+	if (have_plans)
+		nla_put_nested(msg, NL80211_ATTR_SCHED_SCAN_PLANS, scan_plans);
 	if (flags)
 		NLA_PUT_U32(msg, NL80211_ATTR_SCAN_FLAGS, flags);
 
@@ -328,6 +388,7 @@ nla_put_failure:
 		nla_nest_end(msg, match);
 	nlmsg_free(freqs);
 	nlmsg_free(matchset);
+	nlmsg_free(scan_plans);
 
 out:
 	*argc = c;

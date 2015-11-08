@@ -248,6 +248,15 @@ next:
 	if (tb_msg[NL80211_ATTR_MAX_MATCH_SETS])
 		printf("\tmax # match sets: %d\n",
 		       nla_get_u8(tb_msg[NL80211_ATTR_MAX_MATCH_SETS]));
+	if (tb_msg[NL80211_ATTR_MAX_NUM_SCHED_SCAN_PLANS])
+		printf("\tmax # scan plans: %d\n",
+		       nla_get_u32(tb_msg[NL80211_ATTR_MAX_NUM_SCHED_SCAN_PLANS]));
+	if (tb_msg[NL80211_ATTR_MAX_SCAN_PLAN_INTERVAL])
+		printf("\tmax scan plan interval: %d\n",
+		       nla_get_u32(tb_msg[NL80211_ATTR_MAX_SCAN_PLAN_INTERVAL]));
+	if (tb_msg[NL80211_ATTR_MAX_SCAN_PLAN_ITERATIONS])
+		printf("\tmax scan plan iterations: %d\n",
+		       nla_get_u32(tb_msg[NL80211_ATTR_MAX_SCAN_PLAN_ITERATIONS]));
 
 	if (tb_msg[NL80211_ATTR_WIPHY_FRAG_THRESHOLD]) {
 		unsigned int frag;
