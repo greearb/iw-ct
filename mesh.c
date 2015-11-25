@@ -448,12 +448,8 @@ static int join_mesh(struct nl80211_state *state,
 	char *end, *value = NULL, *sptr = NULL;
 	unsigned int i;
 	unsigned long freq = 0;
-	static const struct {
-		const char *name;
-		unsigned int width;
-		int freq1_diff;
-		int chantype; /* for older kernel */
-	} *chanmode_selected = NULL, chanmode[] = {
+	const struct chanmode *chanmode_selected = NULL;
+	static const struct chanmode chanmode[] = {
 		{ .name = "HT20",
 		  .width = NL80211_CHAN_WIDTH_20,
 		  .freq1_diff = 0,
@@ -506,7 +502,7 @@ static int join_mesh(struct nl80211_state *state,
 			NLA_PUT_U32(msg, NL80211_ATTR_CHANNEL_WIDTH,
 				    chanmode_selected->width);
 			NLA_PUT_U32(msg, NL80211_ATTR_CENTER_FREQ1,
-				    freq + chanmode_selected->freq1_diff);
+				    get_cf1(chanmode_selected, freq));
 			if (chanmode_selected->chantype != -1)
 				NLA_PUT_U32(msg,
 					    NL80211_ATTR_WIPHY_CHANNEL_TYPE,

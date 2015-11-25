@@ -726,3 +726,29 @@ void iw_hexdump(const char *prefix, const __u8 *buf, size_t size)
 	}
 	printf("\n\n");
 }
+
+int get_cf1(const struct chanmode *chanmode, unsigned long freq)
+{
+	unsigned int cf1 = freq, j;
+	unsigned int vht80[] = { 5180, 5260, 5500, 5580, 5660, 5745 };
+
+	switch (chanmode->width) {
+	case NL80211_CHAN_WIDTH_80:
+	        /* setup center_freq1 */
+		for (j = 0; j < ARRAY_SIZE(vht80); j++) {
+			if (freq >= vht80[j] && freq < vht80[j] + 80)
+				break;
+		}
+
+		if (j == ARRAY_SIZE(vht80))
+			break;
+
+		cf1 = vht80[j] + 30;
+		break;
+	default:
+		cf1 = freq + chanmode->freq1_diff;
+		break;
+	}
+
+	return cf1;
+}

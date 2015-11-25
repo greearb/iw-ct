@@ -59,6 +59,13 @@ struct cmd {
 	const struct cmd *parent;
 };
 
+struct chanmode {
+	const char *name;
+	unsigned int width;
+	int freq1_diff;
+	int chantype; /* for older kernel */
+};
+
 #define ARRAY_SIZE(ar) (sizeof(ar)/sizeof(ar[0]))
 #define DIV_ROUND_UP(x, y) (((x) + (y - 1)) / (y))
 
@@ -173,6 +180,8 @@ void print_ies(unsigned char *ie, int ielen, bool unknown,
 
 void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen);
 void iw_hexdump(const char *prefix, const __u8 *data, size_t len);
+
+int get_cf1(const struct chanmode *chanmode, unsigned long freq);
 
 #define SCHED_SCAN_OPTIONS "interval <in_msecs> [delay <in_secs>] " \
 	"[freqs <freq>+] [matches [ssid <ssid>]+]] [active [ssid <ssid>]+|passive] [randomise[=<addr>/<mask>]]"
