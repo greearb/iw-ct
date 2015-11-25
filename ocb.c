@@ -13,14 +13,16 @@ static int join_ocb(struct nl80211_state *state,
 	unsigned long freq;
 	char *end;
 	unsigned int i;
-	static const struct {
-		const char *name;
-		unsigned int width;
-	} *chanmode_selected, chanmode[] = {
+	const struct chanmode *chanmode_selected = NULL;
+	static const struct chanmode chanmode[] = {
 		{ .name = "5MHz",
-		  .width = NL80211_CHAN_WIDTH_5	},
+		  .width = NL80211_CHAN_WIDTH_5,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
 		{ .name = "10MHz",
-		  .width = NL80211_CHAN_WIDTH_10 },
+		  .width = NL80211_CHAN_WIDTH_10,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
 	};
 
 	if (argc < 2)
@@ -45,7 +47,8 @@ static int join_ocb(struct nl80211_state *state,
 	if (chanmode_selected) {
 		NLA_PUT_U32(msg, NL80211_ATTR_CHANNEL_WIDTH,
 			    chanmode_selected->width);
-		NLA_PUT_U32(msg, NL80211_ATTR_CENTER_FREQ1, freq);
+		NLA_PUT_U32(msg, NL80211_ATTR_CENTER_FREQ1,
+			    get_cf1(chanmode_selected, freq));
 
 		argv++;
 		argc--;
