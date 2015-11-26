@@ -180,7 +180,8 @@ static int wowlan_parse_tcp_file(struct nl_msg *msg, const char *fn)
 	err = -ENOBUFS;
  close:
 	fclose(f);
-	nla_nest_end(msg, tcp);
+	if (tcp)
+		nla_nest_end(msg, tcp);
 	return err;
 }
 
