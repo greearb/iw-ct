@@ -1919,6 +1919,12 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 	}
 	printf("\n");
 
+	if (bss[NL80211_BSS_LAST_SEEN_BOOTTIME]) {
+		unsigned long long bt;
+		bt = (unsigned long long)nla_get_u64(bss[NL80211_BSS_LAST_SEEN_BOOTTIME]);
+		printf("\tlast seen: %llu.%.3llus [boottime]\n", bt/1000000000, (bt%1000000000)/1000000);
+	}
+
 	if (bss[NL80211_BSS_TSF]) {
 		unsigned long long tsf;
 		tsf = (unsigned long long)nla_get_u64(bss[NL80211_BSS_TSF]);
