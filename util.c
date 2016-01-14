@@ -263,6 +263,7 @@ static const char *commands[NL80211_CMD_MAX + 1] = {
 	[NL80211_CMD_TDLS_CHANNEL_SWITCH] = "tdls_channel_switch",
 	[NL80211_CMD_TDLS_CANCEL_CHANNEL_SWITCH] = "tdls_cancel_channel_switch",
 	[NL80211_CMD_WIPHY_REG_CHANGE] = "wiphy_reg_change",
+	[NL80211_CMD_ABORT_SCAN] = "abort_scan",
 };
 
 static char cmdbuf[100];
