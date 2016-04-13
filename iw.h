@@ -38,6 +38,8 @@ enum id_input {
 	II_WDEV,
 };
 
+#define HANDLER_RET_DONE 3
+
 struct cmd {
 	const char *name;
 	const char *args;

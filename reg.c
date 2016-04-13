@@ -244,14 +244,14 @@ static int handle_reg_get(struct nl80211_state *state,
 	int err;
 
 	err = handle_cmd(state, CIB_NONE, 2, dump_args);
-	/* dump might fail since it's not supported on older kernels */
-	if (err == -EOPNOTSUPP) {
-		register_handler(print_reg_handler,
-			  NULL);
+	/*
+	 * dump might fail since it's not supported on older kernels,
+	 * in that case the handler is still registered already
+	 */
+	if (err == -EOPNOTSUPP)
 		return 0;
-	}
 
-	return err;
+	return err ?: HANDLER_RET_DONE;
 }
 COMMAND(reg, get, NULL, NL80211_CMD_GET_REG, 0, CIB_NONE, handle_reg_get,
 	"Print out the kernel's current regulatory domain information.");

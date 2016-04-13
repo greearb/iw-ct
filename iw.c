@@ -575,6 +575,8 @@ int main(int argc, char **argv)
 			usage_cmd(cmd);
 		else
 			usage(0, NULL);
+	} else if (err == HANDLER_RET_DONE) {
+		err = 0;
 	} else if (err < 0)
 		fprintf(stderr, "command failed: %s (%d)\n", strerror(-err), err);
 
