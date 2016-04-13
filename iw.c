@@ -570,7 +570,7 @@ int main(int argc, char **argv)
 		err = __handle_cmd(&nlstate, idby, argc, argv, &cmd);
 	}
 
-	if (err == 1) {
+	if (err == HANDLER_RET_USAGE) {
 		if (cmd)
 			usage_cmd(cmd);
 		else

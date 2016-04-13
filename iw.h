@@ -38,6 +38,7 @@ enum id_input {
 	II_WDEV,
 };
 
+#define HANDLER_RET_USAGE 1
 #define HANDLER_RET_DONE 3
 
 struct cmd {
