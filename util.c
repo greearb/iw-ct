@@ -148,7 +148,7 @@ const char *iftype_name(enum nl80211_iftype iftype)
 
 static const char *commands[NL80211_CMD_MAX + 1] = {
 /*
- * sed 's/^\tNL80211_CMD_//;t n;d;:n s%^\([^=]*\),.*%\t[NL80211_CMD_\1] = \"\L\1\",%;t;d' nl80211.h
+ * sed 's%^\tNL80211_CMD_%%;t n;d;:n s%^\([^=]*\),.*%\t[NL80211_CMD_\1] = \"\L\1\",%;t;d' nl80211.h | grep -v "reserved"
  */
 	[NL80211_CMD_UNSPEC] = "unspec",
 	[NL80211_CMD_GET_WIPHY] = "get_wiphy",
