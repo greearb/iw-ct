@@ -12,6 +12,33 @@
 
 SECTION(vendor);
 
+static int print_vendor_response(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *attr;
+	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+	bool print_ascii = (bool) arg;
+	uint8_t *data;
+	int len;
+
+	attr = nla_find(genlmsg_attrdata(gnlh, 0),
+			genlmsg_attrlen(gnlh, 0),
+			NL80211_ATTR_VENDOR_DATA);
+	if (!attr) {
+		fprintf(stderr, "vendor data attribute missing!\n");
+		return NL_SKIP;
+	}
+
+	data = (uint8_t *) nla_data(attr);
+	len = nla_len(attr);
+
+	if (print_ascii)
+		iw_hexdump("vendor response", data, len);
+	else
+		fwrite(data, 1, len, stdout);
+
+	return NL_OK;
+}
+
 static int read_file(FILE *file, char *buf, size_t size)
 {
 	size_t count = 0;
@@ -96,4 +123,22 @@ nla_put_failure:
 	return -ENOBUFS;
 }
 
+static int handle_vendor_recv(struct nl80211_state *state,
+			      struct nl_msg *msg, int argc,
+			      char **argv, enum id_input id)
+{
+	register_handler(print_vendor_response, (void *) true);
+	return handle_vendor(state, msg, argc, argv, id);
+}
+
+static int handle_vendor_recv_bin(struct nl80211_state *state,
+				  struct nl_msg *msg, int argc,
+				  char **argv, enum id_input id)
+{
+	register_handler(print_vendor_response, (void *) false);
+	return handle_vendor(state, msg, argc, argv, id);
+}
+
 COMMAND(vendor, send, "<oui> <subcmd> <filename|-|hex data>", NL80211_CMD_VENDOR, 0, CIB_NETDEV, handle_vendor, "");
+COMMAND(vendor, recv, "<oui> <subcmd> <filename|-|hex data>", NL80211_CMD_VENDOR, 0, CIB_NETDEV, handle_vendor_recv, "");
+COMMAND(vendor, recvbin, "<oui> <subcmd> <filename|-|hex data>", NL80211_CMD_VENDOR, 0, CIB_NETDEV, handle_vendor_recv_bin, "");
