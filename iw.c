@@ -516,7 +516,7 @@ int main(int argc, char **argv)
 	const struct cmd *cmd = NULL;
 
 	/* calculate command size including padding */
-	cmd_size = abs((long)&__section_set - (long)&__section_get);
+	cmd_size = labs((long)&__section_set - (long)&__section_get);
 	/* strip off self */
 	argc--;
 	argv0 = *argv++;
