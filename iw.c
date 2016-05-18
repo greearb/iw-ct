@@ -54,13 +54,13 @@ static int nl80211_init(struct nl80211_state *state)
 		return -ENOMEM;
 	}
 
-	nl_socket_set_buffer_size(state->nl_sock, 8192, 8192);
-
 	if (genl_connect(state->nl_sock)) {
 		fprintf(stderr, "Failed to connect to generic netlink.\n");
 		err = -ENOLINK;
 		goto out_handle_destroy;
 	}
+
+	nl_socket_set_buffer_size(state->nl_sock, 8192, 8192);
 
 	state->nl80211_id = genl_ctrl_resolve(state->nl_sock, "nl80211");
 	if (state->nl80211_id < 0) {
