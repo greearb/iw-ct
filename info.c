@@ -47,20 +47,6 @@ static char *cipher_name(__u32 c)
 	}
 }
 
-static char *dfs_state_name(enum nl80211_dfs_state state)
-{
-	switch (state) {
-	case NL80211_DFS_USABLE:
-		return "usable";
-	case NL80211_DFS_AVAILABLE:
-		return "available";
-	case NL80211_DFS_UNAVAILABLE:
-		return "unavailable";
-	default:
-		return "unknown";
-	}
-}
-
 static int ext_feature_isset(const unsigned char *ext_features, int ext_features_len,
 			     enum nl80211_ext_feature_index ftidx)
 {
@@ -198,22 +184,6 @@ next:
 					if (open)
 						printf(")");
 					printf("\n");
-
-					if (!tb_freq[NL80211_FREQUENCY_ATTR_DISABLED] && tb_freq[NL80211_FREQUENCY_ATTR_DFS_STATE]) {
-						enum nl80211_dfs_state state = nla_get_u32(tb_freq[NL80211_FREQUENCY_ATTR_DFS_STATE]);
-						unsigned long time;
-
-						printf("\t\t\t  DFS state: %s", dfs_state_name(state));
-						if (tb_freq[NL80211_FREQUENCY_ATTR_DFS_TIME]) {
-							time = nla_get_u32(tb_freq[NL80211_FREQUENCY_ATTR_DFS_TIME]);
-							printf(" (for %lu sec)", time/1000);
-						}
-						printf("\n");
-						if (tb_freq[NL80211_FREQUENCY_ATTR_DFS_CAC_TIME])
-							printf("\t\t\t  DFS CAC time: %u ms\n",
-							       nla_get_u32(tb_freq[NL80211_FREQUENCY_ATTR_DFS_CAC_TIME]));
-					}
-
 				}
 			}
 
