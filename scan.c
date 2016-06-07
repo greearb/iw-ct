@@ -389,24 +389,16 @@ static int handle_scan(struct nl80211_state *state,
 				flags |= NL80211_SCAN_FLAG_AP;
 				break;
 			} else if (!strcmp(argv[i], "width")) {
-				unsigned long width;
+				int width;
 				if ((i + 1) >= argc) {
 					printf("width needs an argument.\n");
 					goto nla_put_failure;
 				}
 				i++;
-				if (strcmp(argv[i], "5-NOHT") == 0)
-					width = NL80211_CHAN_WIDTH_5_NOHT;
-				else if (strcmp(argv[i], "5") == 0)
-					width = NL80211_CHAN_WIDTH_5;
-				else if (strcmp(argv[i], "10-NOHT") == 0)
-					width = NL80211_CHAN_WIDTH_10_NOHT;
-				else if (strcmp(argv[i], "10") == 0)
-					width = NL80211_CHAN_WIDTH_10;
-				else {
-					printf("valid width options: 5-NOHT, 5, 10-NOHT, 10\n");
+				width = parse_chan_width(argv[i]);
+
+				if (width < 0)
 					goto nla_put_failure;
-				}
 				
 				NLA_PUT_U32(msg,
 					    NL80211_ATTR_CHANNEL_WIDTH,

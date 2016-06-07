@@ -5,6 +5,22 @@
 #include "iw.h"
 #include "nl80211.h"
 
+int parse_chan_width(const char* w)
+{
+	if (strcmp(w, "5-NOHT") == 0)
+		return NL80211_CHAN_WIDTH_5_NOHT;
+	else if (strcmp(w, "5") == 0)
+		return NL80211_CHAN_WIDTH_5;
+	else if (strcmp(w, "10-NOHT") == 0)
+		return NL80211_CHAN_WIDTH_10_NOHT;
+	else if (strcmp(w, "10") == 0)
+		return NL80211_CHAN_WIDTH_10;
+	else {
+		printf("valid width options: 5-NOHT, 5, 10-NOHT, 10\n");
+		return -1;
+	}
+}
+
 void mac_addr_n2a(char *mac_addr, unsigned char *arg)
 {
 	int i, l;
