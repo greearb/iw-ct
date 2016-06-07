@@ -100,6 +100,10 @@ static int handle_freqchan(struct nl_msg *msg, bool chan,
 		const char *name;
 		unsigned int val;
 	} htmap[] = {
+		{ .name = "NO_HT5", .val = NL80211_CHAN_NO_HT5, },
+		{ .name = "HT5", .val = NL80211_CHAN_HT5, },
+		{ .name = "NO_HT10", .val = NL80211_CHAN_NO_HT10, },
+		{ .name = "HT10", .val = NL80211_CHAN_HT10, },
 		{ .name = "HT20", .val = NL80211_CHAN_HT20, },
 		{ .name = "HT40+", .val = NL80211_CHAN_HT40PLUS, },
 		{ .name = "HT40-", .val = NL80211_CHAN_HT40MINUS, },
@@ -151,11 +155,11 @@ static int handle_freq(struct nl80211_state *state, struct nl_msg *msg,
 {
 	return handle_freqchan(msg, false, argc, argv);
 }
-COMMAND(set, freq, "<freq> [HT20|HT40+|HT40-]",
+COMMAND(set, freq, "<freq> [NO_HT5|HT5|NO_HT10|HT10|HT20|HT40+|HT40-]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_PHY, handle_freq,
 	"Set frequency/channel the hardware is using, including HT\n"
 	"configuration.");
-COMMAND(set, freq, "<freq> [HT20|HT40+|HT40-]\n"
+COMMAND(set, freq, "<freq> [NO_HT5|HT5|NO_HT10|HT10|HT20|HT40+|HT40-]\n"
 		   "<control freq> [5|10|20|40|80|80+80|160] [<center freq 1>] [<center freq 2>]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_freq, NULL);
 
