@@ -38,6 +38,8 @@ static int handle_freqs(struct nl_msg *msg, int argc, char **argv)
 		const char *name;
 		unsigned int val;
 	} bwmap[] = {
+		{ .name = "5", .val = NL80211_CHAN_WIDTH_5, },
+		{ .name = "10", .val = NL80211_CHAN_WIDTH_10, },
 		{ .name = "20", .val = NL80211_CHAN_WIDTH_20, },
 		{ .name = "40", .val = NL80211_CHAN_WIDTH_40, },
 		{ .name = "80", .val = NL80211_CHAN_WIDTH_80, },
@@ -154,7 +156,7 @@ COMMAND(set, freq, "<freq> [HT20|HT40+|HT40-]",
 	"Set frequency/channel the hardware is using, including HT\n"
 	"configuration.");
 COMMAND(set, freq, "<freq> [HT20|HT40+|HT40-]\n"
-		   "<control freq> [20|40|80|80+80|160] [<center freq 1>] [<center freq 2>]",
+		   "<control freq> [5|10|20|40|80|80+80|160] [<center freq 1>] [<center freq 2>]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_freq, NULL);
 
 static int handle_chan(struct nl80211_state *state, struct nl_msg *msg,
