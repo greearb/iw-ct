@@ -284,8 +284,12 @@ static char *channel_type_name(enum nl80211_channel_type channel_type)
 char *channel_width_name(enum nl80211_chan_width width)
 {
 	switch (width) {
+	case NL80211_CHAN_WIDTH_5_NOHT:
+		return "5 MHz (no HT)";
 	case NL80211_CHAN_WIDTH_5:
 		return "5 MHz";
+	case NL80211_CHAN_WIDTH_10_NOHT:
+		return "10 MHz (no HT)";
 	case NL80211_CHAN_WIDTH_10:
 		return "10 MHz";
 	case NL80211_CHAN_WIDTH_20_NOHT:
