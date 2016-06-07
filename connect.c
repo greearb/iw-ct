@@ -44,6 +44,26 @@ static int iw_conn(struct nl80211_state *state,
 		}
 	}
 
+	/* channel width */
+	if (argc) {
+		if (strcmp("width", argv[0]) == 0) {
+			int width;
+			argv++;
+			argc--;
+			if (argc) {
+				width = parse_chan_width(argv[0]);
+				if (width < 0)
+					goto nla_put_failure;
+				NLA_PUT_U32(msg, NL80211_ATTR_CHANNEL_WIDTH, width);
+				argv++;
+				argc--;
+			}
+			else {
+				goto nla_put_failure;
+			}
+		}
+	}
+
 	if (!argc)
 		return 0;
 
@@ -139,7 +159,7 @@ static int iw_connect(struct nl80211_state *state,
 	__do_listen_events(state, ARRAY_SIZE(cmds), cmds, &printargs);
 	return 0;
 }
-TOPLEVEL(connect, "[-w] <SSID> [<freq in MHz>] [<bssid>] [key 0:abcde d:1:6162636465]",
+TOPLEVEL(connect, "[-w] <SSID> [<freq in MHz>] [<bssid>] [key 0:abcde d:1:6162636465] [width <5-NOHT | 5 | 10-NOHT | 10>]",
 	0, 0, CIB_NETDEV, iw_connect,
 	"Join the network with the given SSID (and frequency, BSSID).\n"
 	"With -w, wait for the connect to finish or fail.");
