@@ -388,6 +388,30 @@ static int handle_scan(struct nl80211_state *state,
 			} else if (strcmp(argv[i], "ap-force") == 0) {
 				flags |= NL80211_SCAN_FLAG_AP;
 				break;
+			} else if (!strcmp(argv[i], "width")) {
+				unsigned long width;
+				if ((i + 1) >= argc) {
+					printf("width needs an argument.\n");
+					goto nla_put_failure;
+				}
+				i++;
+				if (strcmp(argv[i], "5-NOHT") == 0)
+					width = NL80211_CHAN_WIDTH_5_NOHT;
+				else if (strcmp(argv[i], "5") == 0)
+					width = NL80211_CHAN_WIDTH_5;
+				else if (strcmp(argv[i], "10-NOHT") == 0)
+					width = NL80211_CHAN_WIDTH_10_NOHT;
+				else if (strcmp(argv[i], "10") == 0)
+					width = NL80211_CHAN_WIDTH_10;
+				else {
+					printf("valid width options: 5-NOHT, 5, 10-NOHT, 10\n");
+					goto nla_put_failure;
+				}
+				
+				NLA_PUT_U32(msg,
+					    NL80211_ATTR_CHANNEL_WIDTH,
+					    width);
+				break;
 			} else if (strncmp(argv[i], "randomise", 9) == 0 ||
 				   strncmp(argv[i], "randomize", 9) == 0) {
 				flags |= NL80211_SCAN_FLAG_RANDOM_ADDR;
@@ -2067,7 +2091,7 @@ static int handle_scan_combined(struct nl80211_state *state,
 	dump_argv[0] = argv[0];
 	return handle_cmd(state, id, dump_argc, dump_argv);
 }
-TOPLEVEL(scan, "[-u] [freq <freq>*] [ies <hex as 00:11:..>] [meshid <meshid>] [lowpri,flush,ap-force] [randomise[=<addr>/<mask>]] [ssid <ssid>*|passive]", 0, 0,
+TOPLEVEL(scan, "[-u] [freq <freq>*] [ies <hex as 00:11:..>] [meshid <meshid>] [lowpri,flush,ap-force] [randomise[=<addr>/<mask>]] [ssid <ssid>*|passive] [width <5-NOHT | 5 | 10-NOHT | 10>]", 0, 0,
 	 CIB_NETDEV, handle_scan_combined,
 	 "Scan on the given frequencies and probe for the given SSIDs\n"
 	 "(or wildcard if not given) unless passive scanning is requested.\n"
@@ -2077,7 +2101,7 @@ COMMAND(scan, dump, "[-u]",
 	NL80211_CMD_GET_SCAN, NLM_F_DUMP, CIB_NETDEV, handle_scan_dump,
 	"Dump the current scan results. If -u is specified, print unknown\n"
 	"data in scan results.");
-COMMAND(scan, trigger, "[freq <freq>*] [ies <hex as 00:11:..>] [meshid <meshid>] [lowpri,flush,ap-force] [randomise[=<addr>/<mask>]] [ssid <ssid>*|passive]",
+COMMAND(scan, trigger, "[freq <freq>*] [ies <hex as 00:11:..>] [meshid <meshid>] [lowpri,flush,ap-force] [randomise[=<addr>/<mask>]] [ssid <ssid>*|passive] [width <5-NOHT | 5 | 10-NOHT | 10>]",
 	NL80211_CMD_TRIGGER_SCAN, 0, CIB_NETDEV, handle_scan,
 	 "Trigger a scan on the given frequencies with probing for the given\n"
 	 "SSIDs (or wildcard if not given) unless passive scanning is requested.");
