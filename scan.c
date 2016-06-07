@@ -422,6 +422,21 @@ static int handle_scan(struct nl80211_state *state,
 				break;
 			} else if (strcmp(argv[i], "duration-mandatory") == 0) {
 				duration_mandatory = true;
+			} else if (!strcmp(argv[i], "width")) {
+				int width;
+				if ((i + 1) >= argc) {
+					printf("width needs an argument.\n");
+					goto nla_put_failure;
+				}
+				i++;
+				width = parse_chan_width(argv[i]);
+
+				if (width < 0)
+					goto nla_put_failure;
+
+				NLA_PUT_U32(msg,
+					    NL80211_ATTR_CHANNEL_WIDTH,
+					    width);
 				break;
 			} else if (strncmp(argv[i], "randomise", 9) == 0 ||
 				   strncmp(argv[i], "randomize", 9) == 0) {
