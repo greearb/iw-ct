@@ -200,7 +200,7 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq);
 
 #define SCHED_SCAN_OPTIONS "[interval <in_msecs> | scan_plans [<interval_secs:iterations>*] <interval_secs>] "	\
 	"[delay <in_secs>] [freqs <freq>+] [matches [ssid <ssid>]+]] [active [ssid <ssid>]+|passive] "	\
-	"[randomise[=<addr>/<mask>]]"
+	"[randomise[=<addr>/<mask>]] [width <width>]"
 int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv);
 
 DECLARE_SECTION(switch);
