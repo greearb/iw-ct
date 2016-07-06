@@ -31,11 +31,21 @@ static char *cipher_name(__u32 c)
 	case 0x000fac02:
 		return "TKIP (00-0f-ac:2)";
 	case 0x000fac04:
-		return "CCMP (00-0f-ac:4)";
+		return "CCMP-128 (00-0f-ac:4)";
 	case 0x000fac06:
 		return "CMAC (00-0f-ac:6)";
 	case 0x000fac08:
-		return "GCMP (00-0f-ac:8)";
+		return "GCMP-128 (00-0f-ac:8)";
+	case 0x000fac09:
+		return "GCMP-256 (00-0f-ac:9)";
+	case 0x000fac0a:
+		return "CCMP-256 (00-0f-ac:10)";
+	case 0x000fac0b:
+		return "GMAC-128 (00-0f-ac:11)";
+	case 0x000fac0c:
+		return "GMAC-256 (00-0f-ac:12)";
+	case 0x000fac0d:
+		return "CMAC-256 (00-0f-ac:13)";
 	case 0x00147201:
 		return "WPI-SMS4 (00-14-72:1)";
 	default:
