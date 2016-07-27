@@ -346,7 +346,7 @@ static int hex2num(char digit)
 	return tolower(digit) - 'a' + 10;
 }
 
-static int hex2byte(char *hex)
+static int hex2byte(const char *hex)
 {
 	int d1, d2;
 
@@ -359,7 +359,7 @@ static int hex2byte(char *hex)
 	return (d1 << 4) | d2;
 }
 
-static char *hex2bin(char *hex, char *buf)
+static char *hex2bin(const char *hex, char *buf)
 {
 	char *result = buf;
 	int d;
