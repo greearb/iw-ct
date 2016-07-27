@@ -385,15 +385,100 @@ static char *hex2bin(const char *hex, char *buf)
 	return result;
 }
 
+static int parse_akm_suite(const char *cipher_str)
+{
+
+	if (!strcmp(cipher_str, "PSK"))
+		return 0x000FAC02;
+	if (!strcmp(cipher_str, "FT/PSK"))
+		return 0x000FAC03;
+	if (!strcmp(cipher_str, "PSK/SHA-256"))
+		return 0x000FAC06;
+	return -EINVAL;
+}
+
+static int parse_cipher_suite(const char *cipher_str)
+{
+
+	if (!strcmp(cipher_str, "TKIP"))
+		return 0x000FAC02;
+	if (!strcmp(cipher_str, "CCMP"))
+		return 0x000FAC04;
+	if (!strcmp(cipher_str, "GCMP"))
+		return 0x000FAC08;
+	if (!strcmp(cipher_str, "GCMP-256"))
+		return 0x000FAC09;
+	if (!strcmp(cipher_str, "CCMP-256"))
+		return 0x000FAC0A;
+	return -EINVAL;
+}
+
 int parse_keys(struct nl_msg *msg, char **argv, int argc)
 {
 	struct nlattr *keys;
 	int i = 0;
 	bool have_default = false;
+	char *arg = *argv;
 	char keybuf[13];
+	int pos = 0;
 
 	if (!argc)
 		return 1;
+
+	if (!memcmp(&arg[pos], "psk", 3)) {
+		char psk_keybuf[32];
+		int cipher_suite, akm_suite;
+
+		if (argc != 4)
+			goto explain;
+
+		pos+=3;
+		if (arg[pos] != ':')
+			goto explain;
+		pos++;
+
+		NLA_PUT_U32(msg, NL80211_ATTR_WPA_VERSIONS, NL80211_WPA_VERSION_2);
+
+		if (strlen(&arg[pos]) != (sizeof(psk_keybuf) * 2) || !hex2bin(&arg[pos], psk_keybuf)) {
+			printf("Bad PSK\n");
+			return -EINVAL;
+		}
+
+		NLA_PUT(msg, NL80211_ATTR_PMK, 32, psk_keybuf);
+		NLA_PUT_U32(msg, NL80211_ATTR_AUTH_TYPE, NL80211_AUTHTYPE_OPEN_SYSTEM);
+
+		argv++;
+		argc--;
+		arg = *argv;
+
+		akm_suite = parse_akm_suite(arg);
+		if (akm_suite < 0)
+			goto explain;
+
+		NLA_PUT_U32(msg, NL80211_ATTR_AKM_SUITES, akm_suite);
+
+		argv++;
+		argc--;
+		arg = *argv;
+
+		cipher_suite = parse_cipher_suite(arg);
+		if (cipher_suite < 0)
+			goto explain;
+
+		NLA_PUT_U32(msg, NL80211_ATTR_CIPHER_SUITES_PAIRWISE, cipher_suite);
+
+		argv++;
+		argc--;
+		arg = *argv;
+
+		cipher_suite = parse_cipher_suite(arg);
+		if (cipher_suite < 0)
+			goto explain;
+
+		NLA_PUT_U32(msg, NL80211_ATTR_CIPHER_SUITE_GROUP, cipher_suite);
+
+		return 0;
+	}
 
 	NLA_PUT_FLAG(msg, NL80211_ATTR_PRIVACY);
 
@@ -402,10 +487,12 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 		return -ENOBUFS;
 
 	do {
-		char *arg = *argv;
-		int pos = 0, keylen;
+		int keylen;
 		struct nlattr *key = nla_nest_start(msg, ++i);
 		char *keydata;
+
+		arg = *argv;
+		pos = 0;
 
 		if (!key)
 			return -ENOBUFS;
@@ -467,7 +554,12 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 			"  'index:' is a single digit (0-3)\n"
 			"  'data'   must be 5 or 13 ascii chars\n"
 			"           or 10 or 26 hex digits\n"
-			"for example: d:2:6162636465 is the same as d:2:abcde\n");
+			"for example: d:2:6162636465 is the same as d:2:abcde\n"
+			"or psk:data <AKM Suite> <pairwise CIPHER> <groupwise CIPHER> where\n"
+			"  'data' is the PSK (output of wpa_passphrase and the CIPHER can be CCMP or GCMP\n"
+			"for example: psk:0123456789abcdef PSK CCMP CCMP\n"
+			"The allowed AKM suites are PSK, FT/PSK, PSK/SHA-256\n"
+			"The allowed Cipher suites are TKIP, CCMP, GCMP, GCMP-256, CCMP-256\n");
 	return 2;
 }
 
