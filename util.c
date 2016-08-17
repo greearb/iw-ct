@@ -402,9 +402,9 @@ static int parse_cipher_suite(const char *cipher_str)
 
 	if (!strcmp(cipher_str, "TKIP"))
 		return 0x000FAC02;
-	if (!strcmp(cipher_str, "CCMP"))
+	if (!strcmp(cipher_str, "CCMP") || !strcmp(cipher_str, "CCMP-128"))
 		return 0x000FAC04;
-	if (!strcmp(cipher_str, "GCMP"))
+	if (!strcmp(cipher_str, "GCMP") || !strcmp(cipher_str, "GCMP-128"))
 		return 0x000FAC08;
 	if (!strcmp(cipher_str, "GCMP-256"))
 		return 0x000FAC09;
