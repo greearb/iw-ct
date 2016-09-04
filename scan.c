@@ -551,7 +551,13 @@ static void tab_on_first(bool *first)
 		*first = false;
 }
 
-static void print_ssid(const uint8_t type, uint8_t len, const uint8_t *data)
+struct print_ies_data {
+	unsigned char *ie;
+	int ielen;
+};
+
+static void print_ssid(const uint8_t type, uint8_t len, const uint8_t *data,
+		       const struct print_ies_data *ie_buffer)
 {
 	printf(" ");
 	print_ssid_escaped(len, data);
@@ -561,7 +567,9 @@ static void print_ssid(const uint8_t type, uint8_t len, const uint8_t *data)
 #define BSS_MEMBERSHIP_SELECTOR_VHT_PHY 126
 #define BSS_MEMBERSHIP_SELECTOR_HT_PHY 127
 
-static void print_supprates(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_supprates(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
 {
 	int i;
 
@@ -582,7 +590,8 @@ static void print_supprates(const uint8_t type, uint8_t len, const uint8_t *data
 	printf("\n");
 }
 
-static void print_ds(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_ds(const uint8_t type, uint8_t len, const uint8_t *data,
+		     const struct print_ies_data *ie_buffer)
 {
 	printf(" channel %d\n", data[0]);
 }
@@ -601,7 +610,8 @@ static const char *country_env_str(char environment)
 	}
 }
 
-static void print_country(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_country(const uint8_t type, uint8_t len, const uint8_t *data,
+			  const struct print_ies_data *ie_buffer)
 {
 	printf(" %.*s", 2, data);
 
@@ -646,18 +656,23 @@ static void print_country(const uint8_t type, uint8_t len, const uint8_t *data)
 	return;
 }
 
-static void print_powerconstraint(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_powerconstraint(const uint8_t type, uint8_t len,
+				  const uint8_t *data,
+				  const struct print_ies_data *ie_buffer)
 {
 	printf(" %d dB\n", data[0]);
 }
 
-static void print_tpcreport(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_tpcreport(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
 {
 	printf(" TX power: %d dBm\n", data[0]);
 	/* printf(" Link Margin (%d dB) is reserved in Beacons\n", data[1]); */
 }
 
-static void print_erp(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_erp(const uint8_t type, uint8_t len, const uint8_t *data,
+		      const struct print_ies_data *ie_buffer)
 {
 	if (data[0] == 0x00)
 		printf(" <no flags>");
@@ -960,12 +975,14 @@ static void print_osen_ie(const char *defcipher, const char *defauth,
 	_print_rsn_ie(defcipher, defauth, len, data, 1);
 }
 
-static void print_rsn(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_rsn(const uint8_t type, uint8_t len, const uint8_t *data,
+		      const struct print_ies_data *ie_buffer)
 {
 	print_rsn_ie("CCMP", "IEEE 802.1X", len, data);
 }
 
-static void print_ht_capa(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_ht_capa(const uint8_t type, uint8_t len, const uint8_t *data,
+			  const struct print_ies_data *ie_buffer)
 {
 	printf("\n");
 	print_ht_capability(data[0] | (data[1] << 8));
@@ -1008,7 +1025,9 @@ static const char* vgroup_11u(uint8_t t)
 	}
 }
 
-static void print_interworking(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_interworking(const uint8_t type, uint8_t len,
+			       const uint8_t *data,
+			       const struct print_ies_data *ie_buffer)
 {
 	/* See Section 7.3.2.92 in the 802.11u spec. */
 	printf("\n");
@@ -1039,7 +1058,9 @@ static void print_interworking(const uint8_t type, uint8_t len, const uint8_t *d
 		       data[1], data[2], data[3], data[4], data[5], data[6]);
 }
 
-static void print_11u_advert(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_11u_advert(const uint8_t type, uint8_t len,
+			     const uint8_t *data,
+			     const struct print_ies_data *ie_buffer)
 {
 	/* See Section 7.3.2.93 in the 802.11u spec. */
 	/* TODO: This code below does not decode private protocol IDs */
@@ -1071,7 +1092,8 @@ static void print_11u_advert(const uint8_t type, uint8_t len, const uint8_t *dat
 	}
 }
 
-static void print_11u_rcon(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_11u_rcon(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	/* See Section 7.3.2.96 in the 802.11u spec. */
 	int idx = 0;
@@ -1129,7 +1151,8 @@ static const char *ht_secondary_offset[4] = {
 	"below",
 };
 
-static void print_ht_op(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_ht_op(const uint8_t type, uint8_t len, const uint8_t *data,
+			const struct print_ies_data *ie_buffer)
 {
 	static const char *protection[4] = {
 		"no",
@@ -1159,11 +1182,23 @@ static void print_ht_op(const uint8_t type, uint8_t len, const uint8_t *data)
 	printf("\t\t * PCO phase: %d\n", (data[5] & 0x8) >> 3);
 }
 
-static void print_capabilities(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_capabilities(const uint8_t type, uint8_t len,
+			       const uint8_t *data,
+			       const struct print_ies_data *ie_buffer)
 {
-	int i, base, bit;
-	bool first = true;
+	int i, base, bit, si_duration = 0, max_amsdu = 0;
+	bool s_psmp_support = false, is_vht_cap = false;
+	unsigned char *ie = ie_buffer->ie;
+	int ielen = ie_buffer->ielen;
 
+	while (ielen >= 2 && ielen >= ie[1]) {
+		if (ie[0] == 191) {
+			is_vht_cap = true;
+			break;
+		}
+		ielen -= ie[1] + 2;
+		ie += ie[1] + 2;
+	}
 
 	for (i = 0; i < len; i++) {
 		base = i * 8;
@@ -1172,12 +1207,20 @@ static void print_capabilities(const uint8_t type, uint8_t len, const uint8_t *d
 			if (!(data[i] & (1 << bit)))
 				continue;
 
-			if (!first)
-				printf(",");
-			else
-				first = false;
+			printf("\n\t\t *");
 
 #define CAPA(bit, name)		case bit: printf(" " name); break
+
+/* if the capability 'cap' exists add 'val' to 'sum'
+ * otherwise print 'Reserved' */
+#define ADD_BIT_VAL(bit, cap, sum, val)	case (bit): do {	\
+	if (!(cap)) {						\
+		printf(" Reserved");				\
+		break;						\
+	}							\
+	sum += val;						\
+	break;							\
+} while (0)
 
 			switch (bit + base) {
 			CAPA(0, "HT Information Exchange Supported");
@@ -1186,7 +1229,12 @@ static void print_capabilities(const uint8_t type, uint8_t len, const uint8_t *d
 			CAPA(3, "reserved (Wave Indication)");
 			CAPA(4, "PSMP Capability");
 			CAPA(5, "reserved (Service Interval Granularity)");
-			CAPA(6, "S-PSMP Capability");
+
+			case 6:
+				s_psmp_support = true;
+				printf(" S-PSMP Capability");
+				break;
+
 			CAPA(7, "Event");
 			CAPA(8, "Diagnostics");
 			CAPA(9, "Multicast Diagnostics");
@@ -1221,25 +1269,82 @@ static void print_capabilities(const uint8_t type, uint8_t len, const uint8_t *d
 			CAPA(38, "TDLS Prohibited");
 			CAPA(39, "TDLS Channel Switching Prohibited");
 			CAPA(40, "Reject Unadmitted Frame");
+
+			ADD_BIT_VAL(41, s_psmp_support, si_duration, 1);
+			ADD_BIT_VAL(42, s_psmp_support, si_duration, 2);
+			ADD_BIT_VAL(43, s_psmp_support, si_duration, 4);
+
 			CAPA(44, "Identifier Location");
 			CAPA(45, "U-APSD Coexistence");
 			CAPA(46, "WNM-Notification");
 			CAPA(47, "Reserved");
 			CAPA(48, "UTF-8 SSID");
+			CAPA(49, "QMFActivated");
+			CAPA(50, "QMFReconfigurationActivated");
+			CAPA(51, "Robust AV Streaming");
+			CAPA(52, "Advanced GCR");
+			CAPA(53, "Mesh GCR");
+			CAPA(54, "SCS");
+			CAPA(55, "QLoad Report");
+			CAPA(56, "Alternate EDCA");
+			CAPA(57, "Unprotected TXOP Negotiation");
+			CAPA(58, "Protected TXOP egotiation");
+			CAPA(59, "Reserved");
+			CAPA(60, "Protected QLoad Report");
+			CAPA(61, "TDLS Wider Bandwidth");
+			CAPA(62, "Operating Mode Notification");
+
+			ADD_BIT_VAL(63, is_vht_cap, max_amsdu, 1);
+			ADD_BIT_VAL(64, is_vht_cap, max_amsdu, 2);
+
+			CAPA(65, "Channel Schedule Management");
+			CAPA(66, "Geodatabase Inband Enabling Signal");
+			CAPA(67, "Network Channel Control");
+			CAPA(68, "White Space Map");
+			CAPA(69, "Channel Availability Query");
 			CAPA(70, "FTM Responder");
 			CAPA(71, "FTM Initiator");
+			CAPA(72, "Reserved");
+			CAPA(73, "Extended Spectrum Management Capable");
+			CAPA(74, "Reserved");
 			default:
 				printf(" %d", bit);
 				break;
 			}
+#undef ADD_BIT_VAL
 #undef CAPA
+		}
+	}
+
+	if (s_psmp_support)
+		printf("\n\t\t * Service Interval Granularity is %d ms",
+		       (si_duration + 1) * 5);
+
+	if (is_vht_cap) {
+		printf("\n\t\t * Max Number Of MSDUs In A-MSDU is ");
+		switch (max_amsdu) {
+		case 0:
+			printf("unlimited");
+			break;
+		case 1:
+			printf("32");
+			break;
+		case 2:
+			printf("16");
+			break;
+		case 3:
+			printf("8");
+			break;
+		default:
+			break;
 		}
 	}
 
 	printf("\n");
 }
 
-static void print_tim(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_tim(const uint8_t type, uint8_t len, const uint8_t *data,
+		      const struct print_ies_data *ie_buffer)
 {
 	printf(" DTIM Count %u DTIM Period %u Bitmap Control 0x%x "
 	       "Bitmap[0] 0x%x",
@@ -1249,12 +1354,14 @@ static void print_tim(const uint8_t type, uint8_t len, const uint8_t *data)
 	printf("\n");
 }
 
-static void print_ibssatim(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_ibssatim(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	printf(" %d TUs", (data[1] << 8) + data[0]);
 }
 
-static void print_vht_capa(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_vht_capa(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	printf("\n");
 	print_vht_info(data[0] | (data[1] << 8) |
@@ -1262,7 +1369,8 @@ static void print_vht_capa(const uint8_t type, uint8_t len, const uint8_t *data)
 		       data + 4);
 }
 
-static void print_vht_oper(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_vht_oper(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	const char *chandwidths[] = {
 		[0] = "20 or 40 MHz",
@@ -1279,7 +1387,9 @@ static void print_vht_oper(const uint8_t type, uint8_t len, const uint8_t *data)
 	printf("\t\t * VHT basic MCS set: 0x%.2x%.2x\n", data[4], data[3]);
 }
 
-static void print_obss_scan_params(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_obss_scan_params(const uint8_t type, uint8_t len,
+				   const uint8_t *data,
+				   const struct print_ies_data *ie_buffer)
 {
 	printf("\n");
 	printf("\t\t * passive dwell: %d TUs\n", (data[1] << 8) | data[0]);
@@ -1292,7 +1402,9 @@ static void print_obss_scan_params(const uint8_t type, uint8_t len, const uint8_
 		((data[13] << 8) | data[12]) / 100, ((data[13] << 8) | data[12]) % 100);
 }
 
-static void print_secchan_offs(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_secchan_offs(const uint8_t type, uint8_t len,
+			       const uint8_t *data,
+			       const struct print_ies_data *ie_buffer)
 {
 	if (data[0] < ARRAY_SIZE(ht_secondary_offset))
 		printf(" %s (%d)\n", ht_secondary_offset[data[0]], data[0]);
@@ -1300,7 +1412,8 @@ static void print_secchan_offs(const uint8_t type, uint8_t len, const uint8_t *d
 		printf(" %d\n", data[0]);
 }
 
-static void print_bss_load(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_bss_load(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	printf("\n");
 	printf("\t\t * station count: %d\n", (data[1] << 8) | data[0]);
@@ -1308,7 +1421,9 @@ static void print_bss_load(const uint8_t type, uint8_t len, const uint8_t *data)
 	printf("\t\t * available admission capacity: %d [*32us]\n", (data[4] << 8) | data[3]);
 }
 
-static void print_mesh_conf(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_mesh_conf(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
 {
 	printf("\n");
 	printf("\t\t * Active Path Selection Protocol ID: %d\n", data[0]);
@@ -1341,13 +1456,15 @@ static void print_mesh_conf(const uint8_t type, uint8_t len, const uint8_t *data
 
 struct ie_print {
 	const char *name;
-	void (*print)(const uint8_t type, uint8_t len, const uint8_t *data);
+	void (*print)(const uint8_t type, uint8_t len, const uint8_t *data,
+		      const struct print_ies_data *ie_buffer);
 	uint8_t minlen, maxlen;
 	uint8_t flags;
 };
 
-static void print_ie(const struct ie_print *p, const uint8_t type,
-		     uint8_t len, const uint8_t *data)
+static void print_ie(const struct ie_print *p, const uint8_t type, uint8_t len,
+		     const uint8_t *data,
+		     const struct print_ies_data *ie_buffer)
 {
 	int i;
 
@@ -1368,7 +1485,7 @@ static void print_ie(const struct ie_print *p, const uint8_t type,
 		return;
 	}
 
-	p->print(type, len, data);
+	p->print(type, len, data, ie_buffer);
 }
 
 #define PRINT_IGN {		\
@@ -1406,12 +1523,15 @@ static const struct ie_print ieprinters[] = {
 	[111] = { "802.11u Roaming Consortium", print_11u_rcon, 0, 255, BIT(PRINT_SCAN), },
 };
 
-static void print_wifi_wpa(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_wifi_wpa(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	print_rsn_ie("TKIP", "IEEE 802.1X", len, data);
 }
 
-static void print_wifi_osen(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_wifi_osen(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
 {
 	print_osen_ie("OSEN", "OSEN", len, data);
 }
@@ -1458,7 +1578,8 @@ static bool print_wifi_wmm_param(const uint8_t *data, uint8_t len)
  	return false;
 }
 
-static void print_wifi_wmm(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_wifi_wmm(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	int i;
 
@@ -1500,7 +1621,8 @@ static const char * wifi_wps_dev_passwd_id(uint16_t id)
 	}
 }
 
-static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data)
+static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
 {
 	bool first = true;
 	__u16 subtype, sublen;
@@ -1676,7 +1798,9 @@ static const struct ie_print wifiprinters[] = {
 	[4] = { "WPS", print_wifi_wps, 0, 255, BIT(PRINT_SCAN), },
 };
 
-static inline void print_p2p(const uint8_t type, uint8_t len, const uint8_t *data)
+static inline void print_p2p(const uint8_t type, uint8_t len,
+			     const uint8_t *data,
+			     const struct print_ies_data *ie_buffer)
 {
 	bool first = true;
 	__u8 subtype;
@@ -1756,7 +1880,9 @@ static inline void print_p2p(const uint8_t type, uint8_t len, const uint8_t *dat
 	}
 }
 
-static inline void print_hs20_ind(const uint8_t type, uint8_t len, const uint8_t *data)
+static inline void print_hs20_ind(const uint8_t type, uint8_t len,
+				  const uint8_t *data,
+				  const struct print_ies_data *ie_buffer)
 {
 	/* I can't find the spec for this...just going off what wireshark uses. */
 	printf("\n");
@@ -1789,7 +1915,8 @@ static void print_vendor(unsigned char len, unsigned char *data,
 		if (data[3] < ARRAY_SIZE(wifiprinters) &&
 		    wifiprinters[data[3]].name &&
 		    wifiprinters[data[3]].flags & BIT(ptype)) {
-			print_ie(&wifiprinters[data[3]], data[3], len - 4, data + 4);
+			print_ie(&wifiprinters[data[3]],
+				 data[3], len - 4, data + 4, 0);
 			return;
 		}
 		if (!unknown)
@@ -1805,7 +1932,8 @@ static void print_vendor(unsigned char len, unsigned char *data,
 		if (data[3] < ARRAY_SIZE(wfa_printers) &&
 		    wfa_printers[data[3]].name &&
 		    wfa_printers[data[3]].flags & BIT(ptype)) {
-			print_ie(&wfa_printers[data[3]], data[3], len - 4, data + 4);
+			print_ie(&wfa_printers[data[3]],
+				 data[3], len - 4, data + 4, 0);
 			return;
 		}
 		if (!unknown)
@@ -1830,11 +1958,16 @@ static void print_vendor(unsigned char len, unsigned char *data,
 void print_ies(unsigned char *ie, int ielen, bool unknown,
 	       enum print_ie_type ptype)
 {
+	struct print_ies_data ie_buffer = {
+		.ie = ie,
+		.ielen = ielen };
+
 	while (ielen >= 2 && ielen >= ie[1]) {
 		if (ie[0] < ARRAY_SIZE(ieprinters) &&
 		    ieprinters[ie[0]].name &&
 		    ieprinters[ie[0]].flags & BIT(ptype)) {
-			print_ie(&ieprinters[ie[0]], ie[0], ie[1], ie + 2);
+			print_ie(&ieprinters[ie[0]],
+				 ie[0], ie[1], ie + 2, &ie_buffer);
 		} else if (ie[0] == 221 /* vendor */) {
 			print_vendor(ie[1], ie + 2, unknown, ptype);
 		} else if (unknown) {
