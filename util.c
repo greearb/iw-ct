@@ -368,7 +368,7 @@ static int hex2byte(const char *hex)
 	return (d1 << 4) | d2;
 }
 
-static char *hex2bin(const char *hex, char *buf)
+char *hex2bin(const char *hex, char *buf)
 {
 	char *result = buf;
 	int d;

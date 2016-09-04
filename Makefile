@@ -17,7 +17,8 @@ OBJS = iw.o genl.o event.o info.o phy.o \
 	interface.o ibss.o station.o survey.o util.o ocb.o \
 	mesh.o mpath.o mpp.o scan.o reg.o version.o \
 	reason.o status.o connect.o link.o offch.o ps.o cqm.o \
-	bitrate.o wowlan.o coalesce.o roc.o p2p.o vendor.o mgmt.o
+	bitrate.o wowlan.o coalesce.o roc.o p2p.o vendor.o mgmt.o \
+	ap.o
 OBJS += sections.o
 
 OBJS-$(HWSIM) += hwsim.o

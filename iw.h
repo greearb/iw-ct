@@ -230,4 +230,6 @@ DECLARE_SECTION(switch);
 DECLARE_SECTION(set);
 DECLARE_SECTION(get);
 
+char *hex2bin(const char *hex, char *buf);
+
 #endif /* __IW_H */
