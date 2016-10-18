@@ -264,6 +264,12 @@ static const char *commands[NL80211_CMD_MAX + 1] = {
 	[NL80211_CMD_TDLS_CANCEL_CHANNEL_SWITCH] = "tdls_cancel_channel_switch",
 	[NL80211_CMD_WIPHY_REG_CHANGE] = "wiphy_reg_change",
 	[NL80211_CMD_ABORT_SCAN] = "abort_scan",
+	[NL80211_CMD_START_NAN] = "start_nan",
+	[NL80211_CMD_STOP_NAN] = "stop_nan",
+	[NL80211_CMD_ADD_NAN_FUNCTION] = "add_nan_function",
+	[NL80211_CMD_DEL_NAN_FUNCTION] = "del_nan_function",
+	[NL80211_CMD_CHANGE_NAN_CONFIG] = "change_nan_config",
+	[NL80211_CMD_NAN_MATCH] = "nan_match",
 };
 
 static char cmdbuf[100];
