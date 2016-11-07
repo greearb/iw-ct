@@ -644,3 +644,74 @@ nla_put_failure:
 COMMAND(set, mcast_rate, "<rate in Mbps>",
 	NL80211_CMD_SET_MCAST_RATE, 0, CIB_NETDEV, set_mcast_rate,
 	"Set the multicast bitrate.");
+
+
+static int handle_chanfreq(struct nl80211_state *state, struct nl_msg *msg,
+			   bool chan, int argc, char **argv,
+			   enum id_input id)
+{
+	struct chandef chandef;
+	int res;
+	int parsed;
+	char *end;
+
+	res = parse_freqchan(&chandef, chan, argc, argv, &parsed);
+	if (res)
+		return res;
+
+	argc -= parsed;
+	argv += parsed;
+
+	while (argc) {
+		unsigned int beacons = 10;
+
+		if (strcmp(argv[0], "beacons") == 0) {
+			if (argc < 2)
+				return 1;
+
+			beacons = strtol(argv[1], &end, 10);
+			if (*end)
+				return 1;
+
+			argc -= 2;
+			argv += 2;
+
+			NLA_PUT_U32(msg, NL80211_ATTR_CH_SWITCH_COUNT, beacons);
+		} else if (strcmp(argv[0], "block-tx") == 0) {
+			argc -= 1;
+			argv += 1;
+
+			NLA_PUT_FLAG(msg, NL80211_ATTR_CH_SWITCH_BLOCK_TX);
+		} else {
+			return 1;
+		}
+	}
+
+	return put_chandef(msg, &chandef);
+
+ nla_put_failure:
+	return -ENOBUFS;
+}
+
+static int handle_freq(struct nl80211_state *state, struct nl_msg *msg,
+		       int argc, char **argv,
+		       enum id_input id)
+{
+	return handle_chanfreq(state, msg, false, argc, argv, id);
+}
+
+static int handle_chan(struct nl80211_state *state, struct nl_msg *msg,
+		       int argc, char **argv,
+		       enum id_input id)
+{
+	return handle_chanfreq(state, msg, true, argc, argv, id);
+}
+
+SECTION(switch);
+COMMAND(switch, freq,
+	"<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz] [beacons <count>] [block-tx]\n"
+	"<control freq> [5|10|20|40|80|80+80|160] [<center1_freq> [<center2_freq>]] [beacons <count>] [block-tx]",
+	NL80211_CMD_CHANNEL_SWITCH, 0, CIB_NETDEV, handle_freq,
+	"Switch the operating channel by sending a channel switch announcement (CSA).");
+COMMAND(switch, channel, "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz] [beacons <count>] [block-tx]",
+	NL80211_CMD_CHANNEL_SWITCH, 0, CIB_NETDEV, handle_chan, NULL);

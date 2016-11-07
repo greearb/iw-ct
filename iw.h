@@ -202,6 +202,7 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq);
 	"[randomise[=<addr>/<mask>]]"
 int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv);
 
+DECLARE_SECTION(switch);
 DECLARE_SECTION(set);
 DECLARE_SECTION(get);
 
