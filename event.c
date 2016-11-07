@@ -584,30 +584,36 @@ static int print_event(struct nl_msg *msg, void *arg)
 				   nla_data(tb[NL80211_ATTR_VENDOR_DATA]),
 				   nla_len(tb[NL80211_ATTR_VENDOR_DATA]));
 		break;
-	case NL80211_CMD_RADAR_DETECT:
-		printf("radar event ");
-		if (tb[NL80211_ATTR_RADAR_EVENT]) {
-			switch (nla_get_u32(tb[NL80211_ATTR_RADAR_EVENT])) {
-				case NL80211_RADAR_DETECTED:
-					printf("(radar detected)");
-					break;
-				case NL80211_RADAR_CAC_FINISHED:
-					printf("(cac finished)");
-					break;
-				case NL80211_RADAR_CAC_ABORTED:
-					printf("(cac aborted)");
-					break;
-				case NL80211_RADAR_NOP_FINISHED:
-					printf("(nop finished)");
-					break;
-				default:
-					printf("(unknown)");
-					break;
-			};
-		} else {
-			printf("(unknown)");
+	case NL80211_CMD_RADAR_DETECT: {
+		enum nl80211_radar_event event_type;
+		uint32_t freq;
+
+		if (!tb[NL80211_ATTR_RADAR_EVENT] ||
+		    !tb[NL80211_ATTR_WIPHY_FREQ]) {
+			printf("BAD radar event\n");
+			break;
 		}
-		printf("\n");
+
+		freq = nla_get_u32(tb[NL80211_ATTR_WIPHY_FREQ]);
+		event_type = nla_get_u32(tb[NL80211_ATTR_RADAR_EVENT]);
+
+		switch (event_type) {
+		case NL80211_RADAR_DETECTED:
+			printf("%d MHz: radar detected\n", freq);
+			break;
+		case NL80211_RADAR_CAC_FINISHED:
+			printf("%d MHz: CAC finished\n", freq);
+			break;
+		case NL80211_RADAR_CAC_ABORTED:
+			printf("%d MHz: CAC was aborted\n", freq);
+			break;
+		case NL80211_RADAR_NOP_FINISHED:
+			printf("%d MHz: NOP finished\n", freq);
+			break;
+		default:
+			printf("%d MHz: unknown radar event\n", freq);
+		}
+		}
 		break;
 	case NL80211_CMD_DEL_WIPHY:
 		printf("delete wiphy\n");
