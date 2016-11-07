@@ -13,45 +13,14 @@ static int join_ibss(struct nl80211_state *state,
 		     enum id_input id)
 {
 	char *end;
+	struct chandef chandef;
 	unsigned char abssid[6];
 	unsigned char rates[NL80211_MAX_SUPP_RATES];
 	int n_rates = 0;
 	char *value = NULL, *sptr = NULL;
 	float rate;
 	int bintval;
-	unsigned int i;
-	unsigned long freq;
-	const struct chanmode *chanmode_selected = NULL;
-	static const struct chanmode chanmode[] = {
-		{ .name = "HT20",
-		  .width = NL80211_CHAN_WIDTH_20,
-		  .freq1_diff = 0,
-		  .chantype = NL80211_CHAN_HT20 },
-		{ .name = "HT40+",
-		  .width = NL80211_CHAN_WIDTH_40,
-		  .freq1_diff = 10,
-		  .chantype = NL80211_CHAN_HT40PLUS },
-		{ .name = "HT40-",
-		  .width = NL80211_CHAN_WIDTH_40,
-		  .freq1_diff = -10,
-		  .chantype = NL80211_CHAN_HT40MINUS },
-		{ .name = "NOHT",
-		  .width = NL80211_CHAN_WIDTH_20_NOHT,
-		  .freq1_diff = 0,
-		  .chantype = NL80211_CHAN_NO_HT },
-		{ .name = "5MHz",
-		  .width = NL80211_CHAN_WIDTH_5,
-		  .freq1_diff = 0,
-		  .chantype = -1 },
-		{ .name = "10MHz",
-		  .width = NL80211_CHAN_WIDTH_10,
-		  .freq1_diff = 0,
-		  .chantype = -1 },
-		{ .name = "80MHz",
-		  .width = NL80211_CHAN_WIDTH_80,
-		  .freq1_diff = 0,
-		  .chantype = -1 },
-	};
+	int parsed, err;
 
 	if (argc < 2)
 		return 1;
@@ -61,37 +30,16 @@ static int join_ibss(struct nl80211_state *state,
 	argv++;
 	argc--;
 
-	/* freq */
-	freq = strtoul(argv[0], &end, 10);
-	if (*end != '\0')
-		return 1;
+	err = parse_freqchan(&chandef, false, argc, argv, &parsed);
+	if (err)
+		return err;
 
-	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_FREQ, freq);
-	argv++;
-	argc--;
+	argv += parsed;
+	argc -= parsed;
 
-	if (argc) {
-		for (i = 0; i < ARRAY_SIZE(chanmode); i++) {
-			if (strcasecmp(chanmode[i].name, argv[0]) == 0) {
-				chanmode_selected = &chanmode[i];
-				break;
-			}
-		}
-		if (chanmode_selected) {
-			NLA_PUT_U32(msg, NL80211_ATTR_CHANNEL_WIDTH,
-				    chanmode_selected->width);
-			NLA_PUT_U32(msg, NL80211_ATTR_CENTER_FREQ1,
-				    get_cf1(chanmode_selected, freq));
-			if (chanmode_selected->chantype != -1)
-				NLA_PUT_U32(msg,
-					    NL80211_ATTR_WIPHY_CHANNEL_TYPE,
-					    chanmode_selected->chantype);
-
-			argv++;
-			argc--;
-		}
-
-	}
+	put_chandef(msg, &chandef);
+	if (err)
+		return err;
 
 	if (argc && strcmp(argv[0], "fixed-freq") == 0) {
 		NLA_PUT_FLAG(msg, NL80211_ATTR_FREQ_FIXED);
