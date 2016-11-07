@@ -446,31 +446,6 @@ static int join_mesh(struct nl80211_state *state,
 	unsigned char rates[NL80211_MAX_SUPP_RATES];
 	int bintval, dtim_period, n_rates = 0;
 	char *end, *value = NULL, *sptr = NULL;
-	unsigned int i;
-	unsigned long freq = 0;
-	const struct chanmode *chanmode_selected = NULL;
-	static const struct chanmode chanmode[] = {
-		{ .name = "HT20",
-		  .width = NL80211_CHAN_WIDTH_20,
-		  .freq1_diff = 0,
-		  .chantype = NL80211_CHAN_HT20 },
-		{ .name = "HT40+",
-		  .width = NL80211_CHAN_WIDTH_40,
-		  .freq1_diff = 10,
-		  .chantype = NL80211_CHAN_HT40PLUS },
-		{ .name = "HT40-",
-		  .width = NL80211_CHAN_WIDTH_40,
-		  .freq1_diff = -10,
-		  .chantype = NL80211_CHAN_HT40MINUS },
-		{ .name = "NOHT",
-		  .width = NL80211_CHAN_WIDTH_20_NOHT,
-		  .freq1_diff = 0,
-		  .chantype = NL80211_CHAN_NO_HT },
-		{ .name = "80MHz",
-		  .width = NL80211_CHAN_WIDTH_80,
-		  .freq1_diff = 0,
-		  .chantype = -1 },
-	};
 
 	if (argc < 1)
 		return 1;
@@ -481,40 +456,20 @@ static int join_mesh(struct nl80211_state *state,
 
 	/* freq */
 	if (argc > 1 && strcmp(argv[0], "freq") == 0) {
-		argv++;
-		argc--;
+		struct chandef chandef;
+		int err, parsed;
 
-		freq = strtoul(argv[0], &end, 10);
-		if (*end != '\0')
-			return 1;
-		NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_FREQ, freq);
+		err = parse_freqchan(&chandef, false, argc - 1, argv + 1,
+				     &parsed);
+		if (err)
+			return err;
 
-		argv++;
-		argc--;
-	}
+		argv += parsed + 1;
+		argc -= parsed + 1;
 
-	/* channel type */
-	if (argc) {
-		for (i = 0; i < ARRAY_SIZE(chanmode); i++) {
-			if (strcasecmp(chanmode[i].name, argv[0]) == 0) {
-				chanmode_selected = &chanmode[i];
-				break;
-			}
-		}
-
-		if (chanmode_selected) {
-			NLA_PUT_U32(msg, NL80211_ATTR_CHANNEL_WIDTH,
-				    chanmode_selected->width);
-			NLA_PUT_U32(msg, NL80211_ATTR_CENTER_FREQ1,
-				    get_cf1(chanmode_selected, freq));
-			if (chanmode_selected->chantype != -1)
-				NLA_PUT_U32(msg,
-					    NL80211_ATTR_WIPHY_CHANNEL_TYPE,
-					    chanmode_selected->chantype);
-
-			argv++;
-			argc--;
-		}
+		put_chandef(msg, &chandef);
+		if (err)
+			return err;
 	}
 
 	/* basic rates */
