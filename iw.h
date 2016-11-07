@@ -70,6 +70,14 @@ struct chanmode {
 	int chantype; /* for older kernel */
 };
 
+struct chandef {
+	enum nl80211_chan_width width;
+
+	unsigned int control_freq;
+	unsigned int center_freq1;
+	unsigned int center_freq2;
+};
+
 #define ARRAY_SIZE(ar) (sizeof(ar)/sizeof(ar[0]))
 #define DIV_ROUND_UP(x, y) (((x) + (y - 1)) / (y))
 
@@ -150,6 +158,8 @@ int parse_hex_mask(char *hexmask, unsigned char **result, size_t *result_len,
 unsigned char *parse_hex(char *hex, size_t *outlen);
 
 int parse_keys(struct nl_msg *msg, char **argv, int argc);
+int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv, int *parsed);
+int put_chandef(struct nl_msg *msg, struct chandef *chandef);
 
 void print_ht_mcs(const __u8 *mcs);
 void print_ampdu_length(__u8 exponent);
