@@ -13,6 +13,8 @@ static int handle_start_ap(struct nl80211_state *state,
 			   struct nl_msg *msg, int argc, char **argv,
 			   enum id_input id)
 {
+	struct chandef chandef;
+	int res, parsed;
 	char *end;
 	int val, len;
 	char buf[2304];
@@ -25,14 +27,15 @@ static int handle_start_ap(struct nl80211_state *state,
 	argv++;
 	argc--;
 
-	/* freq */
-	val = strtoul(argv[0], &end, 10);
-	if (*end != '\0')
-		return -EINVAL;
-
-	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_FREQ, val);
-	argv++;
-	argc--;
+	/* chandef */
+	res = parse_freqchan(&chandef, false, argc, argv, &parsed);
+	if (res)
+		return res;
+	argc -= parsed;
+	argv += parsed;
+	res = put_chandef(msg, &chandef);
+	if (res)
+		return res;
 
 	/* beacon interval */
 	val = strtoul(argv[0], &end, 10);
@@ -107,8 +110,9 @@ static int handle_start_ap(struct nl80211_state *state,
 }
 COMMAND(ap, start, "",
 	NL80211_CMD_NEW_BEACON, 0, CIB_NETDEV, handle_start_ap,
-	"<SSID> <freq in MHz> <beacon interval in TU> <DTIM period> <head>"
-	" <beacon head in hexadecimal> [<tail> <beacon tail in hexadecimal>]"
+	"<SSID> <control freq> [5|10|20|40|80|80+80|160] [<center1_freq> [<center2_freq>]]"
+	" <beacon interval in TU> <DTIM period> head"
+	" <beacon head in hexadecimal> [tail <beacon tail in hexadecimal>]"
 	" [key0:abcde d:1:6162636465]\n");
 
 static int handle_stop_ap(struct nl80211_state *state,
