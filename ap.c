@@ -55,6 +55,18 @@ static int handle_start_ap(struct nl80211_state *state,
 	argv++;
 	argc--;
 
+	if (strcmp(argv[0], "hidden-ssid") == 0) {
+		argc--;
+		argv++;
+		NLA_PUT_U32(msg, NL80211_ATTR_HIDDEN_SSID,
+			    NL80211_HIDDEN_SSID_ZERO_LEN);
+	} else if (strcmp(argv[0], "zeroed-ssid") == 0) {
+		argc--;
+		argv++;
+		NLA_PUT_U32(msg, NL80211_ATTR_HIDDEN_SSID,
+			    NL80211_HIDDEN_SSID_ZERO_CONTENTS);
+	}
+
 	/* beacon head must be provided */
 	if (strcmp(argv[0], "head") != 0)
 		return -1;
@@ -111,7 +123,7 @@ static int handle_start_ap(struct nl80211_state *state,
 COMMAND(ap, start, "",
 	NL80211_CMD_NEW_BEACON, 0, CIB_NETDEV, handle_start_ap,
 	"<SSID> <control freq> [5|10|20|40|80|80+80|160] [<center1_freq> [<center2_freq>]]"
-	" <beacon interval in TU> <DTIM period> head"
+	" <beacon interval in TU> <DTIM period> [hidden-ssid|zeroed-ssid] head"
 	" <beacon head in hexadecimal> [tail <beacon tail in hexadecimal>]"
 	" [key0:abcde d:1:6162636465]\n");
 
