@@ -469,8 +469,7 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 	return 2;
 }
 
-static int parse_freqs(struct chandef *chandef, int argc, char **argv,
-		       int *parsed)
+enum nl80211_chan_width str_to_bw(const char *str)
 {
 	static const struct {
 		const char *name;
@@ -484,25 +483,32 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
 		{ .name = "80+80", .val = NL80211_CHAN_WIDTH_80P80, },
 		{ .name = "160", .val = NL80211_CHAN_WIDTH_160, },
 	};
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(bwmap); i++) {
+		if (strcasecmp(bwmap[i].name, str) == 0)
+			return bwmap[i].val;
+	}
+
+	return NL80211_CHAN_WIDTH_20_NOHT;
+}
+
+static int parse_freqs(struct chandef *chandef, int argc, char **argv,
+		       int *parsed)
+{
 	uint32_t freq;
-	unsigned int i, bwval = NL80211_CHAN_WIDTH_20_NOHT;
 	char *end;
 
 	if (argc < 1)
 		return 0;
 
-	for (i = 0; i < ARRAY_SIZE(bwmap); i++) {
-		if (strcasecmp(bwmap[i].name, argv[0]) == 0) {
-			bwval = bwmap[i].val;
-			*parsed += 1;
-			break;
-		}
-	}
-	chandef->width = bwval;
+	chandef->width = str_to_bw(argv[0]);
 
 	/* First argument was not understood, give up gracefully. */
-	if (bwval == NL80211_CHAN_WIDTH_20_NOHT)
+	if (chandef->width == NL80211_CHAN_WIDTH_20_NOHT)
 		return 0;
+
+	*parsed += 1;
 
 	if (argc < 2)
 		return 0;
