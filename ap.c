@@ -69,7 +69,7 @@ static int handle_start_ap(struct nl80211_state *state,
 
 	/* beacon head must be provided */
 	if (strcmp(argv[0], "head") != 0)
-		return -1;
+		return 1;
 	argv++;
 	argc--;
 
