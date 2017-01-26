@@ -498,40 +498,61 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
 {
 	uint32_t freq;
 	char *end;
+	bool need_cf1 = false, need_cf2 = false;
 
 	if (argc < 1)
 		return 0;
 
 	chandef->width = str_to_bw(argv[0]);
 
-	/* First argument was not understood, give up gracefully. */
-	if (chandef->width == NL80211_CHAN_WIDTH_20_NOHT)
+	switch (chandef->width) {
+	case NL80211_CHAN_WIDTH_20_NOHT:
+		/* First argument was not understood, give up gracefully. */
 		return 0;
+	case NL80211_CHAN_WIDTH_20:
+	case NL80211_CHAN_WIDTH_5:
+	case NL80211_CHAN_WIDTH_10:
+		break;
+	case NL80211_CHAN_WIDTH_80P80:
+		need_cf2 = true;
+		/* fall through */
+	case NL80211_CHAN_WIDTH_40:
+	case NL80211_CHAN_WIDTH_80:
+	case NL80211_CHAN_WIDTH_160:
+		need_cf1 = true;
+		break;
+	}
 
 	*parsed += 1;
 
-	if (argc < 2)
+	if (!need_cf1)
 		return 0;
+
+	if (argc < 2)
+		return 1;
 
 	/* center freq 1 */
 	if (!*argv[1])
-		return 0;
+		return 1;
 	freq = strtoul(argv[1], &end, 10);
 	if (*end)
-		return 0;
+		return 1;
 	*parsed += 1;
 
 	chandef->center_freq1 = freq;
 
-	if (argc < 3)
+	if (!need_cf2)
 		return 0;
+
+	if (argc < 3)
+		return 1;
 
 	/* center freq 2 */
 	if (!*argv[2])
-		return 0;
+		return 1;
 	freq = strtoul(argv[2], &end, 10);
 	if (*end)
-		return 0;
+		return 1;
 	chandef->center_freq2 = freq;
 
 	*parsed += 1;
@@ -554,8 +575,11 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
  * arguments. argc/argv will be updated so that further arguments from the
  * command line can be parsed.
  *
- * Note that no integer argument may follow a frequency definition to allow the
- * user to skip the center frequency definition(s).
+ * Note that despite the fact that the function knows how many center freqs
+ * are needed, there's an ambiguity if the next argument after this is an
+ * integer argument, since the valid channel width values are interpreted
+ * as such, rather than a following argument. This can be avoided by the
+ * user by giving "NOHT" instead.
  *
  * The working specifier if chan is set are:
  *   <channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]
