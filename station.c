@@ -151,6 +151,8 @@ void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen)
 	if (rate > 0)
 		pos += snprintf(pos, buflen - (pos - buf),
 				"%d.%d MBit/s", rate / 10, rate % 10);
+	else
+		pos += snprintf(pos, buflen - (pos - buf), "(unknown)");
 
 	if (rinfo[NL80211_RATE_INFO_MCS])
 		pos += snprintf(pos, buflen - (pos - buf),
