@@ -271,6 +271,8 @@ static const char *commands[NL80211_CMD_MAX + 1] = {
 	[NL80211_CMD_DEL_NAN_FUNCTION] = "del_nan_function",
 	[NL80211_CMD_CHANGE_NAN_CONFIG] = "change_nan_config",
 	[NL80211_CMD_NAN_MATCH] = "nan_match",
+	[NL80211_CMD_SET_MULTICAST_TO_UNICAST] = "set_multicast_to_unicast",
+	[NL80211_CMD_UPDATE_CONNECT_PARAMS] = "update_connect_params",
 };
 
 static char cmdbuf[100];
