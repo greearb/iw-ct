@@ -190,7 +190,7 @@ static int parse_srf(char **argv, int argc, struct nl_msg *func_attrs)
 	struct nl_msg *srf_attrs;
 	int old_argc = argc;
 	unsigned char mac_addr[ETH_ALEN];
-	char *cur_mac, *sptr;
+	char *cur_mac, *sptr = NULL;
 
 	srf_attrs = nlmsg_alloc();
 	if (strcmp(argv[0], "include") == 0)
@@ -273,7 +273,7 @@ nla_put_failure:
 static void parse_match_filter(char *filter, struct nl_msg *func_attrs, int tx)
 {
 	struct nlattr *nl_filt;
-	char *cur_filt, *sptr;
+	char *cur_filt, *sptr = NULL;
 	int i = 0;
 
 	if (tx)
