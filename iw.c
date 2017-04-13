@@ -62,6 +62,11 @@ static int nl80211_init(struct nl80211_state *state)
 
 	nl_socket_set_buffer_size(state->nl_sock, 8192, 8192);
 
+	/* try to set NETLINK_EXT_ACK to 1, ignoring errors */
+	err = 1;
+	setsockopt(nl_socket_get_fd(state->nl_sock), SOL_NETLINK,
+		   NETLINK_EXT_ACK, &err, sizeof(err));
+
 	state->nl80211_id = genl_ctrl_resolve(state->nl_sock, "nl80211");
 	if (state->nl80211_id < 0) {
 		fprintf(stderr, "nl80211 not found.\n");
@@ -273,8 +278,35 @@ static int phy_lookup(char *name)
 static int error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 			 void *arg)
 {
+	struct nlmsghdr *nlh = (struct nlmsghdr *)err - 1;
+	int len = nlh->nlmsg_len;
+	struct nlattr *attrs;
+	struct nlattr *tb[NLMSGERR_ATTR_MAX + 1];
 	int *ret = arg;
+	int ack_len = sizeof(*nlh) + sizeof(int) + sizeof(*nlh);
+
 	*ret = err->error;
+
+	if (!(nlh->nlmsg_flags & NLM_F_ACK_TLVS))
+		return NL_STOP;
+
+	if (!(nlh->nlmsg_flags & NLM_F_CAPPED))
+		ack_len += err->msg.nlmsg_len - sizeof(*nlh);
+
+	if (len <= ack_len)
+		return NL_STOP;
+
+	attrs = (void *)((unsigned char *)nlh + ack_len);
+	len -= ack_len;
+
+	nla_parse(tb, NLMSGERR_ATTR_MAX, attrs, len, NULL);
+	if (tb[NLMSGERR_ATTR_MSG]) {
+		len = strnlen((char *)nla_data(tb[NLMSGERR_ATTR_MSG]),
+			      nla_len(tb[NLMSGERR_ATTR_MSG]));
+		fprintf(stderr, "kernel reports: %*s\n", len,
+			(char *)nla_data(tb[NLMSGERR_ATTR_MSG]));
+	}
+
 	return NL_STOP;
 }
 

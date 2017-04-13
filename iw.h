@@ -11,6 +11,26 @@
 #include "nl80211.h"
 #include "ieee80211.h"
 
+/* support for extack if compilation headers are too old */
+#ifndef NETLINK_EXT_ACK
+#define NETLINK_EXT_ACK 11
+enum nlmsgerr_attrs {
+	NLMSGERR_ATTR_UNUSED,
+	NLMSGERR_ATTR_MSG,
+	NLMSGERR_ATTR_OFFS,
+	NLMSGERR_ATTR_COOKIE,
+
+	__NLMSGERR_ATTR_MAX,
+	NLMSGERR_ATTR_MAX = __NLMSGERR_ATTR_MAX - 1
+};
+#endif
+#ifndef NLM_F_CAPPED
+#define NLM_F_CAPPED 0x100
+#endif
+#ifndef NLM_F_ACK_TLVS
+#define NLM_F_ACK_TLVS 0x200
+#endif
+
 #define ETH_ALEN 6
 #define VHT_MUMIMO_GROUP_LEN 24
 
