@@ -415,19 +415,19 @@ static void parse_nan_match(struct nlattr **attrs)
 	if (nla_get_u8(peer_func[NL80211_NAN_FUNC_TYPE]) ==
 	    NL80211_NAN_FUNC_PUBLISH) {
 		printf(
-		       "NAN(cookie=0x%llx): DiscoveryResult, peer_id=%d, local_id=%d, peer_mac=%s, ",
+		       "NAN(cookie=0x%llx): DiscoveryResult, peer_id=%d, local_id=%d, peer_mac=%s",
 		       cookie,
 		       nla_get_u8(peer_func[NL80211_NAN_FUNC_INSTANCE_ID]),
 		       nla_get_u8(local_func[NL80211_NAN_FUNC_INSTANCE_ID]),
 		       macbuf);
 		if (peer_func[NL80211_NAN_FUNC_SERVICE_INFO])
-			printf("info=%.*s",
+			printf(", info=%.*s",
 				   nla_len(peer_func[NL80211_NAN_FUNC_SERVICE_INFO]),
 			       (char *)nla_data(peer_func[NL80211_NAN_FUNC_SERVICE_INFO]));
 	} else if (nla_get_u8(peer_func[NL80211_NAN_FUNC_TYPE]) ==
 		   NL80211_NAN_FUNC_SUBSCRIBE) {
 		printf(
-		       "NAN(cookie=0x%llx): Replied, peer_id=%d, local_id=%d, peer_mac=%s\n",
+		       "NAN(cookie=0x%llx): Replied, peer_id=%d, local_id=%d, peer_mac=%s",
 		       cookie,
 		       nla_get_u8(peer_func[NL80211_NAN_FUNC_INSTANCE_ID]),
 		       nla_get_u8(local_func[NL80211_NAN_FUNC_INSTANCE_ID]),
@@ -435,18 +435,20 @@ static void parse_nan_match(struct nlattr **attrs)
 	} else if (nla_get_u8(peer_func[NL80211_NAN_FUNC_TYPE]) ==
 		   NL80211_NAN_FUNC_FOLLOW_UP) {
 		printf(
-		       "NAN(cookie=0x%llx): FollowUpReceive, peer_id=%d, local_id=%d, peer_mac=%s, ",
+		       "NAN(cookie=0x%llx): FollowUpReceive, peer_id=%d, local_id=%d, peer_mac=%s",
 		       cookie,
 		       nla_get_u8(peer_func[NL80211_NAN_FUNC_INSTANCE_ID]),
 		       nla_get_u8(local_func[NL80211_NAN_FUNC_INSTANCE_ID]),
 		       macbuf);
 		if (peer_func[NL80211_NAN_FUNC_SERVICE_INFO])
-			printf("info=%.*s",
+			printf(", info=%.*s",
 			       nla_len(peer_func[NL80211_NAN_FUNC_SERVICE_INFO]),
 			       (char *)nla_data(peer_func[NL80211_NAN_FUNC_SERVICE_INFO]));
 	} else {
-		printf("NaN: Malformed event\n");
+		printf("NaN: Malformed event");
 	}
+
+	printf("\n");
 }
 
 static int print_event(struct nl_msg *msg, void *arg)
