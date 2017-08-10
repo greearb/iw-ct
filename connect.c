@@ -16,6 +16,7 @@ static int iw_conn(struct nl80211_state *state,
 	char *end;
 	unsigned char bssid[6];
 	int freq;
+	int ret;
 
 	if (argc < 1)
 		return 1;
@@ -53,7 +54,27 @@ static int iw_conn(struct nl80211_state *state,
 	argv++;
 	argc--;
 
-	return parse_keys(msg, argv, argc);
+	ret = parse_keys(msg, argv, argc);
+	if (ret)
+		return ret;
+
+	argc -= 4;
+	argv += 4;
+
+	if (!argc)
+		return 0;
+
+	if (!strcmp(*argv, "mfp:req"))
+		NLA_PUT_U32(msg, NL80211_ATTR_USE_MFP, NL80211_MFP_REQUIRED);
+	else if (!strcmp(*argv, "mfp:opt"))
+		NLA_PUT_U32(msg, NL80211_ATTR_USE_MFP, NL80211_MFP_OPTIONAL);
+	else if (!strcmp(*argv, "mfp:no"))
+		NLA_PUT_U32(msg, NL80211_ATTR_USE_MFP, NL80211_MFP_NO);
+	else
+		return -EINVAL;
+
+	return 0;
+
  nla_put_failure:
 	return -ENOSPC;
 }
@@ -139,7 +160,7 @@ static int iw_connect(struct nl80211_state *state,
 	__do_listen_events(state, ARRAY_SIZE(cmds), cmds, &printargs);
 	return 0;
 }
-TOPLEVEL(connect, "[-w] <SSID> [<freq in MHz>] [<bssid>] [key 0:abcde d:1:6162636465]",
+TOPLEVEL(connect, "[-w] <SSID> [<freq in MHz>] [<bssid>] [key 0:abcde d:1:6162636465] [mfp:req/opt/no]",
 	0, 0, CIB_NETDEV, iw_connect,
 	"Join the network with the given SSID (and frequency, BSSID).\n"
 	"With -w, wait for the connect to finish or fail.");

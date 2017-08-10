@@ -429,7 +429,7 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 		char psk_keybuf[32];
 		int cipher_suite, akm_suite;
 
-		if (argc != 4)
+		if (argc < 4)
 			goto explain;
 
 		pos+=3;
