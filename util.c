@@ -273,6 +273,10 @@ static const char *commands[NL80211_CMD_MAX + 1] = {
 	[NL80211_CMD_NAN_MATCH] = "nan_match",
 	[NL80211_CMD_SET_MULTICAST_TO_UNICAST] = "set_multicast_to_unicast",
 	[NL80211_CMD_UPDATE_CONNECT_PARAMS] = "update_connect_params",
+	[NL80211_CMD_SET_PMK] = "set_pmk",
+	[NL80211_CMD_DEL_PMK] = "del_pmk",
+	[NL80211_CMD_PORT_AUTHORIZED] = "port_authorized",
+	[NL80211_CMD_RELOAD_REGDB] = "reload_regdb",
 };
 
 static char cmdbuf[100];
