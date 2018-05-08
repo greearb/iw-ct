@@ -43,6 +43,62 @@ static void print_power_mode(struct nlattr *a)
 	}
 }
 
+int parse_txq_stats(char *buf, int buflen, struct nlattr *tid_stats_attr, int header,
+		    int tid, const char *indent)
+{
+	struct nlattr *txqstats_info[NL80211_TXQ_STATS_MAX + 1], *txqinfo;
+	static struct nla_policy txqstats_policy[NL80211_TXQ_STATS_MAX + 1] = {
+		[NL80211_TXQ_STATS_BACKLOG_BYTES] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_BACKLOG_PACKETS] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_FLOWS] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_DROPS] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_ECN_MARKS] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_OVERLIMIT] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_COLLISIONS] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_TX_BYTES] = { .type = NLA_U32 },
+		[NL80211_TXQ_STATS_TX_PACKETS] = { .type = NLA_U32 },
+	};
+	char *pos = buf;
+	if (nla_parse_nested(txqstats_info, NL80211_TXQ_STATS_MAX, tid_stats_attr,
+			     txqstats_policy)) {
+		printf("failed to parse nested TXQ stats attributes!");
+		return 0;
+	}
+
+	if (header)
+		pos += snprintf(buf, buflen, "\n%s\t%s\tqsz-byt\t"
+				"qsz-pkt\tflows\tdrops\tmarks\toverlmt\t"
+				"hashcol\ttx-bytes\ttx-packets", indent,
+				tid >= 0 ? "TID" : "");
+
+	pos += snprintf(pos, buflen - (pos - buf), "\n%s\t", indent);
+	if (tid >= 0)
+		pos += snprintf(pos, buflen - (pos - buf), "%d", tid);
+
+#define PRINT_STAT(key, spacer) do {					 \
+		txqinfo = txqstats_info[NL80211_TXQ_STATS_ ## key];	 \
+		pos += snprintf(pos, buflen - (pos - buf), spacer);	 \
+		if (txqinfo)						 \
+			pos += snprintf(pos, buflen - (pos - buf), "%u", \
+					nla_get_u32(txqinfo));		 \
+	} while (0)
+
+
+	PRINT_STAT(BACKLOG_BYTES, "\t");
+	PRINT_STAT(BACKLOG_PACKETS, "\t");
+	PRINT_STAT(FLOWS, "\t");
+	PRINT_STAT(DROPS, "\t");
+	PRINT_STAT(ECN_MARKS, "\t");
+	PRINT_STAT(OVERLIMIT, "\t");
+	PRINT_STAT(COLLISIONS, "\t");
+	PRINT_STAT(TX_BYTES, "\t");
+	PRINT_STAT(TX_PACKETS, "\t\t");
+
+#undef PRINT_STAT
+
+	return pos - buf;
+
+}
 void parse_tid_stats(struct nlattr *tid_stats_attr)
 {
 	struct nlattr *stats_info[NL80211_TID_STATS_MAX + 1], *tidattr, *info;
@@ -51,8 +107,11 @@ void parse_tid_stats(struct nlattr *tid_stats_attr)
 		[NL80211_TID_STATS_TX_MSDU] = { .type = NLA_U64 },
 		[NL80211_TID_STATS_TX_MSDU_RETRIES] = { .type = NLA_U64 },
 		[NL80211_TID_STATS_TX_MSDU_FAILED] = { .type = NLA_U64 },
+		[NL80211_TID_STATS_TXQ_STATS] = { .type = NLA_NESTED },
 	};
 	int rem, i = 0;
+	char txqbuf[2000] = {}, *pos = txqbuf;
+	int buflen = sizeof(txqbuf), foundtxq = 0;
 
 	printf("\n\tMSDU:\n\t\tTID\trx\ttx\ttx retries\ttx failed");
 	nla_for_each_nested(tidattr, tid_stats_attr, rem) {
@@ -61,7 +120,7 @@ void parse_tid_stats(struct nlattr *tid_stats_attr)
 			printf("failed to parse nested stats attributes!");
 			return;
 		}
-		printf("\n\t\t%d", i++);
+		printf("\n\t\t%d", i);
 		info = stats_info[NL80211_TID_STATS_RX_MSDU];
 		if (info)
 			printf("\t%llu", (unsigned long long)nla_get_u64(info));
@@ -74,7 +133,17 @@ void parse_tid_stats(struct nlattr *tid_stats_attr)
 		info = stats_info[NL80211_TID_STATS_TX_MSDU_FAILED];
 		if (info)
 			printf("\t\t%llu", (unsigned long long)nla_get_u64(info));
+		info = stats_info[NL80211_TID_STATS_TXQ_STATS];
+		if (info) {
+			pos += parse_txq_stats(pos, buflen - (pos - txqbuf), info, !foundtxq, i, "\t");
+			foundtxq = 1;
+		}
+
+		i++;
 	}
+
+	if (foundtxq)
+		printf("\n\tTXQs:%s", txqbuf);
 }
 
 void parse_bss_param(struct nlattr *bss_param_attr)

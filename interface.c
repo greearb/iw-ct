@@ -441,6 +441,12 @@ static int print_iface_handler(struct nl_msg *msg, void *arg)
 		       indent, txp / 100, txp % 100);
 	}
 
+	if (tb_msg[NL80211_ATTR_TXQ_STATS]) {
+		char buf[150];
+		parse_txq_stats(buf, sizeof(buf), tb_msg[NL80211_ATTR_TXQ_STATS], 1, -1, indent);
+		printf("%s\tmulticast TXQ:%s\n", indent, buf);
+	}
+
 	return NL_SKIP;
 }
 

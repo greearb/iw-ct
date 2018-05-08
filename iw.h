@@ -183,6 +183,8 @@ unsigned char *parse_hex(char *hex, size_t *outlen);
 int parse_keys(struct nl_msg *msg, char **argv, int argc);
 int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv, int *parsed);
 enum nl80211_chan_width str_to_bw(const char *str);
+int parse_txq_stats(char *buf, int buflen, struct nlattr *tid_stats_attr, int header,
+		    int tid, const char *indent);
 int put_chandef(struct nl_msg *msg, struct chandef *chandef);
 
 void print_ht_mcs(const __u8 *mcs);
