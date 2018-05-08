@@ -686,6 +686,8 @@ broken_combination:
 		ext_feat_print(tb, NL80211_EXT_FEATURE_CONTROL_PORT_OVER_NL80211,
 			       "CONTROL_PORT_OVER_NL80211",
 			       "control port over nl80211");
+		ext_feat_print(tb, NL80211_EXT_FEATURE_TXQS,
+			       "TXQS", "FQ-CoDel-enabled intermediate TXQs");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
