@@ -2182,11 +2182,15 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 	}
 
 	if (bss[NL80211_BSS_INFORMATION_ELEMENTS] && show--) {
-		if (bss[NL80211_BSS_BEACON_IES])
+		struct nlattr *ies = bss[NL80211_BSS_INFORMATION_ELEMENTS];
+		struct nlattr *bcnies = bss[NL80211_BSS_BEACON_IES];
+
+		if (bss[NL80211_BSS_PRESP_DATA] ||
+		    nla_len(ies) != nla_len(bcnies) ||
+		    memcmp(nla_data(ies), nla_data(bcnies), nla_len(ies)))
 			printf("\tInformation elements from Probe Response "
 			       "frame:\n");
-		print_ies(nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
-			  nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
+		print_ies(nla_data(ies), nla_len(ies),
 			  params->unknown, params->type);
 	}
 	if (bss[NL80211_BSS_BEACON_IES] && show--) {
