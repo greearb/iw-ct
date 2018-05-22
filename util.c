@@ -518,12 +518,14 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 		switch (strlen(keydata)) {
 		case 10:
 			keydata = hex2bin(keydata, keybuf);
+			/* fall through */
 		case 5:
 			NLA_PUT_U32(msg, NL80211_KEY_CIPHER, 0x000FAC01);
 			keylen = 5;
 			break;
 		case 26:
 			keydata = hex2bin(keydata, keybuf);
+			/* fall through */
 		case 13:
 			NLA_PUT_U32(msg, NL80211_KEY_CIPHER, 0x000FAC05);
 			keylen = 13;

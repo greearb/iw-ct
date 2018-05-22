@@ -476,6 +476,7 @@ static int handle_scan(struct nl80211_state *state,
 				parse = DURATION;
 				break;
 			}
+			/* fall through - this is an error */
 		case DONE:
 			nlmsg_free(ssids);
 			nlmsg_free(freqs);
@@ -1852,6 +1853,7 @@ static inline void print_p2p(const uint8_t type, uint8_t len,
 				printf("\t * malformed device info\n");
 				break;
 			}
+
 			/* fall through for now */
 		case 0x00: /* status */
 		case 0x01: /* minor reason */

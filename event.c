@@ -350,6 +350,7 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_NEW_SCAN_RESULTS:
 		printf("scan finished:");
+		/* fall through */
 	case NL80211_CMD_SCAN_ABORTED:
 		if (gnlh->cmd == NL80211_CMD_SCAN_ABORTED)
 			printf("scan aborted:");

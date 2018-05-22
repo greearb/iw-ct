@@ -10,8 +10,8 @@ INSTALL ?= install
 CC ?= "gcc"
 
 CFLAGS ?= -O2 -g
-CFLAGS += -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common \
-	  -Werror-implicit-function-declaration -Wsign-compare
+CFLAGS += -Wall -Wextra -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common \
+	  -Werror-implicit-function-declaration -Wsign-compare -Wno-unused-parameter
 
 OBJS = iw.o genl.o event.o info.o phy.o \
 	interface.o ibss.o station.o survey.o util.o ocb.o \

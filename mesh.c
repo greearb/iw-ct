@@ -193,7 +193,7 @@ static void _print_s32_in_dBm(struct nlattr *a)
 
 
 /* The current mesh parameters */
-const static struct mesh_param_descr _mesh_param_descrs[] =
+static const struct mesh_param_descr _mesh_param_descrs[] =
 {
 	{"mesh_retry_timeout",
 	NL80211_MESHCONF_RETRY_TIMEOUT,
