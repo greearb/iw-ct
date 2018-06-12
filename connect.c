@@ -54,12 +54,9 @@ static int iw_conn(struct nl80211_state *state,
 	argv++;
 	argc--;
 
-	ret = parse_keys(msg, argv, argc);
+	ret = parse_keys(msg, &argv, &argc);
 	if (ret)
 		return ret;
-
-	argc -= 4;
-	argv += 4;
 
 	if (!argc)
 		return 0;
@@ -228,7 +225,7 @@ static int iw_auth(struct nl80211_state *state,
 	argv++;
 	argc--;
 
-	return parse_keys(msg, argv, argc);
+	return parse_keys(msg, &argv, &argc);
  nla_put_failure:
 	return -ENOSPC;
 }

@@ -115,7 +115,7 @@ static int join_ibss(struct nl80211_state *state,
 	argv++;
 	argc--;
 
-	return parse_keys(msg, argv, argc);
+	return parse_keys(msg, &argv, &argc);
  nla_put_failure:
 	return -ENOSPC;
 }

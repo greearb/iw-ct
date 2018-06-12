@@ -417,23 +417,23 @@ static int parse_cipher_suite(const char *cipher_str)
 	return -EINVAL;
 }
 
-int parse_keys(struct nl_msg *msg, char **argv, int argc)
+int parse_keys(struct nl_msg *msg, char **argv[], int *argc)
 {
 	struct nlattr *keys;
 	int i = 0;
 	bool have_default = false;
-	char *arg = *argv;
+	char *arg = **argv;
 	char keybuf[13];
 	int pos = 0;
 
-	if (!argc)
+	if (!*argc)
 		return 1;
 
 	if (!memcmp(&arg[pos], "psk", 3)) {
 		char psk_keybuf[32];
 		int cipher_suite, akm_suite;
 
-		if (argc < 4)
+		if (*argc < 4)
 			goto explain;
 
 		pos+=3;
@@ -451,9 +451,9 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 		NLA_PUT(msg, NL80211_ATTR_PMK, 32, psk_keybuf);
 		NLA_PUT_U32(msg, NL80211_ATTR_AUTH_TYPE, NL80211_AUTHTYPE_OPEN_SYSTEM);
 
-		argv++;
-		argc--;
-		arg = *argv;
+		*argv += 1;
+		*argc -= 1;
+		arg = **argv;
 
 		akm_suite = parse_akm_suite(arg);
 		if (akm_suite < 0)
@@ -461,9 +461,9 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 
 		NLA_PUT_U32(msg, NL80211_ATTR_AKM_SUITES, akm_suite);
 
-		argv++;
-		argc--;
-		arg = *argv;
+		*argv += 1;
+		*argc -= 1;
+		arg = **argv;
 
 		cipher_suite = parse_cipher_suite(arg);
 		if (cipher_suite < 0)
@@ -471,9 +471,9 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 
 		NLA_PUT_U32(msg, NL80211_ATTR_CIPHER_SUITES_PAIRWISE, cipher_suite);
 
-		argv++;
-		argc--;
-		arg = *argv;
+		*argv += 1;
+		*argc -= 1;
+		arg = **argv;
 
 		cipher_suite = parse_cipher_suite(arg);
 		if (cipher_suite < 0)
@@ -497,7 +497,7 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 		struct nlattr *key = nla_nest_start(msg, ++i);
 		char *keydata;
 
-		arg = *argv;
+		arg = **argv;
 		pos = 0;
 
 		if (!key)
@@ -541,15 +541,15 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 
 		NLA_PUT(msg, NL80211_KEY_DATA, keylen, keydata);
 
-		argv++;
-		argc--;
+		*argv += 1;
+		*argc -= 1;
 
 		/* one key should be TX key */
-		if (!have_default && !argc)
+		if (!have_default && !*argc)
 			NLA_PUT_FLAG(msg, NL80211_KEY_DEFAULT);
 
 		nla_nest_end(msg, key);
-	} while (argc);
+	} while (*argc);
 
 	nla_nest_end(msg, keys);
 
