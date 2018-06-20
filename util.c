@@ -481,6 +481,8 @@ int parse_keys(struct nl_msg *msg, char **argv, int argc)
 
 		NLA_PUT_U32(msg, NL80211_ATTR_CIPHER_SUITE_GROUP, cipher_suite);
 
+		*argv += 1;
+		*argc -= 1;
 		return 0;
 	}
 
