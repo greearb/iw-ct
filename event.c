@@ -244,9 +244,8 @@ static void parse_wowlan_wake_event(struct nlattr **attrs)
 		nla_for_each_nested(match,
 				    tb[NL80211_WOWLAN_TRIG_NET_DETECT_RESULTS],
 				    rem_nst) {
-			nla_parse(tb_match, NUM_NL80211_ATTR, nla_data(match),
-				  nla_len(match),
-				  NULL);
+			nla_parse_nested(tb_match, NL80211_ATTR_MAX, match,
+					 NULL);
 			printf("\t\tSSID: \"");
 			print_ssid_escaped(nla_len(tb_match[NL80211_ATTR_SSID]),
 					   nla_data(tb_match[NL80211_ATTR_SSID]));
