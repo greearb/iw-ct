@@ -308,6 +308,8 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_TID_STATS] = { .type = NLA_NESTED },
 		[NL80211_STA_INFO_BSS_PARAM] = { .type = NLA_NESTED },
 		[NL80211_STA_INFO_RX_DURATION] = { .type = NLA_U64 },
+		[NL80211_STA_INFO_ACK_SIGNAL] = {.type = NLA_U8 },
+		[NL80211_STA_INFO_ACK_SIGNAL_AVG] = { .type = NLA_U8 },
 	};
 	char *chain;
 
@@ -408,6 +410,14 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 	if (sinfo[NL80211_STA_INFO_RX_DURATION])
 		printf("\n\trx duration:\t%lld us",
 		       (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_RX_DURATION]));
+
+	if (sinfo[NL80211_STA_INFO_ACK_SIGNAL])
+		printf("\n\tlast ack signal:%d dBm",
+			(int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_ACK_SIGNAL]));
+
+	if (sinfo[NL80211_STA_INFO_ACK_SIGNAL_AVG])
+		printf("\n\tavg ack signal:\t%d dBm",
+			(int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_ACK_SIGNAL_AVG]));
 
 	if (sinfo[NL80211_STA_INFO_EXPECTED_THROUGHPUT]) {
 		uint32_t thr;
