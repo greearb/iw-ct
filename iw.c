@@ -594,8 +594,9 @@ int main(int argc, char **argv)
 		err = __handle_cmd(&nlstate, II_WDEV, argc, argv, &cmd);
 	} else {
 		int idx;
-		enum id_input idby = II_NONE;
+		enum id_input idby;
  detect:
+		idby = II_NONE;
 		if ((idx = if_nametoindex(argv[0])) != 0)
 			idby = II_NETDEV;
 		else if ((idx = phy_lookup(argv[0])) >= 0)
