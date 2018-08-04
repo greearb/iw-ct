@@ -2188,8 +2188,8 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 		struct nlattr *bcnies = bss[NL80211_BSS_BEACON_IES];
 
 		if (bss[NL80211_BSS_PRESP_DATA] ||
-		    nla_len(ies) != nla_len(bcnies) ||
-		    memcmp(nla_data(ies), nla_data(bcnies), nla_len(ies)))
+		    (bcnies && (nla_len(ies) != nla_len(bcnies) ||
+		    memcmp(nla_data(ies), nla_data(bcnies), nla_len(ies)))))
 			printf("\tInformation elements from Probe Response "
 			       "frame:\n");
 		print_ies(nla_data(ies), nla_len(ies),
