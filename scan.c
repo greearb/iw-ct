@@ -1853,8 +1853,7 @@ static inline void print_p2p(const uint8_t type, uint8_t len,
 				printf("\t * malformed device info\n");
 				break;
 			}
-
-			/* fall through for now */
+			/* fall through */
 		case 0x00: /* status */
 		case 0x01: /* minor reason */
 		case 0x03: /* device ID */
