@@ -808,6 +808,36 @@ static void print_auth(const uint8_t *data)
 		case 7:
 			printf("TDLS/TPK");
 			break;
+		case 8:
+			printf("SAE");
+			break;
+		case 9:
+			printf("FT/SAE");
+			break;
+		case 11:
+			printf("IEEE 802.1X/SUITE-B");
+			break;
+		case 12:
+			printf("IEEE 802.1X/SUITE-B-192");
+			break;
+		case 13:
+			printf("FT/IEEE 802.1X/SHA-384");
+			break;
+		case 14:
+			printf("FILS/SHA-256");
+			break;
+		case 15:
+			printf("FILS/SHA-384");
+			break;
+		case 16:
+			printf("FT/FILS/SHA-256");
+			break;
+		case 17:
+			printf("FT/FILS/SHA-384");
+			break;
+		case 18:
+			printf("OWE");
+			break;
 		default:
 			printf("%.02x-%.02x-%.02x:%d",
 				data[0], data[1] ,data[2], data[3]);
@@ -817,6 +847,9 @@ static void print_auth(const uint8_t *data)
 		switch (data[3]) {
 		case 1:
 			printf("OSEN");
+			break;
+		case 2:
+			printf("DPP");
 			break;
 		default:
 			printf("%.02x-%.02x-%.02x:%d",
