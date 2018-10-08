@@ -243,7 +243,7 @@ static int handle_reg_get(struct nl80211_state *state,
 	char *dump_args[] = { "reg", "dump" };
 	int err;
 
-	err = handle_cmd(state, CIB_NONE, 2, dump_args);
+	err = handle_cmd(state, II_NONE, 2, dump_args);
 	/*
 	 * dump might fail since it's not supported on older kernels,
 	 * in that case the handler is still registered already

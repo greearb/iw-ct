@@ -718,7 +718,7 @@ static int handle_info(struct nl80211_state *state,
 	char *feat_args[] = { "features", "-q" };
 	int err;
 
-	err = handle_cmd(state, CIB_NONE, 2, feat_args);
+	err = handle_cmd(state, II_NONE, 2, feat_args);
 	if (!err && nl80211_has_split_wiphy) {
 		nla_put_flag(msg, NL80211_ATTR_SPLIT_WIPHY_DUMP);
 		nlmsg_hdr(msg)->nlmsg_flags |= NLM_F_DUMP;
