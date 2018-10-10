@@ -1950,10 +1950,39 @@ static inline void print_hs20_ind(const uint8_t type, uint8_t len,
 		printf("\t\tUnexpected length: %i\n", len);
 }
 
+static void print_wifi_owe_tarns(const uint8_t type, uint8_t len,
+				 const uint8_t *data,
+				 const struct print_ies_data *ie_buffer)
+{
+	char mac_addr[20];
+	int ssid_len;
+
+	printf("\n");
+	if (len < 7)
+		return;
+
+	mac_addr_n2a(mac_addr, data);
+	printf("\t\tBSSID: %s\n", mac_addr);
+
+	ssid_len = data[6];
+	if (ssid_len > len - 7)
+		return;
+	printf("\t\tSSID: ");
+	print_ssid_escaped(ssid_len, data + 7);
+	printf("\n");
+
+	/* optional elements */
+	if (len >= ssid_len + 9) {
+		printf("\t\tBand Info: %u\n", data[ssid_len + 7]);
+		printf("\t\tChannel Info: %u\n", data[ssid_len + 8]);
+	}
+}
+
 static const struct ie_print wfa_printers[] = {
 	[9] = { "P2P", print_p2p, 2, 255, BIT(PRINT_SCAN), },
 	[16] = { "HotSpot 2.0 Indication", print_hs20_ind, 1, 255, BIT(PRINT_SCAN), },
 	[18] = { "HotSpot 2.0 OSEN", print_wifi_osen, 1, 255, BIT(PRINT_SCAN), },
+	[28] = { "OWE Transition Mode", print_wifi_owe_tarns, 7, 255, BIT(PRINT_SCAN), },
 };
 
 static void print_vendor(unsigned char len, unsigned char *data,
