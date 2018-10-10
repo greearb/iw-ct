@@ -5,7 +5,7 @@
 #include "iw.h"
 #include "nl80211.h"
 
-void mac_addr_n2a(char *mac_addr, unsigned char *arg)
+void mac_addr_n2a(char *mac_addr, const unsigned char *arg)
 {
 	int i, l;
 

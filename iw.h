@@ -175,7 +175,7 @@ int valid_handler(struct nl_msg *msg, void *arg);
 void register_handler(int (*handler)(struct nl_msg *, void *), void *data);
 
 int mac_addr_a2n(unsigned char *mac_addr, char *arg);
-void mac_addr_n2a(char *mac_addr, unsigned char *arg);
+void mac_addr_n2a(char *mac_addr, const unsigned char *arg);
 int parse_hex_mask(char *hexmask, unsigned char **result, size_t *result_len,
 		   unsigned char **mask);
 unsigned char *parse_hex(char *hex, size_t *outlen);
