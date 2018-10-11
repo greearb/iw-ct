@@ -130,6 +130,7 @@ struct chandef {
 	__COMMAND(&(__section ## _ ## section), name, #name, args, cmd, flags, 1, idby, handler, NULL, NULL)
 
 #define TOPLEVEL(_name, _args, _nlcmd, _flags, _idby, _handler, _help)	\
+	extern struct cmd __section ## _ ## _name; /* sparse */		\
 	struct cmd							\
 	__section ## _ ## _name						\
 	__attribute__((used)) __attribute__((section("__cmd")))	= {	\
@@ -142,6 +143,7 @@ struct chandef {
 		.help = (_help),					\
 	 }
 #define SECTION(_name)							\
+	extern struct cmd __section ## _ ## _name; /* sparse */		\
 	struct cmd __section ## _ ## _name				\
 	__attribute__((used)) __attribute__((section("__cmd"))) = {	\
 		.name = (#_name),					\

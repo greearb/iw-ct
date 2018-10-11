@@ -37,7 +37,7 @@ static int join_ibss(struct nl80211_state *state,
 	argv += parsed;
 	argc -= parsed;
 
-	put_chandef(msg, &chandef);
+	err = put_chandef(msg, &chandef);
 	if (err)
 		return err;
 

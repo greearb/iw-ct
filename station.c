@@ -99,7 +99,8 @@ int parse_txq_stats(char *buf, int buflen, struct nlattr *tid_stats_attr, int he
 	return pos - buf;
 
 }
-void parse_tid_stats(struct nlattr *tid_stats_attr)
+
+static void parse_tid_stats(struct nlattr *tid_stats_attr)
 {
 	struct nlattr *stats_info[NL80211_TID_STATS_MAX + 1], *tidattr, *info;
 	static struct nla_policy stats_policy[NL80211_TID_STATS_MAX + 1] = {
@@ -146,7 +147,7 @@ void parse_tid_stats(struct nlattr *tid_stats_attr)
 		printf("\n\tTXQs:%s", txqbuf);
 }
 
-void parse_bss_param(struct nlattr *bss_param_attr)
+static void parse_bss_param(struct nlattr *bss_param_attr)
 {
 	struct nlattr *bss_param_info[NL80211_STA_BSS_PARAM_MAX + 1], *info;
 	static struct nla_policy bss_poilcy[NL80211_STA_BSS_PARAM_MAX + 1] = {

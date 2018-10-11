@@ -467,7 +467,7 @@ static int join_mesh(struct nl80211_state *state,
 		argv += parsed + 1;
 		argc -= parsed + 1;
 
-		put_chandef(msg, &chandef);
+		err = put_chandef(msg, &chandef);
 		if (err)
 			return err;
 	}

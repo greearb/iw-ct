@@ -2003,7 +2003,8 @@ static void print_vendor(unsigned char len, unsigned char *data,
 		    wifiprinters[data[3]].name &&
 		    wifiprinters[data[3]].flags & BIT(ptype)) {
 			print_ie(&wifiprinters[data[3]],
-				 data[3], len - 4, data + 4, 0);
+				 data[3], len - 4, data + 4,
+				 NULL);
 			return;
 		}
 		if (!unknown)
@@ -2020,7 +2021,8 @@ static void print_vendor(unsigned char len, unsigned char *data,
 		    wfa_printers[data[3]].name &&
 		    wfa_printers[data[3]].flags & BIT(ptype)) {
 			print_ie(&wfa_printers[data[3]],
-				 data[3], len - 4, data + 4, 0);
+				 data[3], len - 4, data + 4,
+				 NULL);
 			return;
 		}
 		if (!unknown)
