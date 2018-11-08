@@ -101,7 +101,7 @@ version.c: version.sh $(patsubst %.o,%.c,$(VERSION_OBJS)) nl80211.h iw.h Makefil
 
 %.o: %.c iw.h nl80211.h
 	@$(NQ) ' CC  ' $@
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(Q)$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 ifeq ($(IW_ANDROID_BUILD),)
 iw:	$(OBJS)
