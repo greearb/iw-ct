@@ -609,6 +609,12 @@ broken_combination:
 			printf("\tDevice supports configuring vdev MAC-addr on create.\n");
 		if (features & NL80211_FEATURE_TDLS_CHANNEL_SWITCH)
 			printf("\tDevice supports TDLS channel switching\n");
+		if (features & NL80211_FEATURE_SCAN_RANDOM_MAC_ADDR)
+			printf("\tDevice supports randomizing MAC-addr in scans.\n");
+		if (features & NL80211_FEATURE_SCHED_SCAN_RANDOM_MAC_ADDR)
+			printf("\tDevice supports randomizing MAC-addr in sched scans.\n");
+		if (features & NL80211_FEATURE_ND_RANDOM_MAC_ADDR)
+			printf("\tDevice supports randomizing MAC-addr in net-detect scans.\n");
 	}
 
 	if (tb_msg[NL80211_ATTR_TDLS_SUPPORT])
