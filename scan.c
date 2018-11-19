@@ -69,35 +69,6 @@ union ieee80211_country_ie_triplet {
 	} __attribute__ ((packed)) ext;
 } __attribute__ ((packed));
 
-static int parse_random_mac_addr(struct nl_msg *msg, char *arg)
-{
-	char *a_addr, *a_mask, *sep;
-	unsigned char addr[ETH_ALEN], mask[ETH_ALEN];
-	char *addrs = arg + 9;
-
-	if (*addrs != '=')
-		return 0;
-
-	addrs++;
-	sep = strchr(addrs, '/');
-	a_addr = addrs;
-
-	if (!sep)
-		return 1;
-
-	*sep = 0;
-	a_mask = sep + 1;
-	if (mac_addr_a2n(addr, a_addr) || mac_addr_a2n(mask, a_mask))
-		return 1;
-
-	NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN, addr);
-	NLA_PUT(msg, NL80211_ATTR_MAC_MASK, ETH_ALEN, mask);
-
-	return 0;
- nla_put_failure:
-	return -ENOBUFS;
-}
-
 int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 {
 	struct nl_msg *matchset = NULL, *freqs = NULL, *ssids = NULL;
@@ -228,11 +199,9 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 			} else if (!strncmp(v[0], "randomise", 9) ||
 				   !strncmp(v[0], "randomize", 9)) {
 				flags |= NL80211_SCAN_FLAG_RANDOM_ADDR;
-				if (c > 0) {
-					err = parse_random_mac_addr(msg, v[0]);
-					if (err)
-						goto nla_put_failure;
-				}
+				err = parse_random_mac_addr(msg, v[0] + 9);
+				if (err)
+					goto nla_put_failure;
 			} else {
 				/* this element is not for us, so
 				 * return to continue parsing.
@@ -457,7 +426,7 @@ static int handle_scan(struct nl80211_state *state,
 			} else if (strncmp(argv[i], "randomise", 9) == 0 ||
 				   strncmp(argv[i], "randomize", 9) == 0) {
 				flags |= NL80211_SCAN_FLAG_RANDOM_ADDR;
-				err = parse_random_mac_addr(msg, argv[i]);
+				err = parse_random_mac_addr(msg, argv[i] + 9);
 				if (err)
 					goto nla_put_failure;
 				break;

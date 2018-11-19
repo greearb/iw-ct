@@ -1139,3 +1139,40 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq)
 
 	return cf1;
 }
+
+int parse_random_mac_addr(struct nl_msg *msg, char *addrs)
+{
+	char *a_addr, *a_mask, *sep;
+	unsigned char addr[ETH_ALEN], mask[ETH_ALEN];
+
+	if (!*addrs) {
+		/* randomise all but the multicast bit */
+		NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN,
+			"\x00\x00\x00\x00\x00\x00");
+		NLA_PUT(msg, NL80211_ATTR_MAC_MASK, ETH_ALEN,
+			"\x01\x00\x00\x00\x00\x00");
+		return 0;
+	}
+
+	if (*addrs != '=')
+		return 1;
+
+	addrs++;
+	sep = strchr(addrs, '/');
+	a_addr = addrs;
+
+	if (!sep)
+		return 1;
+
+	*sep = 0;
+	a_mask = sep + 1;
+	if (mac_addr_a2n(addr, a_addr) || mac_addr_a2n(mask, a_mask))
+		return 1;
+
+	NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN, addr);
+	NLA_PUT(msg, NL80211_ATTR_MAC_MASK, ETH_ALEN, mask);
+
+	return 0;
+ nla_put_failure:
+	return -ENOBUFS;
+}
