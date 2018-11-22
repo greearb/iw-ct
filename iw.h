@@ -171,6 +171,7 @@ __u32 listen_events(struct nl80211_state *state,
 int __prepare_listen_events(struct nl80211_state *state);
 __u32 __do_listen_events(struct nl80211_state *state,
 			 const int n_waits, const __u32 *waits,
+			 const int n_prints, const __u32 *prints,
 			 struct print_event_args *args);
 
 int valid_handler(struct nl_msg *msg, void *arg);

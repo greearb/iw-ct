@@ -154,7 +154,10 @@ static int iw_connect(struct nl80211_state *state,
 	 * Alas, the kernel doesn't do that (yet).
 	 */
 
-	__do_listen_events(state, ARRAY_SIZE(cmds), cmds, &printargs);
+	__do_listen_events(state,
+			   ARRAY_SIZE(cmds), cmds,
+			   ARRAY_SIZE(cmds), cmds,
+			   &printargs);
 	return 0;
 }
 TOPLEVEL(connect, "[-w] <SSID> [<freq in MHz>] [<bssid>] [key 0:abcde d:1:6162636465] [mfp:req/opt/no]",

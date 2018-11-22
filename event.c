@@ -795,8 +795,9 @@ static int print_event(struct nl_msg *msg, void *arg)
 }
 
 struct wait_event {
-	int n_cmds;
+	int n_cmds, n_prints;
 	const __u32 *cmds;
+	const __u32 *prints;
 	__u32 cmd;
 	struct print_event_args *pargs;
 };
@@ -807,12 +808,16 @@ static int wait_event(struct nl_msg *msg, void *arg)
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
 	int i;
 
-	for (i = 0; i < wait->n_cmds; i++) {
-		if (gnlh->cmd == wait->cmds[i]) {
-			wait->cmd = gnlh->cmd;
-			if (wait->pargs)
+	if (wait->pargs) {
+		for (i = 0; i < wait->n_prints; i++) {
+			if (gnlh->cmd == wait->prints[i])
 				print_event(msg, wait->pargs);
 		}
+	}
+
+	for (i = 0; i < wait->n_cmds; i++) {
+		if (gnlh->cmd == wait->cmds[i])
+			wait->cmd = gnlh->cmd;
 	}
 
 	return NL_SKIP;
@@ -874,6 +879,7 @@ int __prepare_listen_events(struct nl80211_state *state)
 
 __u32 __do_listen_events(struct nl80211_state *state,
 			 const int n_waits, const __u32 *waits,
+			 const int n_prints, const __u32 *prints,
 			 struct print_event_args *args)
 {
 	struct nl_cb *cb = nl_cb_alloc(iw_debug ? NL_CB_DEBUG : NL_CB_DEFAULT);
@@ -891,6 +897,8 @@ __u32 __do_listen_events(struct nl80211_state *state,
 	if (n_waits && waits) {
 		wait_ev.cmds = waits;
 		wait_ev.n_cmds = n_waits;
+		wait_ev.prints = prints;
+		wait_ev.n_prints = n_prints;
 		wait_ev.pargs = args;
 		register_handler(wait_event, &wait_ev);
 	} else
@@ -915,7 +923,7 @@ __u32 listen_events(struct nl80211_state *state,
 	if (ret)
 		return ret;
 
-	return __do_listen_events(state, n_waits, waits, NULL);
+	return __do_listen_events(state, n_waits, waits, 0, NULL, NULL);
 }
 
 static int print_events(struct nl80211_state *state,
@@ -954,7 +962,7 @@ static int print_events(struct nl80211_state *state,
 	if (ret)
 		return ret;
 
-	return __do_listen_events(state, 0, NULL, &args);
+	return __do_listen_events(state, 0, NULL, 0, NULL, &args);
 }
 TOPLEVEL(event, "[-t|-r] [-f]", 0, 0, CIB_NONE, print_events,
 	"Monitor events from the kernel.\n"
