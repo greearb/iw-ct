@@ -121,6 +121,7 @@ static int print_link_sta(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_RX_PACKETS] = { .type = NLA_U32 },
 		[NL80211_STA_INFO_TX_PACKETS] = { .type = NLA_U32 },
 		[NL80211_STA_INFO_SIGNAL] = { .type = NLA_U8 },
+		[NL80211_STA_INFO_RX_BITRATE] = { .type = NLA_NESTED },
 		[NL80211_STA_INFO_TX_BITRATE] = { .type = NLA_NESTED },
 		[NL80211_STA_INFO_LLID] = { .type = NLA_U16 },
 		[NL80211_STA_INFO_PLID] = { .type = NLA_U16 },
@@ -160,6 +161,12 @@ static int print_link_sta(struct nl_msg *msg, void *arg)
 		printf("\tsignal: %d dBm\n",
 			(int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_SIGNAL]));
 
+	if (sinfo[NL80211_STA_INFO_RX_BITRATE]) {
+		char buf[100];
+
+		parse_bitrate(sinfo[NL80211_STA_INFO_RX_BITRATE], buf, sizeof(buf));
+		printf("\trx bitrate: %s\n", buf);
+	}
 	if (sinfo[NL80211_STA_INFO_TX_BITRATE]) {
 		char buf[100];
 
