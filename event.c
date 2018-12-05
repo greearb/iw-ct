@@ -355,6 +355,205 @@ static void parse_nan_term(struct nlattr **attrs)
 	}
 }
 
+static const char *ftm_fail_reason(unsigned int reason)
+{
+#define FTM_FAIL_REASON(x) case NL80211_PMSR_FTM_FAILURE_##x: return #x
+	switch (reason) {
+	FTM_FAIL_REASON(UNSPECIFIED);
+	FTM_FAIL_REASON(NO_RESPONSE);
+	FTM_FAIL_REASON(REJECTED);
+	FTM_FAIL_REASON(WRONG_CHANNEL);
+	FTM_FAIL_REASON(PEER_NOT_CAPABLE);
+	FTM_FAIL_REASON(INVALID_TIMESTAMP);
+	FTM_FAIL_REASON(PEER_BUSY);
+	FTM_FAIL_REASON(BAD_CHANGED_PARAMS);
+	default:
+		return "unknown";
+	}
+}
+
+static void parse_pmsr_ftm_data(struct nlattr *data)
+{
+	struct nlattr *ftm[NL80211_PMSR_FTM_RESP_ATTR_MAX + 1];
+
+	printf("    FTM");
+	nla_parse_nested(ftm, NL80211_PMSR_FTM_RESP_ATTR_MAX, data, NULL);
+
+	if (ftm[NL80211_PMSR_FTM_RESP_ATTR_FAIL_REASON]) {
+		printf(" failed: %s (%d)",
+		       ftm_fail_reason(nla_get_u32(ftm[NL80211_PMSR_FTM_RESP_ATTR_FAIL_REASON])),
+		       nla_get_u32(ftm[NL80211_PMSR_FTM_RESP_ATTR_FAIL_REASON]));
+		if (ftm[NL80211_PMSR_FTM_RESP_ATTR_BUSY_RETRY_TIME])
+			printf(" retry after %us",
+			       nla_get_u32(ftm[NL80211_PMSR_FTM_RESP_ATTR_BUSY_RETRY_TIME]));
+		printf("\n");
+		return;
+	}
+
+	printf("\n");
+
+#define PFTM(tp, attr, sign)							\
+	do {									\
+		if (ftm[NL80211_PMSR_FTM_RESP_ATTR_##attr])			\
+			printf("      " #attr ": %lld\n",			\
+			       (sign long long)nla_get_##tp(			\
+				ftm[NL80211_PMSR_FTM_RESP_ATTR_##attr]));	\
+	} while (0)
+
+	PFTM(u32, BURST_INDEX, unsigned);
+	PFTM(u32, NUM_FTMR_ATTEMPTS, unsigned);
+	PFTM(u32, NUM_FTMR_SUCCESSES, unsigned);
+	PFTM(u8, NUM_BURSTS_EXP, unsigned);
+	PFTM(u8, BURST_DURATION, unsigned);
+	PFTM(u8, FTMS_PER_BURST, unsigned);
+	PFTM(u32, RSSI_AVG, signed);
+	PFTM(u32, RSSI_SPREAD, unsigned);
+	PFTM(u64, RTT_AVG, signed);
+	PFTM(u64, RTT_VARIANCE, unsigned);
+	PFTM(u64, RTT_SPREAD, unsigned);
+	PFTM(u64, DIST_AVG, signed);
+	PFTM(u64, DIST_VARIANCE, unsigned);
+	PFTM(u64, DIST_SPREAD, unsigned);
+
+	if (ftm[NL80211_PMSR_FTM_RESP_ATTR_TX_RATE]) {
+		char buf[100];
+
+		parse_bitrate(ftm[NL80211_PMSR_FTM_RESP_ATTR_TX_RATE],
+			      buf, sizeof(buf));
+		printf("      TX bitrate: %s\n", buf);
+	}
+
+	if (ftm[NL80211_PMSR_FTM_RESP_ATTR_RX_RATE]) {
+		char buf[100];
+
+		parse_bitrate(ftm[NL80211_PMSR_FTM_RESP_ATTR_RX_RATE],
+			      buf, sizeof(buf));
+		printf("      RX bitrate: %s\n", buf);
+	}
+
+	if (ftm[NL80211_PMSR_FTM_RESP_ATTR_LCI])
+		iw_hexdump("      LCI",
+			   nla_data(ftm[NL80211_PMSR_FTM_RESP_ATTR_LCI]),
+			   nla_len(ftm[NL80211_PMSR_FTM_RESP_ATTR_LCI]));
+
+	if (ftm[NL80211_PMSR_FTM_RESP_ATTR_CIVICLOC])
+		iw_hexdump("      civic location",
+			   nla_data(ftm[NL80211_PMSR_FTM_RESP_ATTR_CIVICLOC]),
+			   nla_len(ftm[NL80211_PMSR_FTM_RESP_ATTR_CIVICLOC]));
+}
+
+static const char *pmsr_status(unsigned int status)
+{
+#define PMSR_STATUS(x) case NL80211_PMSR_STATUS_##x: return #x
+	switch (status) {
+	PMSR_STATUS(SUCCESS);
+	PMSR_STATUS(REFUSED);
+	PMSR_STATUS(TIMEOUT);
+	PMSR_STATUS(FAILURE);
+	default:
+		return "unknown";
+	}
+#undef PMSR_STATUS
+}
+
+static void parse_pmsr_peer(struct nlattr *peer)
+{
+	struct nlattr *tb[NL80211_PMSR_PEER_ATTR_MAX + 1];
+	struct nlattr *resp[NL80211_PMSR_RESP_ATTR_MAX + 1];
+	struct nlattr *data[NL80211_PMSR_TYPE_MAX + 1];
+	char macbuf[6*3];
+	int err;
+
+	err = nla_parse_nested(tb, NL80211_PMSR_PEER_ATTR_MAX, peer, NULL);
+	if (err) {
+		printf("  Peer: failed to parse!\n");
+		return;
+	}
+
+	if (!tb[NL80211_PMSR_PEER_ATTR_ADDR]) {
+		printf("  Peer: no MAC address\n");
+		return;
+	}
+
+	mac_addr_n2a(macbuf, nla_data(tb[NL80211_PMSR_PEER_ATTR_ADDR]));
+	printf("  Peer %s:", macbuf);
+
+	if (!tb[NL80211_PMSR_PEER_ATTR_RESP]) {
+		printf(" no response!\n");
+		return;
+	}
+
+	err = nla_parse_nested(resp, NL80211_PMSR_RESP_ATTR_MAX,
+			       tb[NL80211_PMSR_PEER_ATTR_RESP], NULL);
+	if (err) {
+		printf(" failed to parse response!\n");
+		return;
+	}
+
+	if (resp[NL80211_PMSR_RESP_ATTR_STATUS])
+		printf(" status=%d (%s)",
+		       nla_get_u32(resp[NL80211_PMSR_RESP_ATTR_STATUS]),
+		       pmsr_status(nla_get_u32(resp[NL80211_PMSR_RESP_ATTR_STATUS])));
+	if (resp[NL80211_PMSR_RESP_ATTR_HOST_TIME])
+		printf(" @%llu",
+		       (unsigned long long)nla_get_u64(resp[NL80211_PMSR_RESP_ATTR_HOST_TIME]));
+	if (resp[NL80211_PMSR_RESP_ATTR_AP_TSF])
+		printf(" tsf=%llu",
+		       (unsigned long long)nla_get_u64(resp[NL80211_PMSR_RESP_ATTR_AP_TSF]));
+	if (resp[NL80211_PMSR_RESP_ATTR_FINAL])
+		printf(" (final)");
+
+	if (!resp[NL80211_PMSR_RESP_ATTR_DATA]) {
+		printf(" - no data!\n");
+		return;
+	}
+
+	printf("\n");
+
+	nla_parse_nested(data, NL80211_PMSR_TYPE_MAX,
+			 resp[NL80211_PMSR_RESP_ATTR_DATA], NULL);
+
+	if (data[NL80211_PMSR_TYPE_FTM])
+		parse_pmsr_ftm_data(data[NL80211_PMSR_TYPE_FTM]);
+}
+
+static void parse_pmsr_result(struct nlattr **tb,
+			      struct print_event_args *pargs)
+{
+	struct nlattr *pmsr[NL80211_PMSR_ATTR_MAX + 1];
+	struct nlattr *peer;
+	unsigned long long cookie;
+	int err, i;
+
+	if (!tb[NL80211_ATTR_COOKIE]) {
+		printf("Peer measurements: no cookie!\n");
+		return;
+	}
+	cookie = nla_get_u64(tb[NL80211_ATTR_COOKIE]);
+
+	if (!tb[NL80211_ATTR_PEER_MEASUREMENTS]) {
+		printf("Peer measurements: no measurement data!\n");
+		return;
+	}
+
+	err = nla_parse_nested(pmsr, NL80211_PMSR_ATTR_MAX,
+			       tb[NL80211_ATTR_PEER_MEASUREMENTS], NULL);
+	if (err) {
+		printf("Peer measurements: failed to parse measurement data!\n");
+		return;
+	}
+
+	if (!pmsr[NL80211_PMSR_ATTR_PEERS]) {
+		printf("Peer measurements: no peer data!\n");
+		return;
+	}
+
+	printf("Peer measurements (cookie %llu):\n", cookie);
+
+	nla_for_each_nested(peer, pmsr[NL80211_PMSR_ATTR_PEERS], i)
+		parse_pmsr_peer(peer);
+}
+
 static void parse_nan_match(struct nlattr **attrs)
 {
 	char macbuf[6*3];
@@ -776,6 +975,12 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_DEL_WIPHY:
 		printf("delete wiphy\n");
+		break;
+	case NL80211_CMD_PEER_MEASUREMENT_RESULT:
+		parse_pmsr_result(tb, args);
+		break;
+	case NL80211_CMD_PEER_MEASUREMENT_COMPLETE:
+		printf("peer measurement complete\n");
 		break;
 	case NL80211_CMD_DEL_NAN_FUNCTION:
 		parse_nan_term(tb);
