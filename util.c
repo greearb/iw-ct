@@ -277,6 +277,14 @@ static const char *commands[NL80211_CMD_MAX + 1] = {
 	[NL80211_CMD_DEL_PMK] = "del_pmk",
 	[NL80211_CMD_PORT_AUTHORIZED] = "port_authorized",
 	[NL80211_CMD_RELOAD_REGDB] = "reload_regdb",
+	[NL80211_CMD_EXTERNAL_AUTH] = "external_auth",
+	[NL80211_CMD_STA_OPMODE_CHANGED] = "sta_opmode_changed",
+	[NL80211_CMD_CONTROL_PORT_FRAME] = "control_port_frame",
+	[NL80211_CMD_GET_FTM_RESPONDER_STATS] = "get_ftm_responder_stats",
+	[NL80211_CMD_PEER_MEASUREMENT_START] = "peer_measurement_start",
+	[NL80211_CMD_PEER_MEASUREMENT_RESULT] = "peer_measurement_result",
+	[NL80211_CMD_PEER_MEASUREMENT_COMPLETE] = "peer_measurement_complete",
+	[NL80211_CMD_NOTIFY_RADAR] = "notify_radar",
 };
 
 static char cmdbuf[100];
