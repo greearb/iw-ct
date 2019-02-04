@@ -9,10 +9,14 @@ MKDIR ?= mkdir -p
 INSTALL ?= install
 CC ?= "gcc"
 
+cc-option = $(shell set -e ; $(CC) $(1) -c -x c /dev/null -o /dev/null >/dev/null 2>&1 && echo '$(1)')
+
+CFLAGS_EVAL := $(call cc-option,-Wstringop-overflow=4)
+
 CFLAGS ?= -O2 -g
 CFLAGS += -Wall -Wextra -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common \
 	  -Werror-implicit-function-declaration -Wsign-compare -Wno-unused-parameter \
-	  -Wstringop-overflow=4
+	  $(CFLAGS_EVAL)
 
 OBJS = iw.o genl.o event.o info.o phy.o \
 	interface.o ibss.o station.o survey.o util.o ocb.o \
