@@ -660,6 +660,7 @@ COMMAND(station, del, "<MAC address> [subtype <subtype>] [reason-code <code>]",
 static const struct cmd *station_set_plink;
 static const struct cmd *station_set_vlan;
 static const struct cmd *station_set_mesh_power_mode;
+static const struct cmd *station_set_airtime_weight;
 
 static const struct cmd *select_station_cmd(int argc, char **argv)
 {
@@ -671,6 +672,8 @@ static const struct cmd *select_station_cmd(int argc, char **argv)
 		return station_set_vlan;
 	if (strcmp(argv[1], "mesh_power_mode") == 0)
 		return station_set_mesh_power_mode;
+	if (strcmp(argv[1], "airtime_weight") == 0)
+		return station_set_airtime_weight;
 	return NULL;
 }
 
@@ -821,6 +824,54 @@ COMMAND_ALIAS(station, set, "<MAC address> mesh_power_mode "
 	handle_station_set_mesh_power_mode,
 	"Set link-specific mesh power mode for this station",
 	select_station_cmd, station_set_mesh_power_mode);
+
+static int handle_station_set_airtime_weight(struct nl80211_state *state,
+					     struct nl_msg *msg,
+					     int argc, char **argv,
+					     enum id_input id)
+{
+	unsigned char mac_addr[ETH_ALEN];
+	unsigned long airtime_weight = 0;
+	char *err = NULL;
+
+	if (argc < 3)
+		return 1;
+
+	if (mac_addr_a2n(mac_addr, argv[0])) {
+		fprintf(stderr, "invalid mac address\n");
+		return 2;
+	}
+	argc--;
+	argv++;
+
+	if (strcmp("airtime_weight", argv[0]) != 0)
+		return 1;
+	argc--;
+	argv++;
+
+	airtime_weight = strtoul(argv[0], &err, 0);
+	if (err && *err) {
+		fprintf(stderr, "invalid airtime weight\n");
+		return 2;
+	}
+	argc--;
+	argv++;
+
+	if (argc)
+		return 1;
+
+	NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN, mac_addr);
+	NLA_PUT_U16(msg, NL80211_ATTR_AIRTIME_WEIGHT, airtime_weight);
+
+	return 0;
+ nla_put_failure:
+	return -ENOBUFS;
+
+}
+COMMAND_ALIAS(station, set, "<MAC address> airtime_weight <weight>",
+	NL80211_CMD_SET_STATION, 0, CIB_NETDEV, handle_station_set_airtime_weight,
+	"Set airtime weight for this station.",
+	select_station_cmd, station_set_airtime_weight);
 
 static int handle_station_dump(struct nl80211_state *state,
 			       struct nl_msg *msg,
