@@ -694,6 +694,8 @@ broken_combination:
 			       "control port over nl80211");
 		ext_feat_print(tb, NL80211_EXT_FEATURE_TXQS,
 			       "TXQS", "FQ-CoDel-enabled intermediate TXQs");
+		ext_feat_print(tb, NL80211_EXT_FEATURE_AIRTIME_FAIRNESS,
+			       "AIRTIME_FAIRNESS", "airtime fairness scheduling");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
