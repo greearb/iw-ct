@@ -558,8 +558,8 @@ int handle_cmd(struct nl80211_state *state, enum id_input idby,
  * be how they get packed and that can be used to iterate the __cmd section
  * as well.
  */
-static struct cmd sizer1 __attribute__((used,section("__sizer"))) = {};
-static struct cmd sizer2 __attribute__((used,section("__sizer"))) = {};
+static struct cmd sizer1 __attribute__((section("__sizer"))) = {};
+static struct cmd sizer2 __attribute__((section("__sizer"))) = {};
 
 int main(int argc, char **argv)
 {
@@ -568,7 +568,7 @@ int main(int argc, char **argv)
 	const struct cmd *cmd = NULL;
 
 	/* calculate command size including padding */
-	cmd_size = labs((uintptr_t)&sizer2 - (uintptr_t)&sizer1);
+	cmd_size = labs((long)&sizer2 - (long)&sizer1);
 	/* strip off self */
 	argc--;
 	argv0 = *argv++;
