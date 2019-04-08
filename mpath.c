@@ -90,6 +90,45 @@ static int print_mpath_handler(struct nl_msg *msg, void *arg)
 	return NL_SKIP;
 }
 
+static int handle_mpath_probe(struct nl80211_state *state,
+			      struct nl_msg *msg,
+			      int argc, char **argv,
+			      enum id_input id)
+{
+	unsigned char dst[ETH_ALEN];
+	unsigned char *frame;
+	size_t frame_len;
+
+	if (argc < 3)
+		return 1;
+
+	if (mac_addr_a2n(dst, argv[0])) {
+		fprintf(stderr, "invalid mac address\n");
+		return 2;
+	}
+
+	if (strcmp("frame", argv[1]) != 0)
+		return 1;
+
+	frame = parse_hex(argv[2], &frame_len);
+	if (!frame) {
+		fprintf(stderr, "invalid frame pattern: %p\n", frame);
+		return 2;
+	}
+
+	NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN, dst);
+	NLA_PUT(msg, NL80211_ATTR_FRAME, frame_len, frame);
+
+	return 0;
+ nla_put_failure:
+	return -ENOBUFS;
+}
+COMMAND(mpath, probe, "<destination MAC address> frame <frame>",
+	NL80211_CMD_PROBE_MESH_LINK, 0, CIB_NETDEV, handle_mpath_probe,
+	"Inject ethernet frame to given peer overriding the next hop\n"
+	"lookup from mpath table.\n."
+	"Example: iw dev wlan0 mpath probe xx:xx:xx:xx:xx:xx frame 01:xx:xx:00\n");
+
 static int handle_mpath_get(struct nl80211_state *state,
 			    struct nl_msg *msg,
 			    int argc, char **argv,
