@@ -314,6 +314,12 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_ACK_SIGNAL_AVG] = { .type = NLA_U8 },
 	};
 	char *chain;
+	struct timeval now;
+	unsigned long long now_ms;
+
+	gettimeofday(&now, NULL);
+	now_ms = now.tv_sec * 1000;
+	now_ms += (now.tv_usec / 1000);
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
 		  genlmsg_attrlen(gnlh, 0), NULL);
@@ -561,7 +567,7 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		printf("\n\tassociated at:\t%llu ms",
 			 (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_ASSOC_AT_MS]));
 
-	printf("\n");
+	printf("\n\tcurrent time:\t%llu ms\n", now_ms);
 	return NL_SKIP;
 }
 
