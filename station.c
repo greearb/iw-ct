@@ -7,6 +7,7 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/msg.h>
 #include <netlink/attr.h>
+#include <time.h>
 
 #include "nl80211.h"
 #include "iw.h"
@@ -326,6 +327,12 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_ACK_SIGNAL_AVG] = { .type = NLA_U8 },
 	};
 	char *chain;
+	struct timeval now;
+	unsigned long long now_ms;
+
+	gettimeofday(&now, NULL);
+	now_ms = now.tv_sec * 1000;
+	now_ms += (now.tv_usec / 1000);
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
 		  genlmsg_attrlen(gnlh, 0), NULL);
@@ -571,12 +578,22 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 			nla_get_u32(sinfo[NL80211_STA_INFO_CONNECTED_TIME]));
 	if (sinfo[NL80211_STA_INFO_ASSOC_AT_BOOTTIME]) {
 		unsigned long long bt;
+		struct timespec now_ts;
+		unsigned long long boot_ns;
+		unsigned long long assoc_at_ms;
+
+		clock_gettime(CLOCK_BOOTTIME, &now_ts);
+		boot_ns = now_ts.tv_sec * 1000000000;
+		boot_ns += now_ts.tv_nsec;
+
 		bt = (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_ASSOC_AT_BOOTTIME]);
-		printf("\n\tassociated at:\t%llu.%.3llus [boottime]",
+		printf("\n\tassociated at [boottime]:\t%llu.%.3llus",
 		       bt/1000000000, (bt%1000000000)/1000000);
+		assoc_at_ms = now_ms - ((boot_ns - bt) / 1000000);
+		printf("\n\tassociated at:\t%llu ms", assoc_at_ms);
 	}
 
-	printf("\n");
+	printf("\n\tcurrent time:\t%llu ms\n", now_ms);
 	return NL_SKIP;
 }
 
