@@ -557,6 +557,9 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 	if (sinfo[NL80211_STA_INFO_CONNECTED_TIME])
 		printf("\n\tconnected time:\t%u seconds",
 			nla_get_u32(sinfo[NL80211_STA_INFO_CONNECTED_TIME]));
+	if (sinfo[NL80211_STA_INFO_ASSOC_AT_MS])
+		printf("\n\tassociated at:\t%llu ms",
+			 (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_ASSOC_AT_MS]));
 
 	printf("\n");
 	return NL_SKIP;
