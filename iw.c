@@ -89,12 +89,12 @@ static void nl80211_cleanup(struct nl80211_state *state)
 
 static int cmd_size;
 
-extern struct cmd __start___cmd;
-extern struct cmd __stop___cmd;
+extern struct cmd *__start___cmd[];
+extern struct cmd *__stop___cmd;
 
-#define for_each_cmd(_cmd)					\
-	for (_cmd = &__start___cmd; _cmd < &__stop___cmd;		\
-	     _cmd = (const struct cmd *)((char *)_cmd + cmd_size))
+#define for_each_cmd(_cmd, i)					\
+	for (i = 0; i < &__stop___cmd - __start___cmd; i++)	\
+		if ((_cmd = __start___cmd[i]))
 
 
 static void __usage_cmd(const struct cmd *cmd, char *indent, bool full)
@@ -192,6 +192,7 @@ static void usage(int argc, char **argv)
 	bool full = argc >= 0;
 	const char *sect_filt = NULL;
 	const char *cmd_filt = NULL;
+	unsigned int i, j;
 
 	if (argc > 0)
 		sect_filt = argv[0];
@@ -203,7 +204,7 @@ static void usage(int argc, char **argv)
 	usage_options();
 	printf("\t--version\tshow version (%s)\n", iw_version);
 	printf("Commands:\n");
-	for_each_cmd(section) {
+	for_each_cmd(section, i) {
 		if (section->parent)
 			continue;
 
@@ -213,7 +214,7 @@ static void usage(int argc, char **argv)
 		if (section->handler && !section->hidden)
 			__usage_cmd(section, "\t", full);
 
-		for_each_cmd(cmd) {
+		for_each_cmd(cmd, j) {
 			if (section != cmd->parent)
 				continue;
 			if (!cmd->handler || cmd->hidden)
@@ -350,7 +351,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 	struct nl_cb *s_cb;
 	struct nl_msg *msg;
 	signed long long devidx = 0;
-	int err, o_argc;
+	int err, o_argc, i;
 	const char *command, *section;
 	char *tmp, **o_argv;
 	enum command_identify_by command_idby = CIB_NONE;
@@ -402,7 +403,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 	argc--;
 	argv++;
 
-	for_each_cmd(sectcmd) {
+	for_each_cmd(sectcmd, i) {
 		if (sectcmd->parent)
 			continue;
 		/* ok ... bit of a hack for the dupe 'info' section */
@@ -420,7 +421,7 @@ static int __handle_cmd(struct nl80211_state *state, enum id_input idby,
 	if (argc > 0) {
 		command = *argv;
 
-		for_each_cmd(cmd) {
+		for_each_cmd(cmd, i) {
 			if (!cmd->handler)
 				continue;
 			if (cmd->parent != sectcmd)

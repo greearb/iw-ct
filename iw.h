@@ -106,8 +106,7 @@ struct chandef {
 
 #define __COMMAND(_section, _symname, _name, _args, _nlcmd, _flags, _hidden, _idby, _handler, _help, _sel)\
 	static struct cmd						\
-	__cmd ## _ ## _symname ## _ ## _handler ## _ ## _nlcmd ## _ ## _idby ## _ ## _hidden\
-	__attribute__((used)) __attribute__((section("__cmd")))	= {	\
+	__cmd ## _ ## _symname ## _ ## _handler ## _ ## _nlcmd ## _ ## _idby ## _ ## _hidden = {\
 		.name = (_name),					\
 		.args = (_args),					\
 		.cmd = (_nlcmd),					\
@@ -118,7 +117,10 @@ struct chandef {
 		.help = (_help),					\
 		.parent = _section,					\
 		.selector = (_sel),					\
-	}
+	};								\
+	static struct cmd *__cmd ## _ ## _symname ## _ ## _handler ## _ ## _nlcmd ## _ ## _idby ## _ ## _hidden ## _p \
+	__attribute__((used,section("__cmd"))) =			\
+	&__cmd ## _ ## _symname ## _ ## _handler ## _ ## _nlcmd ## _ ## _idby ## _ ## _hidden
 #define __ACMD(_section, _symname, _name, _args, _nlcmd, _flags, _hidden, _idby, _handler, _help, _sel, _alias)\
 	__COMMAND(_section, _symname, _name, _args, _nlcmd, _flags, _hidden, _idby, _handler, _help, _sel);\
 	static const struct cmd *_alias = &__cmd ## _ ## _symname ## _ ## _handler ## _ ## _nlcmd ## _ ## _idby ## _ ## _hidden
@@ -130,10 +132,7 @@ struct chandef {
 	__COMMAND(&(__section ## _ ## section), name, #name, args, cmd, flags, 1, idby, handler, NULL, NULL)
 
 #define TOPLEVEL(_name, _args, _nlcmd, _flags, _idby, _handler, _help)	\
-	extern struct cmd __section ## _ ## _name; /* sparse */		\
-	struct cmd							\
-	__section ## _ ## _name						\
-	__attribute__((used)) __attribute__((section("__cmd")))	= {	\
+	struct cmd __section ## _ ## _name = {				\
 		.name = (#_name),					\
 		.args = (_args),					\
 		.cmd = (_nlcmd),					\
@@ -141,14 +140,17 @@ struct chandef {
 		.idby = (_idby),					\
 		.handler = (_handler),					\
 		.help = (_help),					\
-	 }
+	 };								\
+	static struct cmd *__section ## _ ## _name ## _p		\
+	__attribute__((used,section("__cmd"))) = &__section ## _ ## _name
+
 #define SECTION(_name)							\
-	extern struct cmd __section ## _ ## _name; /* sparse */		\
-	struct cmd __section ## _ ## _name				\
-	__attribute__((used)) __attribute__((section("__cmd"))) = {	\
+	struct cmd __section ## _ ## _name = {				\
 		.name = (#_name),					\
 		.hidden = 1,						\
-	}
+	};								\
+	static struct cmd *__section ## _ ## _name ## _p		\
+	__attribute__((used,section("__cmd"))) = &__section ## _ ## _name
 
 #define DECLARE_SECTION(_name)						\
 	extern struct cmd __section ## _ ## _name;
