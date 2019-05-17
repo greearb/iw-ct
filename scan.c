@@ -355,11 +355,12 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 nla_put_failure:
 	if (match)
 		nla_nest_end(msg, match);
+out:
 	nlmsg_free(freqs);
 	nlmsg_free(matchset);
 	nlmsg_free(scan_plans);
+	nlmsg_free(ssids);
 
-out:
 	*argc = c;
 	*argv = v;
 	return err;
