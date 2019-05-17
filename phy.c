@@ -328,12 +328,15 @@ static int handle_cac(struct nl80211_state *state,
 	} else if (strcmp(argv[2], "freq") == 0) {
 		err = parse_freqchan(&chandef, false, argc - 3, argv + 3, NULL);
 	} else {
-		return 1;
+		err = 1;
+		goto err_out;
 	}
 
 	cac_trigger_argv = calloc(argc + 1, sizeof(char*));
-	if (!cac_trigger_argv)
-		return -ENOMEM;
+	if (!cac_trigger_argv) {
+		err = -ENOMEM;
+		goto err_out;
+	}
 
 	cac_trigger_argv[0] = argv[0];
 	cac_trigger_argv[1] = "cac";
@@ -341,9 +344,8 @@ static int handle_cac(struct nl80211_state *state,
 	memcpy(&cac_trigger_argv[3], &argv[2], (argc - 2) * sizeof(char*));
 
 	err = handle_cmd(state, id, argc + 1, cac_trigger_argv);
-	free(cac_trigger_argv);
 	if (err)
-		return err;
+		goto err_out;
 
 	cac_event.ret = 1;
 	cac_event.freq = chandef.control_freq;
@@ -357,7 +359,13 @@ static int handle_cac(struct nl80211_state *state,
 	while (cac_event.ret > 0)
 		nl_recvmsgs(state->nl_sock, radar_cb);
 
-	return 0;
+	err = 0;
+err_out:
+	if (radar_cb)
+		nl_cb_put(radar_cb);
+	if (cac_trigger_argv)
+		free(cac_trigger_argv);
+	return err;
 }
 TOPLEVEL(cac, "channel <channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]\n"
 	      "freq <freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]\n"
