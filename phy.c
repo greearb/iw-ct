@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <strings.h>
+#include <unistd.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -531,7 +532,7 @@ static int handle_netns(struct nl80211_state *state,
 			enum id_input id)
 {
 	char *end;
-	int fd;
+	int fd = -1;
 
 	if (argc < 1 || !*argv[0])
 		return 1;
@@ -559,6 +560,8 @@ static int handle_netns(struct nl80211_state *state,
 	return 1;
 
  nla_put_failure:
+	if (fd >= 0)
+		close(fd);
 	return -ENOBUFS;
 }
 COMMAND(set, netns, "{ <pid> | name <nsname> }",
