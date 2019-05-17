@@ -109,6 +109,8 @@ static int handle_mgmt_dump(struct nl80211_state *state,
 	for (i = 3; i < argc; i += 3) {
 		if (strcmp(argv[i], "count") == 0) {
 			count = 1 + atoi(argv[i + 1]);
+			if (count < 1)
+				count = 1;
 			break;
 		}
 
