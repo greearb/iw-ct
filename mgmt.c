@@ -69,9 +69,11 @@ static int register_mgmt_frame(struct nl80211_state *state,
 	NLA_PUT_U16(msg, NL80211_ATTR_FRAME_TYPE, type);
 	NLA_PUT(msg, NL80211_ATTR_FRAME_MATCH, match_len, match);
 
+	free(match);
 	return 0;
 
 nla_put_failure:
+	free(match);
 	return -ENOBUFS;
 }
 
