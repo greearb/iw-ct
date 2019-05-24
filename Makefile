@@ -18,7 +18,7 @@ CFLAGS += -Wall -Wextra -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-a
 	  -Werror-implicit-function-declaration -Wsign-compare -Wno-unused-parameter \
 	  $(CFLAGS_EVAL)
 
-OBJS = $(sort $(patsubst %.c,%.o,$(wildcard *.c)))
+OBJS = $(sort $(patsubst %.c,%.o,$(wildcard *.c))) version.o
 
 ALL = iw
 
