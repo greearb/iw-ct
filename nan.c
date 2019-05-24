@@ -204,6 +204,7 @@ static int parse_srf(char **argv, int argc, struct nl_msg *func_attrs)
 		unsigned char *srf;
 		size_t srf_len;
 		__u8 bf_idx;
+		int err;
 
 		argc--;
 		argv++;
@@ -231,6 +232,7 @@ static int parse_srf(char **argv, int argc, struct nl_msg *func_attrs)
 		while (cur_mac) {
 			if (mac_addr_a2n(mac_addr, cur_mac)) {
 				printf("mac format error %s\n", cur_mac);
+				free(srf);
 				return -EINVAL;
 			}
 
@@ -238,7 +240,10 @@ static int parse_srf(char **argv, int argc, struct nl_msg *func_attrs)
 			cur_mac = strtok_r(NULL, ";", &sptr);
 		}
 
-		NLA_PUT(srf_attrs, NL80211_NAN_SRF_BF, srf_len, srf);
+		err = nla_put(srf_attrs, NL80211_NAN_SRF_BF, srf_len, srf);
+		free(srf);
+		if (err)
+			goto nla_put_failure;
 		argv++;
 		argc--;
 	} else if  (strcmp(argv[0], "list") == 0) {
