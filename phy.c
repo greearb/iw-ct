@@ -330,8 +330,9 @@ static int handle_cac(struct nl80211_state *state,
 		err = parse_freqchan(&chandef, false, argc - 3, argv + 3, NULL);
 	} else {
 		err = 1;
-		goto err_out;
 	}
+	if (err)
+		goto err_out;
 
 	cac_trigger_argv = calloc(argc + 1, sizeof(char*));
 	if (!cac_trigger_argv) {
