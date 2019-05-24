@@ -18,7 +18,9 @@ CFLAGS += -Wall -Wextra -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-a
 	  -Werror-implicit-function-declaration -Wsign-compare -Wno-unused-parameter \
 	  $(CFLAGS_EVAL)
 
-OBJS = $(sort $(patsubst %.c,%.o,$(wildcard *.c))) version.o
+_OBJS := $(sort $(patsubst %.c,%.o,$(wildcard *.c)))
+VERSION_OBJS := $(filter-out version.o, $(_OBJS))
+OBJS := $(VERSION_OBJS) version.o
 
 ALL = iw
 
@@ -86,8 +88,6 @@ NQ=echo
 endif
 
 all: $(ALL)
-
-VERSION_OBJS := $(filter-out version.o, $(OBJS))
 
 version.c: version.sh $(patsubst %.o,%.c,$(VERSION_OBJS)) nl80211.h iw.h Makefile \
 		$(wildcard .git/index .git/refs/tags)
