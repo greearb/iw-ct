@@ -298,7 +298,7 @@ static int set_interface_meshparam(struct nl80211_state *state,
 	const struct mesh_param_descr *mdescr;
 	struct nlattr *container;
 	uint32_t ret;
-	int err;
+	int err = 2;
 
 	container = nla_nest_start(msg, NL80211_ATTR_MESH_PARAMS);
 	if (!container)
