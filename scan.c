@@ -1384,7 +1384,7 @@ static void print_tim(const uint8_t type, uint8_t len, const uint8_t *data,
 static void print_ibssatim(const uint8_t type, uint8_t len, const uint8_t *data,
 			   const struct print_ies_data *ie_buffer)
 {
-	printf(" %d TUs", (data[1] << 8) + data[0]);
+	printf(" %d TUs\n", (data[1] << 8) + data[0]);
 }
 
 static void print_vht_capa(const uint8_t type, uint8_t len, const uint8_t *data,
