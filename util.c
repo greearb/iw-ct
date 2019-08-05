@@ -285,6 +285,8 @@ static const char *commands[NL80211_CMD_MAX + 1] = {
 	[NL80211_CMD_PEER_MEASUREMENT_RESULT] = "peer_measurement_result",
 	[NL80211_CMD_PEER_MEASUREMENT_COMPLETE] = "peer_measurement_complete",
 	[NL80211_CMD_NOTIFY_RADAR] = "notify_radar",
+	[NL80211_CMD_UPDATE_OWE_INFO] = "update_owe_info",
+	[NL80211_CMD_PROBE_MESH_LINK] = "probe_mesh_link",
 };
 
 static char cmdbuf[100];
