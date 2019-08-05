@@ -679,6 +679,13 @@ broken_combination:
 		ext_feat_print(tb, TXQS, "FQ-CoDel-enabled intermediate TXQs");
 		ext_feat_print(tb, AIRTIME_FAIRNESS,
 			       "airtime fairness scheduling");
+		ext_feat_print(tb, AP_PMKSA_CACHING,
+			       "PMKSA caching supported in AP mode");
+		ext_feat_print(tb, SCHED_SCAN_BAND_SPECIFIC_RSSI_THOLD,
+			       "band specific RSSI thresholds for scheduled scan");
+		ext_feat_print(tb, EXT_KEY_ID, "extended key ID support");
+		ext_feat_print(tb, STA_TX_PWR, "TX power control per station");
+		ext_feat_print(tb, SAE_OFFLOAD, "SAE offload support");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
