@@ -1172,5 +1172,5 @@ static int print_events(struct nl80211_state *state,
 TOPLEVEL(event, "[-t|-r] [-f]", 0, 0, CIB_NONE, print_events,
 	"Monitor events from the kernel.\n"
 	"-t - print timestamp\n"
-	"-r - print relative timstamp\n"
+	"-r - print relative timestamp\n"
 	"-f - print full frame for auth/assoc etc.");
