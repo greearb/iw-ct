@@ -448,8 +448,6 @@ static int handle_scan(struct nl80211_state *state,
 			}
 			/* fall through - this is an error */
 		case DONE:
-			nlmsg_free(ssids);
-			nlmsg_free(freqs);
 			err = 1;
 			goto nla_put_failure;
 		case FREQ:
