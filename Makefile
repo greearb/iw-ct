@@ -94,7 +94,11 @@ version.c: version.sh $(patsubst %.o,%.c,$(VERSION_OBJS)) nl80211.h iw.h Makefil
 	@$(NQ) ' GEN ' $@
 	$(Q)./version.sh $@
 
-%.o: %.c iw.h nl80211.h
+nl80211-commands.inc: nl80211.h
+	@$(NQ) ' GEN ' $@
+	$(Q)sed 's%^\tNL80211_CMD_%%;t n;d;:n s%^\([^=]*\),.*%\t[NL80211_CMD_\1] = \"\L\1\",%;t;d' nl80211.h | grep -v "reserved" > $@
+
+%.o: %.c iw.h nl80211.h nl80211-commands.inc
 	@$(NQ) ' CC  ' $@
 	$(Q)$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
@@ -120,4 +124,4 @@ install: iw iw.8.gz
 	$(Q)$(INSTALL) -m 644 iw.8.gz $(DESTDIR)$(MANDIR)/man8/
 
 clean:
-	$(Q)rm -f iw *.o *~ *.gz version.c *-stamp
+	$(Q)rm -f iw *.o *~ *.gz version.c *-stamp nl80211-commands.inc
