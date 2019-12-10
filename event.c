@@ -668,6 +668,69 @@ static void parse_new_peer_candidate(struct nlattr **attrs)
 	printf("\n");
 }
 
+static void parse_set_interface(struct nlattr **attrs)
+{
+	printf("set interface");
+
+	if (attrs[NL80211_ATTR_IFTYPE]) {
+		printf(" type ");
+		switch (nla_get_u32(attrs[NL80211_ATTR_IFTYPE])) {
+		case NL80211_IFTYPE_STATION:
+			printf("station");
+			break;
+		case NL80211_IFTYPE_AP:
+			printf("access point");
+			break;
+		case NL80211_IFTYPE_MESH_POINT:
+			printf("mesh point");
+			break;
+		case NL80211_IFTYPE_ADHOC:
+			printf("IBSS");
+			break;
+		case NL80211_IFTYPE_MONITOR:
+			printf("monitor");
+			break;
+		case NL80211_IFTYPE_AP_VLAN:
+			printf("AP-VLAN");
+			break;
+		case NL80211_IFTYPE_WDS:
+			printf("WDS");
+			break;
+		case NL80211_IFTYPE_P2P_CLIENT:
+			printf("P2P-client");
+			break;
+		case NL80211_IFTYPE_P2P_GO:
+			printf("P2P-GO");
+			break;
+		case NL80211_IFTYPE_P2P_DEVICE:
+			printf("P2P-Device");
+			break;
+		case NL80211_IFTYPE_OCB:
+			printf("OCB");
+			break;
+		case NL80211_IFTYPE_NAN:
+			printf("NAN");
+			break;
+		default:
+			printf("unknown (%d)",
+			       nla_get_u32(attrs[NL80211_ATTR_IFTYPE]));
+			break;
+		}
+	}
+
+	if (attrs[NL80211_ATTR_MESH_ID]) {
+		printf(" meshid ");
+		print_ssid_escaped(nla_len(attrs[NL80211_ATTR_MESH_ID]),
+				   nla_data(attrs[NL80211_ATTR_MESH_ID]));
+	}
+
+	if (attrs[NL80211_ATTR_4ADDR]) {
+		printf(" use 4addr %d", nla_get_u8(attrs[NL80211_ATTR_4ADDR]));
+	}
+
+	printf("\n");
+}
+
 static int print_event(struct nl_msg *msg, void *arg)
 {
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
@@ -1009,6 +1072,9 @@ static int print_event(struct nl_msg *msg, void *arg)
 	}
 	case NL80211_CMD_NEW_PEER_CANDIDATE:
 		parse_new_peer_candidate(tb);
+		break;
+	case NL80211_CMD_SET_INTERFACE:
+		parse_set_interface(tb);
 		break;
 	default:
 		printf("unknown event %d (%s)\n",
