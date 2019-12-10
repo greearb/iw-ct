@@ -650,6 +650,24 @@ static void parse_nan_match(struct nlattr **attrs)
 	printf("\n");
 }
 
+static void parse_new_peer_candidate(struct nlattr **attrs)
+{
+	char macbuf[ETH_ALEN * 3];
+	int32_t sig_dbm;
+
+	printf("new peer candidate");
+	if (attrs[NL80211_ATTR_MAC]) {
+		mac_addr_n2a(macbuf, nla_data(attrs[NL80211_ATTR_MAC]));
+		printf(" %s", macbuf);
+	}
+	if (attrs[NL80211_ATTR_RX_SIGNAL_DBM]) {
+		sig_dbm = nla_get_u32(attrs[NL80211_ATTR_RX_SIGNAL_DBM]);
+		printf(" %d dBm", sig_dbm);
+	}
+
+	printf("\n");
+}
+
 static int print_event(struct nl_msg *msg, void *arg)
 {
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
@@ -989,6 +1007,9 @@ static int print_event(struct nl_msg *msg, void *arg)
 		parse_nan_match(tb);
 		break;
 	}
+	case NL80211_CMD_NEW_PEER_CANDIDATE:
+		parse_new_peer_candidate(tb);
+		break;
 	default:
 		printf("unknown event %d (%s)\n",
 		       gnlh->cmd, command_name(gnlh->cmd));
