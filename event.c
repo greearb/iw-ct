@@ -731,6 +731,29 @@ static void parse_set_interface(struct nlattr **attrs)
 	printf("\n");
 }
 
+static void parse_sta_opmode_changed(struct nlattr **attrs)
+{
+	char macbuf[ETH_ALEN*3];
+
+	printf("sta opmode changed");
+
+	if (attrs[NL80211_ATTR_MAC]) {
+		mac_addr_n2a(macbuf, nla_data(attrs[NL80211_ATTR_MAC]));
+		printf(" %s", macbuf);
+	}
+
+	if (attrs[NL80211_ATTR_SMPS_MODE])
+		printf(" smps mode %d", nla_get_u8(attrs[NL80211_ATTR_SMPS_MODE]));
+
+	if (attrs[NL80211_ATTR_CHANNEL_WIDTH])
+		printf(" chan width %d", nla_get_u8(attrs[NL80211_ATTR_CHANNEL_WIDTH]));
+
+	if (attrs[NL80211_ATTR_NSS])
+		printf(" nss %d", nla_get_u8(attrs[NL80211_ATTR_NSS]));
+
+	printf("\n");
+}
+
 static int print_event(struct nl_msg *msg, void *arg)
 {
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
@@ -1075,6 +1098,9 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_SET_INTERFACE:
 		parse_set_interface(tb);
+		break;
+	case NL80211_CMD_STA_OPMODE_CHANGED:
+		parse_sta_opmode_changed(tb);
 		break;
 	default:
 		printf("unknown event %d (%s)\n",
