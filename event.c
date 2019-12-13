@@ -1089,10 +1089,9 @@ static int print_event(struct nl_msg *msg, void *arg)
 	case NL80211_CMD_DEL_NAN_FUNCTION:
 		parse_nan_term(tb);
 		break;
-	case NL80211_CMD_NAN_MATCH: {
+	case NL80211_CMD_NAN_MATCH:
 		parse_nan_match(tb);
 		break;
-	}
 	case NL80211_CMD_NEW_PEER_CANDIDATE:
 		parse_new_peer_candidate(tb);
 		break;
