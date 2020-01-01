@@ -676,7 +676,17 @@ broken_combination:
 		ext_feat_print(tb, DFS_OFFLOAD, "DFS offload");
 		ext_feat_print(tb, CONTROL_PORT_OVER_NL80211,
 			       "control port over nl80211");
+		ext_feat_print(tb, ACK_SIGNAL_SUPPORT,
+			       "ack signal level support");
 		ext_feat_print(tb, TXQS, "FQ-CoDel-enabled intermediate TXQs");
+		ext_feat_print(tb, SCAN_RANDOM_SN,
+			       "use random sequence numbers in scans");
+		ext_feat_print(tb, SCAN_MIN_PREQ_CONTENT,
+			       "use probe request with only rate IEs in scans");
+		ext_feat_print(tb, CAN_REPLACE_PTK0,
+			       "can safely replace PTK 0 when rekeying");
+		ext_feat_print(tb, ENABLE_FTM_RESPONDER,
+			       "enable FTM (Fine Time Measurement) responder");
 		ext_feat_print(tb, AIRTIME_FAIRNESS,
 			       "airtime fairness scheduling");
 		ext_feat_print(tb, AP_PMKSA_CACHING,
