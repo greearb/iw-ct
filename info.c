@@ -679,6 +679,10 @@ broken_combination:
 		ext_feat_print(tb, ACK_SIGNAL_SUPPORT,
 			       "ack signal level support");
 		ext_feat_print(tb, TXQS, "FQ-CoDel-enabled intermediate TXQs");
+		ext_feat_print(tb, AIRTIME_FAIRNESS,
+			       "airtime fairness scheduling");
+		ext_feat_print(tb, AQL,
+			       "Airtime Queue Limits (AQL)");
 		ext_feat_print(tb, SCAN_RANDOM_SN,
 			       "use random sequence numbers in scans");
 		ext_feat_print(tb, SCAN_MIN_PREQ_CONTENT,
@@ -687,8 +691,6 @@ broken_combination:
 			       "can safely replace PTK 0 when rekeying");
 		ext_feat_print(tb, ENABLE_FTM_RESPONDER,
 			       "enable FTM (Fine Time Measurement) responder");
-		ext_feat_print(tb, AIRTIME_FAIRNESS,
-			       "airtime fairness scheduling");
 		ext_feat_print(tb, AP_PMKSA_CACHING,
 			       "PMKSA caching supported in AP mode");
 		ext_feat_print(tb, SCHED_SCAN_BAND_SPECIFIC_RSSI_THOLD,
@@ -696,6 +698,7 @@ broken_combination:
 		ext_feat_print(tb, EXT_KEY_ID, "extended key ID support");
 		ext_feat_print(tb, STA_TX_PWR, "TX power control per station");
 		ext_feat_print(tb, SAE_OFFLOAD, "SAE offload support");
+		ext_feat_print(tb, VLAN_OFFLOAD, "VLAN offload support");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
