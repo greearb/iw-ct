@@ -1026,6 +1026,11 @@ static int print_event(struct nl_msg *msg, void *arg)
 			nla_get_u32(tb[NL80211_ATTR_WIPHY_FREQ]),
 			(unsigned long long)nla_get_u64(tb[NL80211_ATTR_COOKIE]));
 		break;
+	case NL80211_CMD_FRAME_WAIT_CANCEL:
+		printf("frame wait cancel on freq %d (cookie %llx)\n",
+			nla_get_u32(tb[NL80211_ATTR_WIPHY_FREQ]),
+			(unsigned long long)nla_get_u64(tb[NL80211_ATTR_COOKIE]));
+		break;
 	case NL80211_CMD_NOTIFY_CQM:
 		parse_cqm_event(tb);
 		break;
@@ -1118,6 +1123,9 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_STA_OPMODE_CHANGED:
 		parse_sta_opmode_changed(tb);
+		break;
+	case NL80211_CMD_STOP_AP:
+		printf("stop ap\n");
 		break;
 	default:
 		printf("unknown event %d (%s)\n",
