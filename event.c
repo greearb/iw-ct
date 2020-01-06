@@ -668,9 +668,22 @@ static void parse_new_peer_candidate(struct nlattr **attrs)
 	printf("\n");
 }
 
-static void parse_set_interface(struct nlattr **attrs)
+static void parse_recv_interface(struct nlattr **attrs, int command)
 {
-	printf("set interface");
+	switch (command) {
+	case NL80211_CMD_NEW_INTERFACE:
+		printf("new interface");
+		break;
+	case NL80211_CMD_DEL_INTERFACE:
+		printf("del interface");
+		break;
+	case NL80211_CMD_SET_INTERFACE:
+		printf("set interface");
+		break;
+	default:
+		printf("unknown interface command (%i) received\n", command);
+		return;
+	}
 
 	if (attrs[NL80211_ATTR_IFTYPE]) {
 		printf(" type ");
@@ -787,8 +800,11 @@ static int print_event(struct nl_msg *msg, void *arg)
 		  genlmsg_attrlen(gnlh, 0), NULL);
 
 	if (tb[NL80211_ATTR_IFINDEX] && tb[NL80211_ATTR_WIPHY]) {
-		if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), ifname);
-		printf("%s (phy #%d): ", ifname, nla_get_u32(tb[NL80211_ATTR_WIPHY]));
+		/* if_indextoname may fails on delete interface/wiphy event */
+		if(if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), ifname))
+			printf("%s (phy #%d): ", ifname, nla_get_u32(tb[NL80211_ATTR_WIPHY]));
+		else
+			printf("phy #%d: ", nla_get_u32(tb[NL80211_ATTR_WIPHY]));
 	} else if (tb[NL80211_ATTR_WDEV] && tb[NL80211_ATTR_WIPHY]) {
 		printf("wdev 0x%llx (phy #%d): ",
 			(unsigned long long)nla_get_u64(tb[NL80211_ATTR_WDEV]),
@@ -1095,8 +1111,10 @@ static int print_event(struct nl_msg *msg, void *arg)
 	case NL80211_CMD_NEW_PEER_CANDIDATE:
 		parse_new_peer_candidate(tb);
 		break;
+	case NL80211_CMD_NEW_INTERFACE:
 	case NL80211_CMD_SET_INTERFACE:
-		parse_set_interface(tb);
+	case NL80211_CMD_DEL_INTERFACE:
+		parse_recv_interface(tb, gnlh->cmd);
 		break;
 	case NL80211_CMD_STA_OPMODE_CHANGED:
 		parse_sta_opmode_changed(tb);
