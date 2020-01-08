@@ -767,6 +767,83 @@ static void parse_sta_opmode_changed(struct nlattr **attrs)
 	printf("\n");
 }
 
+static void parse_ch_switch_notify(struct nlattr **attrs, int command)
+{
+	switch (command) {
+	case NL80211_CMD_CH_SWITCH_STARTED_NOTIFY:
+		printf("channel switch started");
+		break;
+	case NL80211_CMD_CH_SWITCH_NOTIFY:
+		printf("channel switch");
+		break;
+	default:
+		printf("unknown channel switch command (%i) received\n", command);
+		return;
+	}
+
+	if (attrs[NL80211_ATTR_CH_SWITCH_COUNT])
+		printf(" (count=%d)", nla_get_u32(attrs[NL80211_ATTR_CH_SWITCH_COUNT]));
+
+	if (attrs[NL80211_ATTR_WIPHY_FREQ])
+		printf(" freq=%d", nla_get_u32(attrs[NL80211_ATTR_WIPHY_FREQ]));
+
+	if (attrs[NL80211_ATTR_CHANNEL_WIDTH]) {
+		printf(" width=");
+		switch(nla_get_u32(attrs[NL80211_ATTR_CHANNEL_WIDTH])) {
+		case NL80211_CHAN_WIDTH_20_NOHT:
+		case NL80211_CHAN_WIDTH_20:
+			printf("\"20 MHz\"");
+			break;
+		case NL80211_CHAN_WIDTH_40:
+			printf("\"40 MHz\"");
+			break;
+		case NL80211_CHAN_WIDTH_80:
+			printf("\"80 MHz\"");
+			break;
+		case NL80211_CHAN_WIDTH_80P80:
+			printf("\"80+80 MHz\"");
+			break;
+		case NL80211_CHAN_WIDTH_160:
+			printf("\"160 MHz\"");
+			break;
+		case NL80211_CHAN_WIDTH_5:
+			printf("\"5 MHz\"");
+			break;
+		case NL80211_CHAN_WIDTH_10:
+			printf("\"10 MHz\"");
+			break;
+		default:
+			printf("\"unknown\"");
+		}
+	}
+
+	if (attrs[NL80211_ATTR_WIPHY_CHANNEL_TYPE]) {
+		printf(" type=");
+		switch(nla_get_u32(attrs[NL80211_ATTR_WIPHY_CHANNEL_TYPE])) {
+		case NL80211_CHAN_NO_HT:
+			printf("\"No HT\"");
+			break;
+		case NL80211_CHAN_HT20:
+			printf("\"HT20\"");
+			break;
+		case NL80211_CHAN_HT40MINUS:
+			printf("\"HT40-\"");
+			break;
+		case NL80211_CHAN_HT40PLUS:
+			printf("\"HT40+\"");
+			break;
+		}
+	}
+
+	if (attrs[NL80211_ATTR_CENTER_FREQ1])
+		printf(" freq1=%d", nla_get_u32(attrs[NL80211_ATTR_CENTER_FREQ1]));
+
+	if (attrs[NL80211_ATTR_CENTER_FREQ2])
+		printf(" freq2=%d", nla_get_u32(attrs[NL80211_ATTR_CENTER_FREQ2]));
+
+	printf("\n");
+}
+
 static int print_event(struct nl_msg *msg, void *arg)
 {
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
@@ -1126,6 +1203,10 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_STOP_AP:
 		printf("stop ap\n");
+		break;
+	case NL80211_CMD_CH_SWITCH_STARTED_NOTIFY:
+	case NL80211_CMD_CH_SWITCH_NOTIFY:
+		parse_ch_switch_notify(tb, gnlh->cmd);
 		break;
 	default:
 		printf("unknown event %d (%s)\n",
