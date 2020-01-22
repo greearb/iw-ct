@@ -582,6 +582,61 @@ static void print_supprates(const uint8_t type, uint8_t len,
 	printf("\n");
 }
 
+static void print_rm_enabled_capabilities(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
+{
+	__u64 capa = data[0] |
+		     data[1] << 8 |
+		     data[2] << 16 |
+		     data[3] << 24 |
+		     ((__u64) data[4]) << 32;
+
+	printf("\n");
+	printf("\t\tCapabilities: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+							     data[0], data[1],
+							     data[2], data[3],
+							     data[4]);
+
+#define PRINT_RM_CAPA(_bit, _str) \
+	do { \
+		if (capa & BIT(_bit)) \
+			printf("\t\t\t" _str "\n"); \
+	} while (0)
+
+	PRINT_RM_CAPA(0, "Link Measurement");
+	PRINT_RM_CAPA(1, "Neighbor Report");
+	PRINT_RM_CAPA(2, "Parallel Measurements");
+	PRINT_RM_CAPA(3, "Repeated Measurements");
+	PRINT_RM_CAPA(4, "Beacon Passive Measurement");
+	PRINT_RM_CAPA(5, "Beacon Active");
+	PRINT_RM_CAPA(6, "Beacon Table Measurement");
+	PRINT_RM_CAPA(7, "Beacon Measurement Reporting Conditions");
+	PRINT_RM_CAPA(8, "Frame Measurement");
+	PRINT_RM_CAPA(9, "Channel Load");
+	PRINT_RM_CAPA(10, "Noise Histogram Measurement");
+	PRINT_RM_CAPA(11, "Statistics Measurement");
+	PRINT_RM_CAPA(12, "LCI Measurement");
+	PRINT_RM_CAPA(13, "LCI Azimuth");
+	PRINT_RM_CAPA(14, "Transmit Stream/Category Measurement");
+	PRINT_RM_CAPA(15, "Triggered Transmit Stream/Category");
+	PRINT_RM_CAPA(16, "AP Channel Report");
+	PRINT_RM_CAPA(17, "RM MIB Capability");
+
+	PRINT_RM_CAPA(27, "Measurement Pilot Transmission Information");
+	PRINT_RM_CAPA(28, "Neighbor Report TSF Offset");
+	PRINT_RM_CAPA(29, "RCPI Measurement");
+	PRINT_RM_CAPA(30, "RSNI Measurement");
+	PRINT_RM_CAPA(31, "BSS Average Access Delay");
+	PRINT_RM_CAPA(32, "BSS Available Admission");
+	PRINT_RM_CAPA(33, "Antenna");
+	PRINT_RM_CAPA(34, "FTM Range Report");
+	PRINT_RM_CAPA(35, "Civic Location Measurement");
+
+	printf("\t\tNonoperating Channel Max Measurement Duration: %i\n", data[3] >> 5);
+	printf("\t\tMeasurement Pilot Capability: %i\n", data[4] & 7);
+}
+
 static void print_ds(const uint8_t type, uint8_t len, const uint8_t *data,
 		     const struct print_ies_data *ie_buffer)
 {
@@ -1540,6 +1595,7 @@ static const struct ie_print ieprinters[] = {
 	[192] = { "VHT operation", print_vht_oper, 5, 255, BIT(PRINT_SCAN), },
 	[48] = { "RSN", print_rsn, 2, 255, BIT(PRINT_SCAN), },
 	[50] = { "Extended supported rates", print_supprates, 0, 255, BIT(PRINT_SCAN), },
+	[70] = { "RM enabled capabilities", print_rm_enabled_capabilities, 5, 5, BIT(PRINT_SCAN), },
 	[113] = { "MESH Configuration", print_mesh_conf, 7, 7, BIT(PRINT_SCAN), },
 	[114] = { "MESH ID", print_ssid, 0, 32, BIT(PRINT_SCAN) | BIT(PRINT_LINK), },
 	[127] = { "Extended capabilities", print_capabilities, 0, 255, BIT(PRINT_SCAN), },
