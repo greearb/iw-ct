@@ -209,6 +209,7 @@ static int print_reg_handler(struct nl_msg *msg, void *arg)
 		PARSE_FLAG(NL80211_RRF_NO_HT40PLUS, "NO-HT40PLUS");
 		PARSE_FLAG(NL80211_RRF_NO_80MHZ, "NO-80MHZ");
 		PARSE_FLAG(NL80211_RRF_NO_160MHZ, "NO-160MHZ");
+		PARSE_FLAG(NL80211_RRF_NO_HE, "NO-HE");
 
 		/* Kernels that support NO_IR always turn on both flags */
 		if ((flags & NL80211_RRF_NO_IR) && (flags & __NL80211_RRF_NO_IBSS)) {
