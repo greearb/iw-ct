@@ -1467,6 +1467,40 @@ static void print_vht_oper(const uint8_t type, uint8_t len, const uint8_t *data,
 	printf("\t\t * VHT basic MCS set: 0x%.2x%.2x\n", data[4], data[3]);
 }
 
+static void print_supp_op_classes(const uint8_t type, uint8_t len,
+				  const uint8_t *data,
+				  const struct print_ies_data *ie_buffer)
+{
+	uint8_t *p = (uint8_t*) data;
+	const uint8_t *next_data = p + len;
+	int zero_delimiter = 0;
+	int one_hundred_thirty_delimiter = 0;
+
+	printf("\n");
+	printf("\t\t * current operating class: %d\n", *p);
+	while (++p < next_data) {
+		if (*p == 130) {
+			one_hundred_thirty_delimiter = 1;
+			break;
+		}
+		if (*p == 0) {
+			zero_delimiter = 0;
+			break;
+		}
+		printf("\t\t * operating class: %d\n", *p);
+	}
+	if (one_hundred_thirty_delimiter)
+		while (++p < next_data) {
+			printf("\t\t * current operating class extension: %d\n", *p);
+		}
+	if (zero_delimiter)
+		while (++p < next_data - 1) {
+			printf("\t\t * operating class tuple: %d %d\n", p[0], p[1]);
+			if (*p == 0)
+				break;
+		}
+}
+
 static void print_obss_scan_params(const uint8_t type, uint8_t len,
 				   const uint8_t *data,
 				   const struct print_ies_data *ie_buffer)
@@ -1588,6 +1622,7 @@ static const struct ie_print ieprinters[] = {
 	[42] = { "ERP", print_erp, 1, 255, BIT(PRINT_SCAN), },
 	[45] = { "HT capabilities", print_ht_capa, 26, 26, BIT(PRINT_SCAN), },
 	[47] = { "ERP D4.0", print_erp, 1, 255, BIT(PRINT_SCAN), },
+	[59] = { "Supported operating classes", print_supp_op_classes, 1, 255, BIT(PRINT_SCAN), },
 	[74] = { "Overlapping BSS scan params", print_obss_scan_params, 14, 255, BIT(PRINT_SCAN), },
 	[61] = { "HT operation", print_ht_op, 22, 22, BIT(PRINT_SCAN), },
 	[62] = { "Secondary Channel Offset", print_secchan_offs, 1, 1, BIT(PRINT_SCAN), },
