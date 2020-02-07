@@ -609,7 +609,7 @@ static void print_rm_enabled_capabilities(const uint8_t type, uint8_t len,
 	PRINT_RM_CAPA(2, "Parallel Measurements");
 	PRINT_RM_CAPA(3, "Repeated Measurements");
 	PRINT_RM_CAPA(4, "Beacon Passive Measurement");
-	PRINT_RM_CAPA(5, "Beacon Active");
+	PRINT_RM_CAPA(5, "Beacon Active Measurement");
 	PRINT_RM_CAPA(6, "Beacon Table Measurement");
 	PRINT_RM_CAPA(7, "Beacon Measurement Reporting Conditions");
 	PRINT_RM_CAPA(8, "Frame Measurement");
