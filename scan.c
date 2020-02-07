@@ -1224,6 +1224,36 @@ static void print_11u_rcon(const uint8_t type, uint8_t len, const uint8_t *data,
 	}
 }
 
+static void print_tx_power_envelope(const uint8_t type, uint8_t len,
+				    const uint8_t *data,
+				    const struct print_ies_data *ie_buffer)
+{
+	const uint8_t local_max_tx_power_count = data[0] & 7;
+	const uint8_t local_max_tx_power_unit_interp = (data[0] >> 3) & 7;
+	int i;
+	static const char *power_names[] = {
+		"Local Maximum Transmit Power For 20 MHz",
+		"Local Maximum Transmit Power For 40 MHz",
+		"Local Maximum Transmit Power For 80 MHz",
+		"Local Maximum Transmit Power For 160/80+80 MHz",
+	};
+
+	printf("\n");
+
+	if (local_max_tx_power_count + 2 != len)
+		return;
+	if (local_max_tx_power_unit_interp != 0)
+		return;
+	for (i = 0; i < local_max_tx_power_count + 1; ++i) {
+		int8_t power_val = ((int8_t)data[1 + i]) >> 1;
+		int8_t point5 = data[1 + i] & 1;
+		if (point5)
+			printf("\t\t * %s: %i.5 dBm\n", power_names[i], power_val);
+		else
+			printf("\t\t * %s: %i dBm\n", power_names[i], power_val);
+	}
+}
+
 static const char *ht_secondary_offset[4] = {
 	"no secondary",
 	"above",
@@ -1637,6 +1667,7 @@ static const struct ie_print ieprinters[] = {
 	[107] = { "802.11u Interworking", print_interworking, 0, 255, BIT(PRINT_SCAN), },
 	[108] = { "802.11u Advertisement", print_11u_advert, 0, 255, BIT(PRINT_SCAN), },
 	[111] = { "802.11u Roaming Consortium", print_11u_rcon, 0, 255, BIT(PRINT_SCAN), },
+	[195] = { "Transmit Power Envelope", print_tx_power_envelope, 2, 5, BIT(PRINT_SCAN), },
 };
 
 static void print_wifi_wpa(const uint8_t type, uint8_t len, const uint8_t *data,
