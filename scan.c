@@ -2045,7 +2045,7 @@ static inline void print_p2p(const uint8_t type, uint8_t len,
 		case 0x12: /* invitation flags */
 		case 0xdd: /* vendor specific */
 		default: {
-			const __u8 *subdata = data + 4;
+			const __u8 *subdata = data + 3;
 			__u16 tmplen = sublen;
 
 			tab_on_first(&first);
