@@ -2190,7 +2190,10 @@ void print_ies(unsigned char *ie, int ielen, bool unknown,
 		.ie = ie,
 		.ielen = ielen };
 
-	while (ielen >= 2 && ielen >= ie[1]) {
+	if (ie == NULL || ielen < 0)
+		return;
+
+	while (ielen >= 2 && ielen - 2 >= ie[1]) {
 		if (ie[0] < ARRAY_SIZE(ieprinters) &&
 		    ieprinters[ie[0]].name &&
 		    ieprinters[ie[0]].flags & BIT(ptype)) {
