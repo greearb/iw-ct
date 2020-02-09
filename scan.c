@@ -1531,6 +1531,55 @@ static void print_supp_op_classes(const uint8_t type, uint8_t len,
 		}
 }
 
+static void print_measurement_pilot_tx(const uint8_t type, uint8_t len,
+				       const uint8_t *data,
+				       const struct print_ies_data *ie_buffer)
+{
+	uint8_t *p, len_remaining;
+
+	printf("\n");
+	printf("\t\t * interval: %d TUs\n", data[0]);
+
+	if(len <= 1)
+		return;
+
+	p = (uint8_t *) data + 1;
+	len_remaining = len - 1;
+
+	while (len_remaining >=5) {
+		uint8_t subelement_id = *p, len, *end;
+
+		p++;
+		len = *p;
+		p++;
+		end = p + len;
+
+		len_remaining -= 2;
+
+		/* 802.11-2016 only allows vendor specific elements */
+		if (subelement_id != 221) {
+			printf("\t\t * <Invalid subelement ID %d>\n", subelement_id);
+			return;
+		}
+
+		if (len < 3 || len > len_remaining) {
+			printf(" <Parse error, element too short>\n");
+			return;
+		}
+
+		printf("\t\t * vendor specific: OUI %.2x:%.2x:%.2x, data:",
+			p[0], p[1], p[2]);
+		/* add only two here and use ++p in while loop */
+		p += 2;
+
+		while (++p < end)
+			printf(" %.2x", *p);
+		printf("\n");
+
+		len_remaining -= len;
+	}
+}
+
 static void print_obss_scan_params(const uint8_t type, uint8_t len,
 				   const uint8_t *data,
 				   const struct print_ies_data *ie_buffer)
@@ -1653,6 +1702,7 @@ static const struct ie_print ieprinters[] = {
 	[45] = { "HT capabilities", print_ht_capa, 26, 26, BIT(PRINT_SCAN), },
 	[47] = { "ERP D4.0", print_erp, 1, 255, BIT(PRINT_SCAN), },
 	[59] = { "Supported operating classes", print_supp_op_classes, 1, 255, BIT(PRINT_SCAN), },
+	[66] = { "Measurement Pilot Transmission", print_measurement_pilot_tx, 1, 255, BIT(PRINT_SCAN), },
 	[74] = { "Overlapping BSS scan params", print_obss_scan_params, 14, 255, BIT(PRINT_SCAN), },
 	[61] = { "HT operation", print_ht_op, 22, 22, BIT(PRINT_SCAN), },
 	[62] = { "Secondary Channel Offset", print_secchan_offs, 1, 1, BIT(PRINT_SCAN), },
