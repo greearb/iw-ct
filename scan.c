@@ -586,10 +586,10 @@ static void print_rm_enabled_capabilities(const uint8_t type, uint8_t len,
 			    const uint8_t *data,
 			    const struct print_ies_data *ie_buffer)
 {
-	__u64 capa = data[0] |
-		     data[1] << 8 |
-		     data[2] << 16 |
-		     data[3] << 24 |
+	__u64 capa = ((__u64) data[0]) |
+		     ((__u64) data[1]) << 8 |
+		     ((__u64) data[2]) << 16 |
+		     ((__u64) data[3]) << 24 |
 		     ((__u64) data[4]) << 32;
 
 	printf("\n");
