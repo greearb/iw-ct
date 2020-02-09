@@ -1474,8 +1474,8 @@ static void print_vht_capa(const uint8_t type, uint8_t len, const uint8_t *data,
 			   const struct print_ies_data *ie_buffer)
 {
 	printf("\n");
-	print_vht_info(data[0] | (data[1] << 8) |
-		       (data[2] << 16) | (data[3] << 24),
+	print_vht_info((__u32) data[0] | ((__u32)data[1] << 8) |
+		       ((__u32)data[2] << 16) | ((__u32)data[3] << 24),
 		       data + 4);
 }
 
