@@ -1827,7 +1827,7 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 	while (len >= 4) {
 		subtype = (data[0] << 8) + data[1];
 		sublen = (data[2] << 8) + data[3];
-		if (sublen > len)
+		if (sublen > len - 4)
 			break;
 
 		switch (subtype) {
