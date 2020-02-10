@@ -1131,10 +1131,10 @@ static void print_interworking(const uint8_t type, uint8_t len,
 		printf("\t\tVenue Type: %i\n", (int)(data[2]));
 	}
 	if (len == 9)
-		printf("\t\tHESSID: %02hx:%02hx:%02hx:%02hx:%02hx:%02hx\n",
+		printf("\t\tHESSID: %02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx\n",
 		       data[3], data[4], data[5], data[6], data[7], data[8]);
 	else if (len == 7)
-		printf("\t\tHESSID: %02hx:%02hx:%02hx:%02hx:%02hx:%02hx\n",
+		printf("\t\tHESSID: %02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx\n",
 		       data[1], data[2], data[3], data[4], data[5], data[6]);
 }
 
@@ -1193,7 +1193,7 @@ static void print_11u_rcon(const uint8_t type, uint8_t len, const uint8_t *data,
 			printf("Invalid IE length.\n");
 		} else {
 			for (idx = 0; idx < ln0; idx++) {
-				printf("%02hx", data[2 + idx]);
+				printf("%02hhx", data[2 + idx]);
 			}
 			printf("\n");
 		}
@@ -1205,7 +1205,7 @@ static void print_11u_rcon(const uint8_t type, uint8_t len, const uint8_t *data,
 			printf("Invalid IE length.\n");
 		} else {
 			for (idx = 0; idx < ln1; idx++) {
-				printf("%02hx", data[2 + ln0 + idx]);
+				printf("%02hhx", data[2 + ln0 + idx]);
 			}
 			printf("\n");
 		}
@@ -1217,7 +1217,7 @@ static void print_11u_rcon(const uint8_t type, uint8_t len, const uint8_t *data,
 			printf("Invalid IE length.\n");
 		} else {
 			for (idx = 0; idx < ln2; idx++) {
-				printf("%02hx", data[2 + ln0 + ln1 + idx]);
+				printf("%02hhx", data[2 + ln0 + ln1 + idx]);
 			}
 			printf("\n");
 		}
