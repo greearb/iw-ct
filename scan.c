@@ -1833,6 +1833,11 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 		switch (subtype) {
 		case 0x104a:
 			tab_on_first(&first);
+			if (sublen < 1) {
+				printf("\t * Version: (invalid "
+				       "length %d)\n", sublen);
+				break;
+			}
 			printf("\t * Version: %d.%d\n", data[4] >> 4, data[4] & 0xF);
 			break;
 		case 0x1011:
@@ -1843,8 +1848,8 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 			uint16_t id;
 			tab_on_first(&first);
 			if (sublen != 2) {
-				printf("\t * Device Password ID: (invalid "
-				       "length %d)\n", sublen);
+				printf("\t * Device Password ID: (invalid length %d)\n",
+				       sublen);
 				break;
 			}
 			id = data[4] << 8 | data[5];
@@ -1865,7 +1870,14 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 			printf("\t * Model Number: %.*s\n", sublen, data + 4);
 			break;
 		case 0x103b: {
-			__u8 val = data[4];
+			__u8 val;
+
+			if (sublen < 1) {
+				printf("\t * Response Type: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
+			val = data[4];
 			tab_on_first(&first);
 			printf("\t * Response Type: %d%s\n",
 			       val, val == 3 ? " (AP)" : "");
@@ -1878,7 +1890,14 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 			break;
 		}
 		case 0x1041: {
-			__u8 val = data[4];
+			__u8 val;
+
+			if (sublen < 1) {
+				printf("\t * Selected Registrar: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
+			val = data[4];
 			tab_on_first(&first);
 			printf("\t * Selected Registrar: 0x%x\n", val);
 			break;
@@ -1888,7 +1907,14 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 			printf("\t * Serial Number: %.*s\n", sublen, data + 4);
 			break;
 		case 0x1044: {
-			__u8 val = data[4];
+			__u8 val;
+
+			if (sublen < 1) {
+				printf("\t * Wi-Fi Protected Setup State: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
+			val = data[4];
 			tab_on_first(&first);
 			printf("\t * Wi-Fi Protected Setup State: %d%s%s\n",
 			       val,
@@ -1913,8 +1939,8 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 		case 0x1054: {
 			tab_on_first(&first);
 			if (sublen != 8) {
-				printf("\t * Primary Device Type: (invalid "
-				       "length %d)\n", sublen);
+				printf("\t * Primary Device Type: (invalid length %d)\n",
+				       sublen);
 				break;
 			}
 			printf("\t * Primary Device Type: "
@@ -1932,8 +1958,16 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 		}
 		case 0x1008:
 		case 0x1053: {
-			__u16 meth = (data[4] << 8) + data[5];
-			bool comma = false;
+			__u16 meth;
+			bool comma;
+
+			if (sublen < 2) {
+				printf("\t * Config methods: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
+			meth = (data[4] << 8) + data[5];
+			comma = false;
 			tab_on_first(&first);
 			printf("\t * %sConfig methods:",
 			       subtype == 0x1053 ? "Selected Registrar ": "");
