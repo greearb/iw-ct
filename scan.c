@@ -732,6 +732,21 @@ static void print_erp(const uint8_t type, uint8_t len, const uint8_t *data,
 	printf("\n");
 }
 
+static void print_ap_channel_report(const uint8_t type, uint8_t len, const uint8_t *data,
+				    const struct print_ies_data *ie_buffer)
+{
+	uint8_t oper_class = data[0];
+	int i;
+
+	printf("\n");
+	printf("\t\t * operating class: %d\n", oper_class);
+	printf("\t\t * channel(s):");
+	for (i = 1; i < len; ++i) {
+		printf(" %d", data[i]);
+	}
+	printf("\n");
+}
+
 static void print_cipher(const uint8_t *data)
 {
 	if (memcmp(data, ms_oui, 3) == 0) {
@@ -1701,6 +1716,7 @@ static const struct ie_print ieprinters[] = {
 	[42] = { "ERP", print_erp, 1, 255, BIT(PRINT_SCAN), },
 	[45] = { "HT capabilities", print_ht_capa, 26, 26, BIT(PRINT_SCAN), },
 	[47] = { "ERP D4.0", print_erp, 1, 255, BIT(PRINT_SCAN), },
+	[51] = { "AP Channel Report", print_ap_channel_report, 1, 255, BIT(PRINT_SCAN), },
 	[59] = { "Supported operating classes", print_supp_op_classes, 1, 255, BIT(PRINT_SCAN), },
 	[66] = { "Measurement Pilot Transmission", print_measurement_pilot_tx, 1, 255, BIT(PRINT_SCAN), },
 	[74] = { "Overlapping BSS scan params", print_obss_scan_params, 14, 255, BIT(PRINT_SCAN), },
