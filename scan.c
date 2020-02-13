@@ -1842,6 +1842,11 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 			break;
 		case 0x1011:
 			tab_on_first(&first);
+			if (sublen < 1) {
+				printf("\t * Device Name: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
 			printf("\t * Device name: %.*s\n", sublen, data + 4);
 			break;
 		case 0x1012: {
@@ -1859,14 +1864,29 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 		}
 		case 0x1021:
 			tab_on_first(&first);
+			if (sublen < 1) {
+				printf("\t * Manufacturer: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
 			printf("\t * Manufacturer: %.*s\n", sublen, data + 4);
 			break;
 		case 0x1023:
 			tab_on_first(&first);
+			if (sublen < 1) {
+				printf("\t * Model: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
 			printf("\t * Model: %.*s\n", sublen, data + 4);
 			break;
 		case 0x1024:
 			tab_on_first(&first);
+			if (sublen < 1) {
+				printf("\t * Model Number: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
 			printf("\t * Model Number: %.*s\n", sublen, data + 4);
 			break;
 		case 0x103b: {
@@ -1884,7 +1904,14 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 			break;
 		}
 		case 0x103c: {
-			__u8 val = data[4];
+			__u8 val;
+
+			if (sublen < 1) {
+				printf("\t * RF Bands: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
+			val = data[4];
 			tab_on_first(&first);
 			printf("\t * RF Bands: 0x%x\n", val);
 			break;
@@ -1904,6 +1931,11 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 		}
 		case 0x1042:
 			tab_on_first(&first);
+			if (sublen < 1) {
+				printf("\t * Serial Number: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
 			printf("\t * Serial Number: %.*s\n", sublen, data + 4);
 			break;
 		case 0x1044: {
@@ -1953,6 +1985,11 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 		case 0x1057: {
 			__u8 val = data[4];
 			tab_on_first(&first);
+			if (sublen < 1) {
+				printf("\t * AP setup locked: (invalid length %d)\n",
+				       sublen);
+				break;
+			}
 			printf("\t * AP setup locked: 0x%.2x\n", val);
 			break;
 		}
