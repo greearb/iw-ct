@@ -14,9 +14,10 @@ cc-option = $(shell set -e ; $(CC) $(1) -c -x c /dev/null -o /dev/null >/dev/nul
 CFLAGS_EVAL := $(call cc-option,-Wstringop-overflow=4)
 
 CFLAGS ?= -O2 -g
-CFLAGS += -Wall -Wextra -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common \
-	  -Werror-implicit-function-declaration -Wsign-compare -Wno-unused-parameter \
-	  $(CFLAGS_EVAL)
+CFLAGS += -Wall -Wextra -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
+CFLAGS += -Werror-implicit-function-declaration -Wsign-compare -Wno-unused-parameter
+CFLAGS += -Wdeclaration-after-statement
+CFLAGS += $(CFLAGS_EVAL)
 
 _OBJS := $(sort $(patsubst %.c,%.o,$(wildcard *.c)))
 VERSION_OBJS := $(filter-out version.o, $(_OBJS))
