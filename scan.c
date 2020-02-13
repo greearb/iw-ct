@@ -2011,13 +2011,14 @@ static void print_wifi_wps(const uint8_t type, uint8_t len, const uint8_t *data,
 			break;
 		}
 		case 0x1057: {
-			__u8 val = data[4];
+			__u8 val;
 			tab_on_first(&first);
 			if (sublen < 1) {
 				printf("\t * AP setup locked: (invalid length %d)\n",
 				       sublen);
 				break;
 			}
+			val = data[4];
 			printf("\t * AP setup locked: 0x%.2x\n", val);
 			break;
 		}
