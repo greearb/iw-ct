@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <net/if.h>
 #include <errno.h>
-#include <inttypes.h>>>
+#include <inttypes.h>
 #include "iw.h"
 
 static int no_seq_check(struct nl_msg *msg, void *arg)
@@ -1181,15 +1181,6 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_DEL_WIPHY:
 		printf("delete wiphy\n");
-	case NL80211_CMD_STOP_AP:
-		printf("stop AP\n");
-		break;
-	case NL80211_CMD_NEW_INTERFACE:
-		printf("new interface\n");
-		break;
-	case NL80211_CMD_DEL_INTERFACE:
-		printf("delete interface\n");
-		break;
 	case NL80211_CMD_PEER_MEASUREMENT_RESULT:
 		parse_pmsr_result(tb, args);
 		break;
