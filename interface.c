@@ -435,7 +435,7 @@ static int print_iface_handler(struct nl_msg *msg, void *arg)
 	}
 
 	if (tb_msg[NL80211_ATTR_WIPHY_TX_POWER_LEVEL]) {
-		uint32_t txp = nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_TX_POWER_LEVEL]);
+		int32_t txp = nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_TX_POWER_LEVEL]);
 
 		printf("%s\ttxpower %d.%.2d dBm\n",
 		       indent, txp / 100, txp % 100);
