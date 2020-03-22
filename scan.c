@@ -1018,6 +1018,8 @@ static void _print_rsn_ie(const char *defcipher, const char *defauth,
 			printf(" SPP-AMSDU-capable");
 		if (capa & 0x0800)
 			printf(" SPP-AMSDU-required");
+		if (capa & 0x2000)
+			printf(" Extended-Key-ID");
 		printf(" (0x%.4x)\n", capa);
 		data += 2;
 		len -= 2;

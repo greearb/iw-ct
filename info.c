@@ -698,7 +698,7 @@ broken_combination:
 			       "PMKSA caching supported in AP mode");
 		ext_feat_print(tb, SCHED_SCAN_BAND_SPECIFIC_RSSI_THOLD,
 			       "band specific RSSI thresholds for scheduled scan");
-		ext_feat_print(tb, EXT_KEY_ID, "extended key ID support");
+		ext_feat_print(tb, EXT_KEY_ID, "Extended Key ID support");
 		ext_feat_print(tb, STA_TX_PWR, "TX power control per station");
 		ext_feat_print(tb, SAE_OFFLOAD, "SAE offload support");
 		ext_feat_print(tb, VLAN_OFFLOAD, "VLAN offload support");
