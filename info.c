@@ -702,6 +702,10 @@ broken_combination:
 		ext_feat_print(tb, STA_TX_PWR, "TX power control per station");
 		ext_feat_print(tb, SAE_OFFLOAD, "SAE offload support");
 		ext_feat_print(tb, VLAN_OFFLOAD, "VLAN offload support");
+		ext_feat_print(tb, BEACON_PROTECTION, "beacon protection support");
+		ext_feat_print(tb, CONTROL_PORT_NO_PREAUTH, "disable pre-auth over nl80211 control port support");
+		ext_feat_print(tb, PROTECTED_TWT, "protected Target Wake Time (TWT) support");
+		ext_feat_print(tb, DEL_IBSS_STA, "deletion of IBSS station support");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
