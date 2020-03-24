@@ -931,8 +931,12 @@ static int print_event(struct nl_msg *msg, void *arg)
 	case NL80211_CMD_SCHED_SCAN_RESULTS:
 		printf("got scheduled scan results\n");
 		break;
+	case NL80211_CMD_WIPHY_REG_CHANGE:
 	case NL80211_CMD_REG_CHANGE:
-		printf("regulatory domain change: ");
+		if(gnlh->cmd == NL80211_CMD_WIPHY_REG_CHANGE)
+			printf("regulatory domain change (phy): ");
+		else
+			printf("regulatory domain change: ");
 
 		reg_type = nla_get_u8(tb[NL80211_ATTR_REG_TYPE]);
 
