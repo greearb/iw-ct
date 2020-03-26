@@ -249,7 +249,7 @@ int parse_random_mac_addr(struct nl_msg *msg, char *addrs);
 
 #define SCHED_SCAN_OPTIONS "[interval <in_msecs> | scan_plans [<interval_secs:iterations>*] <interval_secs>] "	\
 	"[delay <in_secs>] [freqs <freq>+] [matches [ssid <ssid>]+]] [active [ssid <ssid>]+|passive] "	\
-	"[randomise[=<addr>/<mask>]]"
+	"[randomise[=<addr>/<mask>]] [coloc] [flush]"
 int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv);
 
 DECLARE_SECTION(switch);

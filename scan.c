@@ -202,6 +202,10 @@ int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv)
 				err = parse_random_mac_addr(msg, v[0] + 9);
 				if (err)
 					goto nla_put_failure;
+			} else if (!strncmp(v[0], "coloc", 5)) {
+				flags |= NL80211_SCAN_FLAG_COLOCATED_6GHZ;
+			} else if (!strncmp(v[0], "flush", 5)) {
+				flags |= NL80211_SCAN_FLAG_FLUSH;
 			} else {
 				/* this element is not for us, so
 				 * return to continue parsing.
