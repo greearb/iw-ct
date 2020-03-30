@@ -122,17 +122,20 @@ static void parse_cqm_event(struct nlattr **attrs)
 
 	if (cqm[NL80211_ATTR_CQM_RSSI_THRESHOLD_EVENT]) {
 		enum nl80211_cqm_rssi_threshold_event rssi_event;
+		int32_t rssi_level = -1;
 		bool found_one = false;
 
 		rssi_event = nla_get_u32(cqm[NL80211_ATTR_CQM_RSSI_THRESHOLD_EVENT]);
+		if (cqm[NL80211_ATTR_CQM_RSSI_LEVEL])
+			rssi_level = nla_get_u32(cqm[NL80211_ATTR_CQM_RSSI_LEVEL]);
 
 		switch (rssi_event) {
 		case NL80211_CQM_RSSI_THRESHOLD_EVENT_HIGH:
-			printf("RSSI went above threshold\n");
+			printf("RSSI (%i dBm) went above threshold\n", rssi_level);
 			found_one = true;
 			break;
 		case NL80211_CQM_RSSI_THRESHOLD_EVENT_LOW:
-			printf("RSSI went below threshold\n");
+			printf("RSSI (%i dBm) went below threshold\n", rssi_level);
 			found_one = true;
 			break;
 		case NL80211_CQM_RSSI_BEACON_LOSS_EVENT:
