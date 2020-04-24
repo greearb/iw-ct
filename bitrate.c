@@ -64,7 +64,7 @@ static int setup_vht(struct nl80211_txrate_vht *txrate_vht,
 	memset(txrate_vht, 0, sizeof(*txrate_vht));
 
 	for (i = 0; i < argc; i++) {
-		if(!parse_vht_chunk(argv[i], &nss, &mcs))
+		if (!parse_vht_chunk(argv[i], &nss, &mcs))
 			return 0;
 
 		nss--;
@@ -200,11 +200,11 @@ static int handle_bitrates(struct nl80211_state *state,
 	}
 
 	if (have_vht_mcs_24)
-		if(!setup_vht(&txrate_vht_24, vht_argc_24, vht_argv_24))
+		if (!setup_vht(&txrate_vht_24, vht_argc_24, vht_argv_24))
 			return -EINVAL;
 
 	if (have_vht_mcs_5)
-		if(!setup_vht(&txrate_vht_5, vht_argc_5, vht_argv_5))
+		if (!setup_vht(&txrate_vht_5, vht_argc_5, vht_argv_5))
 			return -EINVAL;
 
 	if (sgi_5 && lgi_5)

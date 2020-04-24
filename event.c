@@ -881,7 +881,7 @@ static int print_event(struct nl_msg *msg, void *arg)
 
 	if (tb[NL80211_ATTR_IFINDEX] && tb[NL80211_ATTR_WIPHY]) {
 		/* if_indextoname may fails on delete interface/wiphy event */
-		if(if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), ifname))
+		if (if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), ifname))
 			printf("%s (phy #%d): ", ifname, nla_get_u32(tb[NL80211_ATTR_WIPHY]));
 		else
 			printf("phy #%d: ", nla_get_u32(tb[NL80211_ATTR_WIPHY]));
@@ -936,7 +936,7 @@ static int print_event(struct nl_msg *msg, void *arg)
 		break;
 	case NL80211_CMD_WIPHY_REG_CHANGE:
 	case NL80211_CMD_REG_CHANGE:
-		if(gnlh->cmd == NL80211_CMD_WIPHY_REG_CHANGE)
+		if (gnlh->cmd == NL80211_CMD_WIPHY_REG_CHANGE)
 			printf("regulatory domain change (phy): ");
 		else
 			printf("regulatory domain change: ");

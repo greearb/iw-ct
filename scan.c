@@ -1557,7 +1557,7 @@ static void print_measurement_pilot_tx(const uint8_t type, uint8_t len,
 	printf("\n");
 	printf("\t\t * interval: %d TUs\n", data[0]);
 
-	if(len <= 1)
+	if (len <= 1)
 		return;
 
 	p = (uint8_t *) data + 1;
