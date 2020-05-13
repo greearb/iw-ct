@@ -140,6 +140,18 @@ static int parse_ftm_target(struct nl_msg *msg, char *str, int peer_index)
 				return HANDLER_RET_USAGE;
 			}
 			preamble = true;
+		} else if (strncmp(pos, "tb", 2) == 0) {
+			NLA_PUT_FLAG(msg,
+				     NL80211_PMSR_FTM_REQ_ATTR_TRIGGER_BASED);
+			NLA_PUT_U32(msg, NL80211_PMSR_FTM_REQ_ATTR_PREAMBLE,
+				    NL80211_PREAMBLE_HE);
+			preamble = true;
+		} else if (strncmp(pos, "non_tb", 6) == 0) {
+			NLA_PUT_FLAG(msg,
+				     NL80211_PMSR_FTM_REQ_ATTR_NON_TRIGGER_BASED);
+			NLA_PUT_U32(msg, NL80211_PMSR_FTM_REQ_ATTR_PREAMBLE,
+				    NL80211_PREAMBLE_HE);
+			preamble = true;
 		} else {
 			printf("Unknown parameter %s\n", pos);
 			return HANDLER_RET_USAGE;
@@ -317,6 +329,6 @@ COMMAND(measurement, ftm_request, "<config-file> [timeout=<seconds>] [randomise[
 	CIB_NETDEV, handle_ftm_req,
 	"Send an FTM request to the targets supplied in the config file.\n"
 	"Each line in the file represents a target, with the following format:\n"
-	"<addr> bw=<[20|40|80|80+80|160]> cf=<center_freq> [cf1=<center_freq1>] [cf2=<center_freq2>] [ftms_per_burst=<samples per burst>] [ap-tsf] [asap] [bursts_exp=<num of bursts exponent>] [burst_period=<burst period>] [retries=<num of retries>] [burst_duration=<burst duration>] [preamble=<legacy,ht,vht,dmg>] [lci] [civic]");
+	"<addr> bw=<[20|40|80|80+80|160]> cf=<center_freq> [cf1=<center_freq1>] [cf2=<center_freq2>] [ftms_per_burst=<samples per burst>] [ap-tsf] [asap] [bursts_exp=<num of bursts exponent>] [burst_period=<burst period>] [retries=<num of retries>] [burst_duration=<burst duration>] [preamble=<legacy,ht,vht,dmg>] [lci] [civic] [tb] [non_tb]");
 HIDDEN(measurement, ftm_request_send, "", NL80211_CMD_PEER_MEASUREMENT_START,
        0, CIB_NETDEV, handle_ftm_req_send);
