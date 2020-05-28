@@ -706,6 +706,10 @@ broken_combination:
 		ext_feat_print(tb, CONTROL_PORT_NO_PREAUTH, "disable pre-auth over nl80211 control port support");
 		ext_feat_print(tb, PROTECTED_TWT, "protected Target Wake Time (TWT) support");
 		ext_feat_print(tb, DEL_IBSS_STA, "deletion of IBSS station support");
+		ext_feat_print(tb, MULTICAST_REGISTRATIONS, "mgmt frame registration for multicast");
+		ext_feat_print(tb, BEACON_PROTECTION_CLIENT, "beacon prot. for clients support");
+		ext_feat_print(tb, SCAN_FREQ_KHZ, "scan on kHz frequency support");
+		ext_feat_print(tb, CONTROL_PORT_OVER_NL80211_TX_STATUS, "tx status for nl80211 control port support");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
