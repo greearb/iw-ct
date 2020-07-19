@@ -244,7 +244,17 @@ static int handle_reg_get(struct nl80211_state *state,
 	char *dump_args[] = { "reg", "dump" };
 	int err;
 
+	/*
+	 * If PHY was specifically given, get the PHY specific regulatory
+	 * information. Otherwise, dump the entire regulatory information.
+	 */
+	if (id == II_PHY_IDX || id == II_PHY_NAME) {
+		register_handler(print_reg_handler, NULL);
+		return 0;
+	}
+
 	err = handle_cmd(state, II_NONE, 2, dump_args);
+
 	/*
 	 * dump might fail since it's not supported on older kernels,
 	 * in that case the handler is still registered already
