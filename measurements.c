@@ -166,6 +166,8 @@ static int parse_ftm_target(struct nl_msg *msg, char *str, int peer_index)
 		case NL80211_CHAN_WIDTH_160:
 			preamble = NL80211_PREAMBLE_VHT;
 			break;
+		default:
+			return HANDLER_RET_USAGE;
 		}
 
 		NLA_PUT_U32(msg, NL80211_PMSR_FTM_REQ_ATTR_PREAMBLE, preamble);
