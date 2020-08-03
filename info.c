@@ -710,6 +710,8 @@ broken_combination:
 		ext_feat_print(tb, BEACON_PROTECTION_CLIENT, "beacon prot. for clients support");
 		ext_feat_print(tb, SCAN_FREQ_KHZ, "scan on kHz frequency support");
 		ext_feat_print(tb, CONTROL_PORT_OVER_NL80211_TX_STATUS, "tx status for nl80211 control port support");
+		ext_feat_print(tb, OPERATING_CHANNEL_VALIDATION, "Operating Channel Validation (OCV) support");
+		ext_feat_print(tb, 4WAY_HANDSHAKE_AP_PSK, "AP mode PSK offload support");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
