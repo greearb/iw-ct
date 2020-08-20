@@ -38,6 +38,8 @@ static int print_mpath_handler(struct nl_msg *msg, void *arg)
 		[NL80211_MPATH_INFO_DISCOVERY_TIMEOUT] = { .type = NLA_U32 },
 		[NL80211_MPATH_INFO_DISCOVERY_RETRIES] = { .type = NLA_U8 },
 		[NL80211_MPATH_INFO_FLAGS] = { .type = NLA_U8 },
+		[NL80211_MPATH_INFO_HOP_COUNT] = { .type = NLA_U8 },
+		[NL80211_MPATH_INFO_PATH_CHANGE] = { .type = NLA_U32 },
 	};
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
@@ -85,6 +87,12 @@ static int print_mpath_handler(struct nl_msg *msg, void *arg)
 	if (pinfo[NL80211_MPATH_INFO_FLAGS])
 		printf("\t0x%x",
 			nla_get_u8(pinfo[NL80211_MPATH_INFO_FLAGS]));
+	if (pinfo[NL80211_MPATH_INFO_HOP_COUNT])
+		printf("\t%u",
+		       nla_get_u8(pinfo[NL80211_MPATH_INFO_HOP_COUNT]));
+	if (pinfo[NL80211_MPATH_INFO_PATH_CHANGE])
+		printf("\t%u",
+		       nla_get_u32(pinfo[NL80211_MPATH_INFO_PATH_CHANGE]));
 
 	printf("\n");
 	return NL_SKIP;
@@ -218,7 +226,7 @@ static int handle_mpath_dump(struct nl80211_state *state,
 			     enum id_input id)
 {
 	printf("DEST ADDR         NEXT HOP          IFACE\tSN\tMETRIC\tQLEN\t"
-	       "EXPTIME\t\tDTIM\tDRET\tFLAGS\n");
+	       "EXPTIME\t\tDTIM\tDRET\tFLAGS\tHOP_COUNT\tPATH_CHANGE\n");
 	register_handler(print_mpath_handler, NULL);
 	return 0;
 }
