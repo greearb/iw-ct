@@ -155,6 +155,22 @@ struct chandef {
 #define DECLARE_SECTION(_name)						\
 	extern struct cmd __section ## _ ## _name;
 
+struct vendor_event {
+	unsigned int vendor_id, subcmd;
+	void (*callback)(unsigned int vendor_id, unsigned int subcmd,
+			 struct nlattr *data);
+};
+
+#define VENDOR_EVENT(_id, _subcmd, _callback)				\
+	const struct vendor_event 					\
+	vendor_event_ ## _id ## _ ## _subcmd = {			\
+		.vendor_id = _id,					\
+		.subcmd = _subcmd,					\
+		.callback = _callback,					\
+	}, * const vendor_event_ ## _id ## _ ## _subcmd ## _p		\
+	__attribute__((used,section("vendor_event"))) =			\
+		&vendor_event_ ## _id ## _ ## _subcmd
+
 extern const char iw_version[];
 
 extern int iw_debug;
