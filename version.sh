@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="5.4"
+VERSION="5.8"
 OUT="$1"
 
 # get the absolute path for the OUT file
