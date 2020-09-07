@@ -261,4 +261,7 @@ void nan_bf(uint8_t idx, uint8_t *bf, uint16_t bf_len, const uint8_t *buf,
 
 char *hex2bin(const char *hex, char *buf);
 
+int set_bitrates(struct nl_msg *msg, int argc, char **argv,
+		 enum nl80211_attrs attr);
+
 #endif /* __IW_H */

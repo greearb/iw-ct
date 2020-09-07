@@ -76,13 +76,12 @@ static int setup_vht(struct nl80211_txrate_vht *txrate_vht,
 
 #define VHT_ARGC_MAX	100
 
-static int handle_bitrates(struct nl80211_state *state,
-			   struct nl_msg *msg,
-			   int argc, char **argv,
-			   enum id_input id)
+int set_bitrates(struct nl_msg *msg,
+		 int argc, char **argv,
+		 enum nl80211_attrs attr)
 {
 	struct nlattr *nl_rates, *nl_band;
-	int i;
+	int i, ret = 0;
 	bool have_legacy_24 = false, have_legacy_5 = false;
 	uint8_t legacy_24[32], legacy_5[32];
 	int n_legacy_24 = 0, n_legacy_5 = 0;
@@ -195,9 +194,15 @@ static int handle_bitrates(struct nl80211_state *state,
 		case S_GI:
 			break;
 		default:
+			if (attr != NL80211_ATTR_TX_RATES)
+				goto next;
 			return 1;
 		}
 	}
+
+next:
+	if (attr != NL80211_ATTR_TX_RATES)
+		ret = i;
 
 	if (have_vht_mcs_24)
 		if (!setup_vht(&txrate_vht_24, vht_argc_24, vht_argv_24))
@@ -213,7 +218,7 @@ static int handle_bitrates(struct nl80211_state *state,
 	if (sgi_24 && lgi_24)
 		return 1;
 
-	nl_rates = nla_nest_start(msg, NL80211_ATTR_TX_RATES);
+	nl_rates = nla_nest_start(msg, attr);
 	if (!nl_rates)
 		goto nla_put_failure;
 
@@ -253,9 +258,17 @@ static int handle_bitrates(struct nl80211_state *state,
 
 	nla_nest_end(msg, nl_rates);
 
-	return 0;
+	return ret;
  nla_put_failure:
 	return -ENOBUFS;
+}
+
+static int handle_bitrates(struct nl80211_state *state,
+			   struct nl_msg *msg,
+			   int argc, char **argv,
+			   enum id_input id)
+{
+	return set_bitrates(msg, argc, argv, NL80211_ATTR_TX_RATES);
 }
 
 #define DESCR_LEGACY "[legacy-<2.4|5> <legacy rate in Mbps>*]"

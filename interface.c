@@ -757,6 +757,7 @@ static int handle_tid_config(struct nl80211_state *state,
 {
 	struct nlattr *tids_array = NULL;
 	struct nlattr *tids_entry = NULL;
+	enum nl80211_tx_rate_setting txrate_type;
 	unsigned char peer[ETH_ALEN];
 	int tids_num = 0;
 	char *end;
@@ -766,6 +767,7 @@ static int handle_tid_config(struct nl80211_state *state,
 		PS_TIDS,
 		PS_CONF,
 	} parse_state = PS_ADDR;
+	unsigned int attr;
 
 	while (argc) {
 		switch (parse_state) {
@@ -920,6 +922,34 @@ static int handle_tid_config(struct nl80211_state *state,
 
 				argc -= 2;
 				argv += 2;
+			} else if (strcmp(argv[0], "bitrates") == 0) {
+				if (argc < 2) {
+					fprintf(stderr, "not enough args for %s\n", argv[0]);
+					return HANDLER_RET_USAGE;
+				}
+				if (!strcmp(argv[1], "auto"))
+					txrate_type = NL80211_TX_RATE_AUTOMATIC;
+				else if (!strcmp(argv[1], "fixed"))
+					txrate_type = NL80211_TX_RATE_FIXED;
+				else if (!strcmp(argv[1], "limit"))
+					txrate_type = NL80211_TX_RATE_LIMITED;
+				else {
+					printf("Invalid parameter: %s\n", argv[0]);
+					return 2;
+				}
+				NLA_PUT_U8(msg, NL80211_TID_CONFIG_ATTR_TX_RATE_TYPE, txrate_type);
+				argc -= 2;
+				argv += 2;
+				if (txrate_type != NL80211_TX_RATE_AUTOMATIC) {
+					attr = NL80211_TID_CONFIG_ATTR_TX_RATE;
+					ret = set_bitrates(msg, argc, argv,
+							   attr);
+					if (ret < 2)
+						return 1;
+
+					argc -= ret;
+					argv += ret;
+				}
 			} else {
 				fprintf(stderr, "Unknown parameter: %s\n", argv[0]);
 				return HANDLER_RET_USAGE;
@@ -945,7 +975,9 @@ nla_put_failure:
 }
 
 COMMAND(set, tidconf, "[peer <MAC address>] tids <mask> [override] [sretry <num>] [lretry <num>] "
-	"[ampdu [on|off]] [amsdu [on|off]] [noack [on|off]] [rtscts [on|off]]",
+	"[ampdu [on|off]] [amsdu [on|off]] [noack [on|off]] [rtscts [on|off]]"
+	"[bitrates <type [auto|fixed|limit]> [legacy-<2.4|5> <legacy rate in Mbps>*] [ht-mcs-<2.4|5> <MCS index>*]"
+	" [vht-mcs-<2.4|5> <NSS:MCSx,MCSy... | NSS:MCSx-MCSy>*] [sgi-2.4|lgi-2.4] [sgi-5|lgi-5]]",
 	NL80211_CMD_SET_TID_CONFIG, 0, CIB_NETDEV, handle_tid_config,
 	"Setup per-node TID specific configuration for TIDs selected by bitmask.\n"
 	"If MAC address is not specified, then supplied TID configuration\n"
@@ -955,4 +987,6 @@ COMMAND(set, tidconf, "[peer <MAC address>] tids <mask> [override] [sretry <num>
 	"  $ iw dev wlan0 set tidconf tids 0x5 ampdu off amsdu off rtscts on\n"
 	"  $ iw dev wlan0 set tidconf tids 0x3 override ampdu on noack on rtscts on\n"
 	"  $ iw dev wlan0 set tidconf peer xx:xx:xx:xx:xx:xx tids 0x1 ampdu off tids 0x3 amsdu off rtscts on\n"
+	"  $ iw dev wlan0 set tidconf peer xx:xx:xx:xx:xx:xx tids 0x2 bitrates auto\n"
+	"  $ iw dev wlan0 set tidconf peer xx:xx:xx:xx:xx:xx tids 0x2 bitrates limit vht-mcs-5 4:9\n"
 	);
