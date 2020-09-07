@@ -951,8 +951,8 @@ COMMAND(set, tidconf, "[peer <MAC address>] tids <mask> [override] [sretry <num>
 	"If MAC address is not specified, then supplied TID configuration\n"
 	"applied to all the peers.\n"
 	"Examples:\n"
-	"  $ iw dev wlan0 tids 0x1 ampdu off\n"
-	"  $ iw dev wlan0 tids 0x5 ampdu off amsdu off rtscts on\n"
-	"  $ iw dev wlan0 tids 0x3 override ampdu on noack on rtscts on\n"
-	"  $ iw dev wlan0 peer xx:xx:xx:xx:xx:xx tids 0x1 ampdu off tids 0x3 amsdu off rtscts on\n"
+	"  $ iw dev wlan0 set tidconf tids 0x1 ampdu off\n"
+	"  $ iw dev wlan0 set tidconf tids 0x5 ampdu off amsdu off rtscts on\n"
+	"  $ iw dev wlan0 set tidconf tids 0x3 override ampdu on noack on rtscts on\n"
+	"  $ iw dev wlan0 set tidconf peer xx:xx:xx:xx:xx:xx tids 0x1 ampdu off tids 0x3 amsdu off rtscts on\n"
 	);
