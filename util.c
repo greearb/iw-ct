@@ -576,10 +576,10 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
  * user by giving "NOHT" instead.
  *
  * The working specifier if chan is set are:
- *   <channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]
+ *   <channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz]
  *
  * And if frequency is set:
- *   <freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]
+ *   <freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz]
  *   <control freq> [5|10|20|40|80|80+80|160] [<center1_freq> [<center2_freq>]]
  *
  * If the mode/channel width is not given the NOHT is assumed.
@@ -617,6 +617,10 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		  .chantype = -1 },
 		{ .name = "80MHz",
 		  .width = NL80211_CHAN_WIDTH_80,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
+		{ .name = "160MHz",
+		  .width = NL80211_CHAN_WIDTH_160,
 		  .freq1_diff = 0,
 		  .chantype = -1 },
 	};
@@ -1233,6 +1237,7 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq)
 {
 	unsigned int cf1 = freq, j;
 	unsigned int vht80[] = { 5180, 5260, 5500, 5580, 5660, 5745 };
+	unsigned int vht160[] = { 5180, 5500 };
 
 	switch (chanmode->width) {
 	case NL80211_CHAN_WIDTH_80:
@@ -1246,6 +1251,18 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq)
 			break;
 
 		cf1 = vht80[j] + 30;
+		break;
+	case NL80211_CHAN_WIDTH_160:
+		/* setup center_freq1 */
+		for (j = 0; j < ARRAY_SIZE(vht160); j++) {
+			if (freq >= vht160[j] && freq < vht160[j] + 160)
+				break;
+		}
+
+		if (j == ARRAY_SIZE(vht160))
+			break;
+
+		cf1 = vht160[j] + 70;
 		break;
 	default:
 		cf1 = freq + chanmode->freq1_diff;

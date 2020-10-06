@@ -199,13 +199,13 @@ static int handle_freq(struct nl80211_state *state, struct nl_msg *msg,
 }
 
 COMMAND(set, freq,
-	"<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]\n"
+	"<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz]\n"
 	"<control freq> [5|10|20|40|80|80+80|160] [<center1_freq> [<center2_freq>]]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_PHY, handle_freq,
 	"Set frequency/channel the hardware is using, including HT\n"
 	"configuration.");
 COMMAND(set, freq,
-	"<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]\n"
+	"<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz]\n"
 	"<control freq> [5|10|20|40|80|80+80|160] [<center1_freq> [<center2_freq>]]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_freq, NULL);
 
@@ -222,9 +222,9 @@ static int handle_chan(struct nl80211_state *state, struct nl_msg *msg,
 
 	return put_chandef(msg, &chandef);
 }
-COMMAND(set, channel, "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]",
+COMMAND(set, channel, "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_PHY, handle_chan, NULL);
-COMMAND(set, channel, "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz]",
+COMMAND(set, channel, "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_chan, NULL);
 
 
