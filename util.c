@@ -1236,21 +1236,24 @@ void iw_hexdump(const char *prefix, const __u8 *buf, size_t size)
 int get_cf1(const struct chanmode *chanmode, unsigned long freq)
 {
 	unsigned int cf1 = freq, j;
-	unsigned int vht80[] = { 5180, 5260, 5500, 5580, 5660, 5745 };
+	unsigned int bw80[] = { 5180, 5260, 5500, 5580, 5660, 5745,
+				5955, 6035, 6115, 6195, 6275, 6355,
+				6435, 6515, 6595, 6675, 6755, 6835,
+				6195, 6995 };
 	unsigned int vht160[] = { 5180, 5500 };
 
 	switch (chanmode->width) {
 	case NL80211_CHAN_WIDTH_80:
 	        /* setup center_freq1 */
-		for (j = 0; j < ARRAY_SIZE(vht80); j++) {
-			if (freq >= vht80[j] && freq < vht80[j] + 80)
+		for (j = 0; j < ARRAY_SIZE(bw80); j++) {
+			if (freq >= bw80[j] && freq < bw80[j] + 80)
 				break;
 		}
 
-		if (j == ARRAY_SIZE(vht80))
+		if (j == ARRAY_SIZE(bw80))
 			break;
 
-		cf1 = vht80[j] + 30;
+		cf1 = bw80[j] + 30;
 		break;
 	case NL80211_CHAN_WIDTH_160:
 		/* setup center_freq1 */
