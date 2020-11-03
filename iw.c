@@ -287,7 +287,19 @@ static int error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 	int *ret = arg;
 	int ack_len = sizeof(*nlh) + sizeof(int) + sizeof(*nlh);
 
-	*ret = err->error;
+	if (err->error > 0) {
+		/*
+		 * This is illegal, per netlink(7), but not impossible (think
+		 * "vendor commands"). Callers really expect negative error
+		 * codes, so make that happen.
+		 */
+		fprintf(stderr,
+			"ERROR: received positive netlink error code %d\n",
+			err->error);
+		*ret = -EPROTO;
+	} else {
+		*ret = err->error;
+	}
 
 	if (!(nlh->nlmsg_flags & NLM_F_ACK_TLVS))
 		return NL_STOP;
