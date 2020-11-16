@@ -45,30 +45,30 @@ NLLIBNAME = libnl-1
 endif
 
 ifeq ($(NL2FOUND),Y)
-CFLAGS += -DCONFIG_LIBNL20
-LIBS += -lnl-genl
+override CFLAGS += -DCONFIG_LIBNL20
+override LIBS += -lnl-genl
 NLLIBNAME = libnl-2.0
 endif
 
 ifeq ($(NL3xFOUND),Y)
 # libnl 3.2 might be found as 3.2 and 3.0
 NL3FOUND = N
-CFLAGS += -DCONFIG_LIBNL30
-LIBS += -lnl-genl-3
+override CFLAGS += -DCONFIG_LIBNL30
+override LIBS += -lnl-genl-3
 NLLIBNAME = libnl-3.0
 endif
 
 ifeq ($(NL3FOUND),Y)
-CFLAGS += -DCONFIG_LIBNL30
-LIBS += -lnl-genl
+override CFLAGS += -DCONFIG_LIBNL30
+override LIBS += -lnl-genl
 NLLIBNAME = libnl-3.0
 endif
 
 # nl-3.1 has a broken libnl-gnl-3.1.pc file
 # as show by pkg-config --debug --libs --cflags --exact-version=3.1 libnl-genl-3.1;echo $?
 ifeq ($(NL31FOUND),Y)
-CFLAGS += -DCONFIG_LIBNL30
-LIBS += -lnl-genl
+override CFLAGS += -DCONFIG_LIBNL30
+override LIBS += -lnl-genl
 NLLIBNAME = libnl-3.1
 endif
 
@@ -76,8 +76,8 @@ ifeq ($(NLLIBNAME),)
 $(error Cannot find development files for any supported version of libnl)
 endif
 
-LIBS += $(shell $(PKG_CONFIG) --libs $(NLLIBNAME))
-CFLAGS += $(shell $(PKG_CONFIG) --cflags $(NLLIBNAME))
+override LIBS += $(shell $(PKG_CONFIG) --libs $(NLLIBNAME))
+override CFLAGS += $(shell $(PKG_CONFIG) --cflags $(NLLIBNAME))
 endif # NO_PKG_CONFIG
 
 ifeq ($(V),1)
