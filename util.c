@@ -994,6 +994,7 @@ static void __print_he_capa(const __u16 *mac_cap,
 			    const __u16 *mcs_set, size_t mcs_len,
 			    const __u8 *ppet, int ppet_len)
 {
+	size_t mcs_used;
 	int i;
 
 	#define PRINT_HE_CAP(_var, _idx, _bit, _str) \
@@ -1124,6 +1125,7 @@ static void __print_he_capa(const __u16 *mac_cap,
 	PRINT_HE_PHY_CAP(5, 4, "RX Full BW SU Using HE MU PPDU with Compression SIGB");
 	PRINT_HE_PHY_CAP(5, 5, "RX Full BW SU Using HE MU PPDU with Non-Compression SIGB");
 
+	mcs_used = 0;
 	for (i = 0; i < 3; i++) {
 		__u8 phy_cap_support[] = { BIT(1) | BIT(2), BIT(3), BIT(4) };
 		char *bw[] = { "<= 80", "160", "80+80" };
@@ -1151,6 +1153,16 @@ static void __print_he_capa(const __u16 *mac_cap,
 			}
 
 		}
+		mcs_used += 2 * sizeof(mcs_set[0]);
+	}
+
+	/* Caller didn't provide ppet; infer it, if there's trailing space. */
+	if (!ppet) {
+		ppet = (const void *)(mcs_set + mcs_used);
+		if (mcs_used < mcs_len)
+			ppet_len = mcs_len - mcs_used;
+		else
+			ppet_len = 0;
 	}
 
 	if (ppet_len && (phy_cap[3] & BIT(15))) {
@@ -1234,6 +1246,24 @@ void print_he_info(struct nlattr *nl_iftype)
 	}
 
 	__print_he_capa(mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len);
+}
+
+void print_he_capability(const uint8_t *ie, int len)
+{
+	const void *mac_cap, *phy_cap, *mcs_set;
+	int mcs_len;
+	int i = 0;
+
+	mac_cap = &ie[i];
+	i += 6;
+
+	phy_cap = &ie[i];
+	i += 11;
+
+	mcs_set = &ie[i];
+	mcs_len = len - i;
+
+	__print_he_capa(mac_cap, phy_cap - 1, mcs_set, mcs_len, NULL, 0);
 }
 
 void iw_hexdump(const char *prefix, const __u8 *buf, size_t size)
