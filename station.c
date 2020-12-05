@@ -329,8 +329,8 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_ACK_SIGNAL] = {.type = NLA_U8 },
 		[NL80211_STA_INFO_ACK_SIGNAL_AVG] = { .type = NLA_U8 },
 		[NL80211_STA_INFO_AIRTIME_LINK_METRIC] = { .type = NLA_U32 },
-		[NL80211_STA_INFO_CONNECTED_TO_AS] = { .type = NLA_FLAG },
-		[NL80211_STA_INFO_CONNECTED_TO_GATE] = { .type = NLA_FLAG },
+		[NL80211_STA_INFO_CONNECTED_TO_AS] = { .type = NLA_U8 },
+		[NL80211_STA_INFO_CONNECTED_TO_GATE] = { .type = NLA_U8 },
 	};
 	char *chain;
 	struct timeval now;
