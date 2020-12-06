@@ -1171,6 +1171,11 @@ static int print_event(struct nl_msg *msg, void *arg)
 			(unsigned long long)nla_get_u64(tb[NL80211_ATTR_COOKIE]),
 			tb[NL80211_ATTR_ACK] ? "acked" : "no ack");
 		break;
+	case NL80211_CMD_CONTROL_PORT_FRAME_TX_STATUS:
+		printf("ctrl. port TX status (cookie %llx): %s\n",
+			(unsigned long long)nla_get_u64(tb[NL80211_ATTR_COOKIE]),
+			tb[NL80211_ATTR_ACK] ? "acked" : "no ack");
+		break;
 	case NL80211_CMD_PMKSA_CANDIDATE:
 		printf("PMKSA candidate found\n");
 		break;
