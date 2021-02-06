@@ -181,7 +181,7 @@ int handle_cmd(struct nl80211_state *state, enum id_input idby,
 struct print_event_args {
 	struct timeval ts; /* internal */
 	bool have_ts; /* must be set false */
-	bool frame, time, reltime;
+	bool frame, time, reltime, ctime;
 };
 
 __u32 listen_events(struct nl80211_state *state,

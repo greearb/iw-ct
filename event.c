@@ -3,6 +3,7 @@
 #include <net/if.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <time.h>
 #include "iw.h"
 
 static int no_seq_check(struct nl_msg *msg, void *arg)
@@ -905,12 +906,13 @@ static int print_event(struct nl_msg *msg, void *arg)
 	int rem_nst;
 	__u16 status;
 
-	if (args->time || args->reltime) {
+	if (args->time || args->reltime || args->ctime) {
 		unsigned long long usecs, previous;
 
 		previous = 1000000ULL * args->ts.tv_sec + args->ts.tv_usec;
 		gettimeofday(&args->ts, NULL);
 		usecs = 1000000ULL * args->ts.tv_sec + args->ts.tv_usec;
+
 		if (args->reltime) {
 			if (!args->have_ts) {
 				usecs = 0;
@@ -918,7 +920,17 @@ static int print_event(struct nl_msg *msg, void *arg)
 			} else
 				usecs -= previous;
 		}
-		printf("%llu.%06llu: ", usecs/1000000, usecs % 1000000);
+
+		if (args->ctime) {
+			struct tm *tm = localtime(&args->ts.tv_sec);
+			char buf[255];
+
+			memset(buf, 0, 255);
+			strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", tm);
+			printf("[%s.%06lu]: ", buf, args->ts.tv_usec);
+		} else {
+			printf("%llu.%06llu: ", usecs/1000000, usecs % 1000000);
+		}
 	}
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
@@ -1407,6 +1419,7 @@ static int print_events(struct nl80211_state *state,
 			enum id_input id)
 {
 	struct print_event_args args;
+	int num_time_formats = 0;
 	int ret;
 
 	memset(&args, 0, sizeof(args));
@@ -1417,17 +1430,22 @@ static int print_events(struct nl80211_state *state,
 	while (argc > 0) {
 		if (strcmp(argv[0], "-f") == 0)
 			args.frame = true;
-		else if (strcmp(argv[0], "-t") == 0)
+		else if (strcmp(argv[0], "-t") == 0) {
+			num_time_formats++;
 			args.time = true;
-		else if (strcmp(argv[0], "-r") == 0)
+		} else if (strcmp(argv[0], "-T") == 0) {
+			num_time_formats++;
+			args.ctime = true;
+		} else if (strcmp(argv[0], "-r") == 0) {
+			num_time_formats++;
 			args.reltime = true;
-		else
+		} else
 			return 1;
 		argc--;
 		argv++;
 	}
 
-	if (args.time && args.reltime)
+	if (num_time_formats > 1)
 		return 1;
 
 	if (argc)
@@ -1442,5 +1460,6 @@ static int print_events(struct nl80211_state *state,
 TOPLEVEL(event, "[-t|-r] [-f]", 0, 0, CIB_NONE, print_events,
 	"Monitor events from the kernel.\n"
 	"-t - print timestamp\n"
+	"-T - print absolute, human-readable timestamp\n"
 	"-r - print relative timestamp\n"
 	"-f - print full frame for auth/assoc etc.");
