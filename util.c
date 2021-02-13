@@ -1160,7 +1160,7 @@ static void __print_he_capa(const __u16 *mac_cap,
 
 	/* Caller didn't provide ppet; infer it, if there's trailing space. */
 	if (!ppet) {
-		ppet = (const void *)(mcs_set + mcs_used);
+		ppet = (const void *)((const __u8 *)mcs_set + mcs_used);
 		if (mcs_used < mcs_len)
 			ppet_len = mcs_len - mcs_used;
 		else
