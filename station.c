@@ -337,7 +337,7 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 	unsigned long long now_ms;
 
 	gettimeofday(&now, NULL);
-	now_ms = now.tv_sec * 1000;
+	now_ms = now.tv_sec * 1000ULL;
 	now_ms += (now.tv_usec / 1000);
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
@@ -601,7 +601,7 @@ static int print_sta_handler(struct nl_msg *msg, void *arg)
 		unsigned long long assoc_at_ms;
 
 		clock_gettime(CLOCK_BOOTTIME, &now_ts);
-		boot_ns = now_ts.tv_sec * 1000000000;
+		boot_ns = now_ts.tv_sec * 1000000000ULL;
 		boot_ns += now_ts.tv_nsec;
 
 		bt = (unsigned long long)nla_get_u64(sinfo[NL80211_STA_INFO_ASSOC_AT_BOOTTIME]);
