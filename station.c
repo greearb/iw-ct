@@ -259,6 +259,8 @@ void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen)
 	if (rinfo[NL80211_RATE_INFO_HE_RU_ALLOC])
 		pos += snprintf(pos, buflen - (pos - buf),
 				" HE-RU-ALLOC %d", nla_get_u8(rinfo[NL80211_RATE_INFO_HE_RU_ALLOC]));
+	if (rinfo[NL80211_RATE_INFO_320_MHZ_WIDTH])
+		pos += snprintf(pos, buflen - (pos - buf), " 320MHz");
 }
 
 static char *get_chain_signal(struct nlattr *attr_list)

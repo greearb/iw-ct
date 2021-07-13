@@ -362,6 +362,8 @@ char *channel_width_name(enum nl80211_chan_width width)
 		return "5 MHz";
 	case NL80211_CHAN_WIDTH_10:
 		return "10 MHz";
+	case NL80211_CHAN_WIDTH_320:
+		return "320 MHz";
 	default:
 		return "unknown";
 	}

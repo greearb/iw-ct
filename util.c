@@ -508,6 +508,7 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
 	case NL80211_CHAN_WIDTH_40:
 	case NL80211_CHAN_WIDTH_80:
 	case NL80211_CHAN_WIDTH_160:
+	case NL80211_CHAN_WIDTH_320:
 		need_cf1 = true;
 		break;
 	case NL80211_CHAN_WIDTH_1:
@@ -515,7 +516,6 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
 	case NL80211_CHAN_WIDTH_4:
 	case NL80211_CHAN_WIDTH_8:
 	case NL80211_CHAN_WIDTH_16:
-	case NL80211_CHAN_WIDTH_320:
 		/* can't happen yet */
 		break;
 	}
@@ -624,6 +624,10 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		  .chantype = -1 },
 		{ .name = "160MHz",
 		  .width = NL80211_CHAN_WIDTH_160,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
+		{ .name = "320MHz",
+		  .width = NL80211_CHAN_WIDTH_320,
 		  .freq1_diff = 0,
 		  .chantype = -1 },
 	};
@@ -1265,6 +1269,216 @@ void print_he_info(struct nlattr *nl_iftype)
 
 	__print_he_capa(mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len,
 			true);
+}
+
+static void __print_eht_capa(int band,
+			     const __u8 *mac_cap,
+			     const __u32 *phy_cap,
+			     const __u8 *mcs_set, size_t mcs_len,
+			     const __u8 *ppet, size_t ppet_len,
+			     const __u16 *he_phy_cap,
+			     bool indent)
+{
+	unsigned int i;
+	const char *pre = indent ? "\t" : "";
+	const char *mcs[] = { "0-7", "8-9", "10-11", "12-13"};
+
+	#define PRINT_EHT_CAP(_var, _idx, _bit, _str) \
+	do { \
+		if (_var[_idx] & BIT(_bit)) \
+			printf("%s\t\t\t" _str "\n", pre); \
+	} while (0)
+
+	#define PRINT_EHT_CAP_MASK(_var, _idx, _shift, _mask, _str) \
+	do { \
+		if ((_var[_idx] >> _shift) & _mask) \
+			printf("%s\t\t\t" _str ": %d\n", pre, (_var[_idx] >> _shift) & _mask); \
+	} while (0)
+
+	#define PRINT_EHT_MAC_CAP(...) PRINT_EHT_CAP(mac_cap, __VA_ARGS__)
+	#define PRINT_EHT_PHY_CAP(...) PRINT_EHT_CAP(phy_cap, __VA_ARGS__)
+	#define PRINT_EHT_PHY_CAP_MASK(...) PRINT_EHT_CAP_MASK(phy_cap, __VA_ARGS__)
+
+	printf("%s\t\tEHT MAC Capabilities (0x", pre);
+	for (i = 0; i < 2; i++)
+		printf("%02x", mac_cap[i]);
+	printf("):\n");
+
+	PRINT_EHT_MAC_CAP(0, 0, "NSEP priority access Supported");
+	PRINT_EHT_MAC_CAP(0, 1, "EHT OM Control Supported");
+	PRINT_EHT_MAC_CAP(0, 2, "Triggered TXOP Sharing Supported");
+	PRINT_EHT_MAC_CAP(0, 3, "ARR Supported");
+
+	printf("%s\t\tEHT PHY Capabilities: (0x", pre);
+	for (i = 0; i < 8; i++)
+		printf("%02x", ((__u8 *)phy_cap)[i]);
+	printf("):\n");
+
+	PRINT_EHT_PHY_CAP(0, 1, "320MHz in 6GHz Supported");
+	PRINT_EHT_PHY_CAP(0, 2, "242-tone RU in BW wider than 20MHz Supported");
+	PRINT_EHT_PHY_CAP(0, 3, "NDP With  EHT-LTF And 3.2 µs GI");
+	PRINT_EHT_PHY_CAP(0, 4, "Partial Bandwidth UL MU-MIMO");
+	PRINT_EHT_PHY_CAP(0, 5, "SU Beamformer");
+	PRINT_EHT_PHY_CAP(0, 6, "SU Beamformee");
+	PRINT_EHT_PHY_CAP_MASK(0, 7, 0x7, "Beamformee SS (80MHz)");
+	PRINT_EHT_PHY_CAP_MASK(0, 10, 0x7, "Beamformee SS (160MHz)");
+	PRINT_EHT_PHY_CAP_MASK(0, 13, 0x7, "Beamformee SS (320MHz)");
+
+	PRINT_EHT_PHY_CAP_MASK(0, 16, 0x7, "Number Of Sounding Dimensions (80MHz)");
+	PRINT_EHT_PHY_CAP_MASK(0, 19, 0x7, "Number Of Sounding Dimensions (160MHz)");
+	PRINT_EHT_PHY_CAP_MASK(0, 22, 0x7, "Number Of Sounding Dimensions (320MHz)");
+	PRINT_EHT_PHY_CAP(0, 25, "Ng = 16 SU Feedback");
+	PRINT_EHT_PHY_CAP(0, 26, "Ng = 16 MU Feedback");
+	PRINT_EHT_PHY_CAP(0, 27, "Codebook size (4, 2) SU Feedback");
+	PRINT_EHT_PHY_CAP(0, 28, "Codebook size (7, 5) MU Feedback");
+	PRINT_EHT_PHY_CAP(0, 29, "Triggered SU Beamforming Feedback");
+	PRINT_EHT_PHY_CAP(0, 30, "Triggered MU Beamforming Partial BW Feedback");
+	PRINT_EHT_PHY_CAP(0, 31, "Triggered CQI Feedback");
+
+	PRINT_EHT_PHY_CAP(1, 0, "Partial Bandwidth DL MU-MIMO");
+	PRINT_EHT_PHY_CAP(1, 1, "PSR-Based SR Support");
+	PRINT_EHT_PHY_CAP(1, 2, "Power Boost Factor Support");
+	PRINT_EHT_PHY_CAP(1, 3, "EHT MU PPDU With 4 EHT-LTF And 0.8 µs GI");
+	PRINT_EHT_PHY_CAP_MASK(1, 4, 0xf, "Max Nc");
+	PRINT_EHT_PHY_CAP(1, 8, "Non-Triggered CQI Feedback");
+
+	PRINT_EHT_PHY_CAP(1, 9, "Tx 1024-QAM And 4096-QAM < 242-tone RU");
+	PRINT_EHT_PHY_CAP(1, 10, "Rx 1024-QAM And 4096-QAM < 242-tone RU");
+	PRINT_EHT_PHY_CAP(1, 11, "PPE Thresholds Present");
+	PRINT_EHT_PHY_CAP_MASK(1, 12, 0x3, "Common Nominal Packet Padding");
+	PRINT_EHT_PHY_CAP_MASK(1, 14, 0x1f, "Maximum Number Of Supported EHT-LTFs");
+	PRINT_EHT_PHY_CAP_MASK(1, 19, 0xf, "Support of MCS 15");
+	PRINT_EHT_PHY_CAP(1, 23, "Support Of EHT DUP In 6 GHz");
+	PRINT_EHT_PHY_CAP(1, 24, "Support For 20MHz Rx NDP With Wider Bandwidth");
+	PRINT_EHT_PHY_CAP(1, 25, "Non-OFDMA UL MU-MIMO (80MHz)");
+	PRINT_EHT_PHY_CAP(1, 26, "Non-OFDMA UL MU-MIMO (160MHz)");
+	PRINT_EHT_PHY_CAP(1, 27, "Non-OFDMA UL MU-MIMO (320MHz)");
+	PRINT_EHT_PHY_CAP(1, 28, "MU Beamformer (80MHz)");
+	PRINT_EHT_PHY_CAP(1, 29, "MU Beamformer (160MHz)");
+	PRINT_EHT_PHY_CAP(1, 30, "MU Beamformer (320MHz)");
+
+	printf("%s\t\tEHT MCS/NSS: (0x", pre);
+	for (i = 0; i < mcs_len; i++)
+		printf("%02x", ((__u8 *)mcs_set)[i]);
+	printf("):\n");
+
+	if (!(he_phy_cap[0] & ((BIT(2) | BIT(3) | BIT(4)) << 8))){
+		for (i = 0; i < 4; i++)
+			printf("%s\t\tEHT bw=20 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
+			       pre, mcs[i],
+			       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+	}
+
+	mcs_set += 4;
+	if (he_phy_cap[0] & (BIT(2) << 8)) {
+		for (i = 0; i < 3; i++)
+			printf("%s\t\tEHT bw <= 80 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
+			       pre, mcs[i + 1],
+			       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+
+	}
+
+	mcs_set += 3;
+	if (he_phy_cap[0] & (BIT(3) << 8)) {
+		for (i = 0; i < 3; i++)
+			printf("%s\t\tEHT bw=160 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
+			       pre, mcs[i + 1],
+			       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+
+	}
+
+	mcs_set += 3;
+	if (band == NL80211_BAND_6GHZ && (phy_cap[0] & BIT(1))) {
+		for (i = 0; i < 3; i++)
+			printf("%s\t\tEHT bw=320 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
+			       pre, mcs[i + 1],
+			       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+
+	}
+
+	if (ppet && ppet_len && (phy_cap[1] & BIT(11))) {
+		printf("%s\t\tEHT PPE Thresholds ", pre);
+		for (i = 0; i < ppet_len; i++)
+			if (ppet[i])
+				printf("0x%02x ", ppet[i]);
+		printf("\n");
+	}
+}
+
+void print_eht_info(struct nlattr *nl_iftype, int band)
+{
+	struct nlattr *tb[NL80211_BAND_IFTYPE_ATTR_MAX + 1];
+	__u8 mac_cap[2] = { 0 };
+	__u32 phy_cap[2] = { 0 };
+	__u8 mcs_set[13] = { 0 };
+	__u8 ppet[31] = { 0 };
+	__u16 he_phy_cap[6] = { 0 };
+	size_t len, mcs_len = 0, ppet_len = 0;
+
+	nla_parse(tb, NL80211_BAND_IFTYPE_ATTR_MAX,
+		  nla_data(nl_iftype), nla_len(nl_iftype), NULL);
+
+	if (!tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES])
+		return;
+
+	printf("\t\tEHT Iftypes: ");
+	print_iftype_line(tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES]);
+	printf("\n");
+
+	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MAC]) {
+		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MAC]);
+		if (len > sizeof(mac_cap))
+			len = sizeof(mac_cap);
+		memcpy(mac_cap,
+		       nla_data(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MAC]),
+		       len);
+	}
+
+	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PHY]) {
+		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PHY]);
+
+		if (len > sizeof(phy_cap))
+			len = sizeof(phy_cap);
+
+		memcpy(phy_cap,
+		       nla_data(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PHY]),
+		       len);
+	}
+
+	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MCS_SET]) {
+		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MCS_SET]);
+		if (len > sizeof(mcs_set))
+			len = sizeof(mcs_set);
+		memcpy(mcs_set,
+		       nla_data(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MCS_SET]),
+		       len);
+
+		// Assume that all parts of the MCS set are present
+		mcs_len = sizeof(mcs_set);
+	}
+
+	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PPE]) {
+		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PPE]);
+		if (len > sizeof(ppet))
+			len = sizeof(ppet);
+		memcpy(ppet,
+		       nla_data(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PPE]),
+		       len);
+		ppet_len = len;
+	}
+
+	if (tb[NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY]) {
+		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY]);
+
+		if (len > sizeof(he_phy_cap) - 1)
+			len = sizeof(he_phy_cap) - 1;
+		memcpy(&((__u8 *)he_phy_cap)[1],
+		       nla_data(tb[NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY]),
+		       len);
+	}
+
+	__print_eht_capa(band, mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len,
+			 he_phy_cap, true);
 }
 
 void print_he_capability(const uint8_t *ie, int len)
