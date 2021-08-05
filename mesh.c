@@ -401,16 +401,20 @@ static int print_mesh_param_handler(struct nl_msg *msg, void *arg)
 
 		for (i = 0; i < ARRAY_SIZE(_mesh_param_descrs); i++) {
 			mdescr = &_mesh_param_descrs[i];
-			printf("%s = ", mdescr->name);
-			mdescr->nla_print_fn(mesh_params[mdescr->mesh_param_num]);
-			printf("\n");
+			if (mesh_params[mdescr->mesh_param_num]) {
+				printf("%s = ", mdescr->name);
+				mdescr->nla_print_fn(mesh_params[mdescr->mesh_param_num]);
+				printf("\n");
+			}
 		}
 		return NL_SKIP;
 	}
 
 	/* print out the mesh parameter */
-	mdescr->nla_print_fn(mesh_params[mdescr->mesh_param_num]);
-	printf("\n");
+	if (mesh_params[mdescr->mesh_param_num]) {
+		mdescr->nla_print_fn(mesh_params[mdescr->mesh_param_num]);
+		printf("\n");
+	}
 	return NL_SKIP;
 }
 
