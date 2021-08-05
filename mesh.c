@@ -11,6 +11,7 @@
 #include "iw.h"
 
 SECTION(mesh);
+SECTION(mesh_param);
 
 
 typedef struct _any_t {
@@ -446,6 +447,19 @@ static int get_interface_meshparam(struct nl80211_state *state,
 COMMAND(get, mesh_param, "[<param>]",
 	NL80211_CMD_GET_MESH_PARAMS, 0, CIB_NETDEV, get_interface_meshparam,
 	"Retrieve mesh parameter (run command without any to see available ones).");
+
+static int dump_interface_meshparam(struct nl80211_state *state,
+				    struct nl_msg *msg,
+				    int argc, char **argv,
+				    enum id_input id)
+{
+	register_handler(print_mesh_param_handler, NULL);
+	return 0;
+}
+
+COMMAND(mesh_param, dump, "",
+	NL80211_CMD_GET_MESH_PARAMS, 0, CIB_NETDEV, dump_interface_meshparam,
+	"List all supported mesh parameters");
 
 static int join_mesh(struct nl80211_state *state,
 		     struct nl_msg *msg, int argc, char **argv,
