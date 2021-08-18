@@ -1176,20 +1176,39 @@ static void __print_he_capa(const __u16 *mac_cap,
 	}
 }
 
+void print_iftype_list(const char *name, const char *pfx, struct nlattr *attr)
+{
+	struct nlattr *ift;
+	int rem;
+
+	printf("%s:\n", name);
+	nla_for_each_nested(ift, attr, rem)
+		printf("%s * %s\n", pfx, iftype_name(nla_type(ift)));
+}
+
+void print_iftype_line(struct nlattr *attr)
+{
+	struct nlattr *ift;
+	bool first = true;
+	int rem;
+
+	nla_for_each_nested(ift, attr, rem) {
+		if (first)
+			first = false;
+		else
+			printf(", ");
+		printf("%s", iftype_name(nla_type(ift)));
+	}
+}
+
 void print_he_info(struct nlattr *nl_iftype)
 {
 	struct nlattr *tb[NL80211_BAND_IFTYPE_ATTR_MAX + 1];
-	struct nlattr *tb_flags[NL80211_IFTYPE_MAX + 1];
-	char *iftypes[NUM_NL80211_IFTYPES] = {
-		"Unspec", "Adhoc", "Station", "AP", "AP/VLAN", "WDS", "Monitor",
-		"Mesh", "P2P/Client", "P2P/Go", "P2P/Device", "OCB", "NAN",
-	};
 	__u16 mac_cap[3] = { 0 };
 	__u16 phy_cap[6] = { 0 };
 	__u16 mcs_set[6] = { 0 };
 	__u8 ppet[25] = { 0 };
 	size_t len;
-	int i;
 	int mcs_len = 0, ppet_len = 0;
 
 	nla_parse(tb, NL80211_BAND_IFTYPE_ATTR_MAX,
@@ -1198,14 +1217,8 @@ void print_he_info(struct nlattr *nl_iftype)
 	if (!tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES])
 		return;
 
-	if (nla_parse_nested(tb_flags, NL80211_IFTYPE_MAX,
-			     tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES], NULL))
-		return;
-
-	printf("\t\tHE Iftypes:");
-	for (i = 0; i < NUM_NL80211_IFTYPES; i++)
-		if (nla_get_flag(tb_flags[i]) && iftypes[i])
-			printf(" %s", iftypes[i]);
+	printf("\t\tHE Iftypes: ");
+	print_iftype_line(tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES]);
 	printf("\n");
 
 	if (tb[NL80211_BAND_IFTYPE_ATTR_HE_CAP_MAC]) {

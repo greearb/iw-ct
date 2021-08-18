@@ -218,6 +218,8 @@ void print_he_info(struct nlattr *nl_iftype);
 
 char *channel_width_name(enum nl80211_chan_width width);
 const char *iftype_name(enum nl80211_iftype iftype);
+void print_iftype_list(const char *name, const char *pfx, struct nlattr *attr);
+void print_iftype_line(struct nlattr *attr);
 const char *command_name(enum nl80211_commands cmd);
 int ieee80211_channel_to_frequency(int chan, enum nl80211_band band);
 int ieee80211_frequency_to_channel(int freq);

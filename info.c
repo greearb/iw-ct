@@ -105,10 +105,9 @@ static int print_phy_handler(struct nl_msg *msg, void *arg)
 	struct nlattr *nl_band;
 	struct nlattr *nl_freq;
 	struct nlattr *nl_rate;
-	struct nlattr *nl_mode;
 	struct nlattr *nl_cmd;
 	struct nlattr *nl_if, *nl_ftype;
-	int rem_band, rem_freq, rem_rate, rem_mode, rem_cmd, rem_ftype, rem_if;
+	int rem_band, rem_freq, rem_rate, rem_cmd, rem_ftype, rem_if;
 	int open;
 	/*
 	 * static variables only work here, other applications need to use the
@@ -321,17 +320,13 @@ next:
 		       nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_ANTENNA_TX]),
 		       nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_ANTENNA_RX]));
 
-	if (tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES]) {
-		printf("\tSupported interface modes:\n");
-		nla_for_each_nested(nl_mode, tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES], rem_mode)
-			printf("\t\t * %s\n", iftype_name(nla_type(nl_mode)));
-	}
+	if (tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES])
+		print_iftype_list("\tSupported interface modes", "\t\t",
+				  tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES]);
 
-	if (tb_msg[NL80211_ATTR_SOFTWARE_IFTYPES]) {
-		printf("\tsoftware interface modes (can always be added):\n");
-		nla_for_each_nested(nl_mode, tb_msg[NL80211_ATTR_SOFTWARE_IFTYPES], rem_mode)
-			printf("\t\t * %s\n", iftype_name(nla_type(nl_mode)));
-	}
+	if (tb_msg[NL80211_ATTR_SOFTWARE_IFTYPES])
+		print_iftype_list("\tsoftware interface modes (can always be added)",
+				  "\t\t", tb_msg[NL80211_ATTR_SOFTWARE_IFTYPES]);
 
 	if (tb_msg[NL80211_ATTR_INTERFACE_COMBINATIONS]) {
 		struct nlattr *nl_combi;
@@ -373,8 +368,6 @@ next:
 			}
 
 			nla_for_each_nested(nl_limit, tb_comb[NL80211_IFACE_COMB_LIMITS], rem_limit) {
-				bool ift_comma = false;
-
 				err = nla_parse_nested(tb_limit, MAX_NL80211_IFACE_LIMIT,
 						       nl_limit, iface_limit_policy);
 				if (err || !tb_limit[NL80211_IFACE_LIMIT_TYPES]) {
@@ -385,13 +378,8 @@ next:
 				if (comma)
 					printf(", ");
 				comma = true;
-				printf("#{");
-
-				nla_for_each_nested(nl_mode, tb_limit[NL80211_IFACE_LIMIT_TYPES], rem_mode) {
-					printf("%s %s", ift_comma ? "," : "",
-						iftype_name(nla_type(nl_mode)));
-					ift_comma = true;
-				}
+				printf("#{ ");
+				print_iftype_line(tb_limit[NL80211_IFACE_LIMIT_TYPES]);
 				printf(" } <= %u", nla_get_u32(tb_limit[NL80211_IFACE_LIMIT_MAX]));
 			}
 			printf(",\n\t\t   ");
