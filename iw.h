@@ -162,7 +162,7 @@ struct vendor_event {
 };
 
 #define VENDOR_EVENT(_id, _subcmd, _callback)				\
-	const struct vendor_event 					\
+	static const struct vendor_event 				\
 	vendor_event_ ## _id ## _ ## _subcmd = {			\
 		.vendor_id = _id,					\
 		.subcmd = _subcmd,					\
