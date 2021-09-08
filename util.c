@@ -290,15 +290,15 @@ static int parse_cipher_suite(const char *cipher_str)
 {
 
 	if (!strcmp(cipher_str, "TKIP"))
-		return 0x000FAC02;
+		return WLAN_CIPHER_SUITE_TKIP;
 	if (!strcmp(cipher_str, "CCMP") || !strcmp(cipher_str, "CCMP-128"))
-		return 0x000FAC04;
+		return WLAN_CIPHER_SUITE_CCMP;
 	if (!strcmp(cipher_str, "GCMP") || !strcmp(cipher_str, "GCMP-128"))
-		return 0x000FAC08;
+		return WLAN_CIPHER_SUITE_GCMP;
 	if (!strcmp(cipher_str, "GCMP-256"))
-		return 0x000FAC09;
+		return WLAN_CIPHER_SUITE_GCMP_256;
 	if (!strcmp(cipher_str, "CCMP-256"))
-		return 0x000FAC0A;
+		return WLAN_CIPHER_SUITE_CCMP_256;
 	return -EINVAL;
 }
 
@@ -407,14 +407,16 @@ int parse_keys(struct nl_msg *msg, char **argv[], int *argc)
 			keydata = hex2bin(keydata, keybuf);
 			/* fall through */
 		case 5:
-			NLA_PUT_U32(msg, NL80211_KEY_CIPHER, 0x000FAC01);
+			NLA_PUT_U32(msg, NL80211_KEY_CIPHER,
+				    WLAN_CIPHER_SUITE_WEP40);
 			keylen = 5;
 			break;
 		case 26:
 			keydata = hex2bin(keydata, keybuf);
 			/* fall through */
 		case 13:
-			NLA_PUT_U32(msg, NL80211_KEY_CIPHER, 0x000FAC05);
+			NLA_PUT_U32(msg, NL80211_KEY_CIPHER,
+				    WLAN_CIPHER_SUITE_WEP104);
 			keylen = 13;
 			break;
 		default:
