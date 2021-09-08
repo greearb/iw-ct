@@ -255,10 +255,6 @@ int parse_random_mac_addr(struct nl_msg *msg, char *addrs);
 	"[randomise[=<addr>/<mask>]] [coloc] [flush]"
 int parse_sched_scan(struct nl_msg *msg, int *argc, char ***argv);
 
-DECLARE_SECTION(switch);
-DECLARE_SECTION(set);
-DECLARE_SECTION(get);
-
 void nan_bf(uint8_t idx, uint8_t *bf, uint16_t bf_len, const uint8_t *buf,
 	    size_t len);
 
@@ -266,5 +262,50 @@ char *hex2bin(const char *hex, char *buf);
 
 int set_bitrates(struct nl_msg *msg, int argc, char **argv,
 		 enum nl80211_attrs attr);
+
+
+/* sections */
+DECLARE_SECTION(ap);
+DECLARE_SECTION(auth);
+DECLARE_SECTION(cac);
+DECLARE_SECTION(channels);
+DECLARE_SECTION(coalesce);
+DECLARE_SECTION(commands);
+DECLARE_SECTION(connect);
+DECLARE_SECTION(cqm);
+DECLARE_SECTION(del);
+DECLARE_SECTION(dev);
+DECLARE_SECTION(disconnect);
+DECLARE_SECTION(event);
+DECLARE_SECTION(features);
+DECLARE_SECTION(ftm);
+DECLARE_SECTION(get);
+DECLARE_SECTION(help);
+DECLARE_SECTION(hwsim);
+DECLARE_SECTION(ibss);
+DECLARE_SECTION(info);
+DECLARE_SECTION(interface);
+DECLARE_SECTION(link);
+DECLARE_SECTION(list);
+DECLARE_SECTION(measurement);
+DECLARE_SECTION(mesh);
+DECLARE_SECTION(mesh_param);
+DECLARE_SECTION(mgmt);
+DECLARE_SECTION(mpath);
+DECLARE_SECTION(mpp);
+DECLARE_SECTION(nan);
+DECLARE_SECTION(ocb);
+DECLARE_SECTION(offchannel);
+DECLARE_SECTION(p2p);
+DECLARE_SECTION(phy);
+DECLARE_SECTION(reg);
+DECLARE_SECTION(roc);
+DECLARE_SECTION(scan);
+DECLARE_SECTION(set);
+DECLARE_SECTION(station);
+DECLARE_SECTION(survey);
+DECLARE_SECTION(switch);
+DECLARE_SECTION(vendor);
+DECLARE_SECTION(wowlan);
 
 #endif /* __IW_H */
