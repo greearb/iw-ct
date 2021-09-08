@@ -124,7 +124,7 @@ static int setup_he(struct nl80211_txrate_he *txrate_he,
 #define HE_GI_08_STR "0.8"
 #define HE_GI_16_STR "1.6"
 #define HE_GI_32_STR "3.2"
-int parse_he_gi(char *he_gi)
+static int parse_he_gi(char *he_gi)
 {
 	if (he_gi == NULL)
 		return 0;
