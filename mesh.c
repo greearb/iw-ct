@@ -400,6 +400,7 @@ static int print_mesh_param_handler(struct nl_msg *msg, void *arg)
 	if (!mdescr) {
 		unsigned int i;
 
+		/* print out all the supported mesh parameters */
 		for (i = 0; i < ARRAY_SIZE(_mesh_param_descrs); i++) {
 			mdescr = &_mesh_param_descrs[i];
 			if (mesh_params[mdescr->mesh_param_num]) {
@@ -411,7 +412,7 @@ static int print_mesh_param_handler(struct nl_msg *msg, void *arg)
 		return NL_SKIP;
 	}
 
-	/* print out the mesh parameter */
+	/* print out the requested mesh parameter */
 	if (mesh_params[mdescr->mesh_param_num]) {
 		mdescr->nla_print_fn(mesh_params[mdescr->mesh_param_num]);
 		printf("\n");
