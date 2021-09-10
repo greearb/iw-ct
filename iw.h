@@ -11,6 +11,11 @@
 #include "nl80211.h"
 #include "ieee80211.h"
 
+#ifndef NL_CAPABILITY_VERSION_3_5_0
+#define nla_nest_start(msg, attrtype) \
+       nla_nest_start(msg, NLA_F_NESTED | (attrtype))
+#endif
+
 /* support for extack if compilation headers are too old */
 #ifndef NETLINK_EXT_ACK
 #define NETLINK_EXT_ACK 11
