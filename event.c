@@ -1457,7 +1457,7 @@ static int print_events(struct nl80211_state *state,
 
 	return __do_listen_events(state, 0, NULL, 0, NULL, &args);
 }
-TOPLEVEL(event, "[-t|-r] [-f]", 0, 0, CIB_NONE, print_events,
+TOPLEVEL(event, "[-t|-T|-r] [-f]", 0, 0, CIB_NONE, print_events,
 	"Monitor events from the kernel.\n"
 	"-t - print timestamp\n"
 	"-T - print absolute, human-readable timestamp\n"
