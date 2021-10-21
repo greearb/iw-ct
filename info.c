@@ -700,6 +700,7 @@ broken_combination:
 		ext_feat_print(tb, CONTROL_PORT_OVER_NL80211_TX_STATUS, "tx status for nl80211 control port support");
 		ext_feat_print(tb, OPERATING_CHANNEL_VALIDATION, "Operating Channel Validation (OCV) support");
 		ext_feat_print(tb, 4WAY_HANDSHAKE_AP_PSK, "AP mode PSK offload support");
+		ext_feat_print(tb, BSS_COLOR, "BSS coloring support");
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
