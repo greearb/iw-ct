@@ -1233,6 +1233,12 @@ static int print_event(struct nl_msg *msg, void *arg)
 		case NL80211_RADAR_NOP_FINISHED:
 			printf("%d MHz: NOP finished\n", freq);
 			break;
+		case NL80211_RADAR_PRE_CAC_EXPIRED:
+			printf("%d MHz: PRE-CAC expired\n", freq);
+			break;
+		case NL80211_RADAR_CAC_STARTED:
+			printf("%d MHz: CAC started\n", freq);
+			break;
 		default:
 			printf("%d MHz: unknown radar event\n", freq);
 		}
