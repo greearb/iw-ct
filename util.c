@@ -515,6 +515,7 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
 	case NL80211_CHAN_WIDTH_4:
 	case NL80211_CHAN_WIDTH_8:
 	case NL80211_CHAN_WIDTH_16:
+	case NL80211_CHAN_WIDTH_320:
 		/* can't happen yet */
 		break;
 	}
