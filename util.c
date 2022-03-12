@@ -1305,7 +1305,8 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq)
 				5955, 6035, 6115, 6195, 6275, 6355,
 				6435, 6515, 6595, 6675, 6755, 6835,
 				6195, 6995 };
-	unsigned int vht160[] = { 5180, 5500 };
+	unsigned int bw160[] = { 5180, 5500, 5955, 6115, 6275, 6435,
+				  6595, 6755, 6915 };
 
 	switch (chanmode->width) {
 	case NL80211_CHAN_WIDTH_80:
@@ -1322,15 +1323,15 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq)
 		break;
 	case NL80211_CHAN_WIDTH_160:
 		/* setup center_freq1 */
-		for (j = 0; j < ARRAY_SIZE(vht160); j++) {
-			if (freq >= vht160[j] && freq < vht160[j] + 160)
+		for (j = 0; j < ARRAY_SIZE(bw160); j++) {
+			if (freq >= bw160[j] && freq < bw160[j] + 160)
 				break;
 		}
 
-		if (j == ARRAY_SIZE(vht160))
+		if (j == ARRAY_SIZE(bw160))
 			break;
 
-		cf1 = vht160[j] + 70;
+		cf1 = bw160[j] + 70;
 		break;
 	default:
 		cf1 = freq + chanmode->freq1_diff;
