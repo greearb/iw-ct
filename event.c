@@ -893,6 +893,21 @@ static void parse_ch_switch_notify(struct nlattr **attrs, int command)
 	printf("\n");
 }
 
+static void parse_assoc_comeback(struct nlattr **attrs, int command)
+{
+	__u32 timeout = 0;
+	char macbuf[6 * 3] = "<unset>";
+
+	if (attrs[NL80211_ATTR_MAC])
+		mac_addr_n2a(macbuf, nla_data(attrs[NL80211_ATTR_MAC]));
+
+	if (attrs[NL80211_ATTR_TIMEOUT])
+		timeout = nla_get_u32(attrs[NL80211_ATTR_TIMEOUT]);
+
+	printf("assoc comeback bssid %s timeout %d\n",
+	       macbuf, timeout);
+}
+
 static int print_event(struct nl_msg *msg, void *arg)
 {
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
@@ -1276,6 +1291,9 @@ static int print_event(struct nl_msg *msg, void *arg)
 	case NL80211_CMD_CH_SWITCH_STARTED_NOTIFY:
 	case NL80211_CMD_CH_SWITCH_NOTIFY:
 		parse_ch_switch_notify(tb, gnlh->cmd);
+		break;
+	case NL80211_CMD_ASSOC_COMEBACK: /* 147 */
+		parse_assoc_comeback(tb, gnlh->cmd);
 		break;
 	default:
 		printf("unknown event %d (%s)\n",
