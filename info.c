@@ -69,15 +69,105 @@ static int ext_feature_isset(const unsigned char *ext_features, int ext_features
 	return (ft_byte & BIT(ftidx % 8)) != 0;
 }
 
-static void _ext_feat_print(const struct nlattr *tb,
-			    enum nl80211_ext_feature_index idx,
-			    const char *feature_name, const char *feature_desc)
+static void ext_feat_print(enum nl80211_ext_feature_index idx)
 {
-	if (ext_feature_isset(nla_data(tb), nla_len(tb),idx))
-		printf("\t\t* [ %s ]: %s\n", feature_name, feature_desc);
+#define ext_feat_case(name, desc)				\
+	case NL80211_EXT_FEATURE_##name:			\
+		printf("\t\t* [ %s ]: %s\n", #name, desc);	\
+		break
+
+	switch (idx) {
+	case NUM_NL80211_EXT_FEATURES: /* cannot happen */ break;
+	ext_feat_case(VHT_IBSS, "VHT-IBSS");
+	ext_feat_case(RRM, "RRM");
+	ext_feat_case(MU_MIMO_AIR_SNIFFER, "MU-MIMO sniffer");
+	ext_feat_case(SCAN_START_TIME, "scan start timestamp");
+	ext_feat_case(BSS_PARENT_TSF,
+		      "BSS last beacon/probe TSF");
+	ext_feat_case(SET_SCAN_DWELL, "scan dwell setting");
+	ext_feat_case(BEACON_RATE_LEGACY,
+		      "legacy beacon rate setting");
+	ext_feat_case(BEACON_RATE_HT, "HT beacon rate setting");
+	ext_feat_case(BEACON_RATE_VHT, "VHT beacon rate setting");
+	ext_feat_case(FILS_STA,
+		      "STA FILS (Fast Initial Link Setup)");
+	ext_feat_case(MGMT_TX_RANDOM_TA,
+		      "randomized TA while not associated");
+	ext_feat_case(MGMT_TX_RANDOM_TA_CONNECTED,
+		      "randomized TA while associated");
+	ext_feat_case(SCHED_SCAN_RELATIVE_RSSI,
+		      "sched_scan for BSS with better RSSI report");
+	ext_feat_case(CQM_RSSI_LIST,
+		      "multiple CQM_RSSI_THOLD records");
+	ext_feat_case(FILS_SK_OFFLOAD,
+		      "FILS shared key authentication offload");
+	ext_feat_case(4WAY_HANDSHAKE_STA_PSK,
+		      "4-way handshake with PSK in station mode");
+	ext_feat_case(4WAY_HANDSHAKE_STA_1X,
+		      "4-way handshake with 802.1X in station mode");
+	ext_feat_case(FILS_MAX_CHANNEL_TIME,
+		      "FILS max channel attribute override with dwell time");
+	ext_feat_case(ACCEPT_BCAST_PROBE_RESP,
+		      "accepts broadcast probe response");
+	ext_feat_case(OCE_PROBE_REQ_HIGH_TX_RATE,
+		      "probe request TX at high rate (at least 5.5Mbps)");
+	ext_feat_case(OCE_PROBE_REQ_DEFERRAL_SUPPRESSION,
+		      "probe request tx deferral and suppression");
+	ext_feat_case(MFP_OPTIONAL,
+		      "MFP_OPTIONAL value in ATTR_USE_MFP");
+	ext_feat_case(LOW_SPAN_SCAN, "low span scan");
+	ext_feat_case(LOW_POWER_SCAN, "low power scan");
+	ext_feat_case(HIGH_ACCURACY_SCAN, "high accuracy scan");
+	ext_feat_case(DFS_OFFLOAD, "DFS offload");
+	ext_feat_case(CONTROL_PORT_OVER_NL80211,
+		      "control port over nl80211");
+	ext_feat_case(ACK_SIGNAL_SUPPORT,
+		      "ack signal level support");
+	ext_feat_case(TXQS, "FQ-CoDel-enabled intermediate TXQs");
+	ext_feat_case(SCAN_RANDOM_SN,
+		      "use random sequence numbers in scans");
+	ext_feat_case(SCAN_MIN_PREQ_CONTENT,
+		      "use probe request with only rate IEs in scans");
+	ext_feat_case(CAN_REPLACE_PTK0,
+		      "can safely replace PTK 0 when rekeying");
+	ext_feat_case(ENABLE_FTM_RESPONDER,
+		      "enable FTM (Fine Time Measurement) responder");
+	ext_feat_case(AIRTIME_FAIRNESS,
+		      "airtime fairness scheduling");
+	ext_feat_case(AP_PMKSA_CACHING,
+		      "PMKSA caching supported in AP mode");
+	ext_feat_case(SCHED_SCAN_BAND_SPECIFIC_RSSI_THOLD,
+		      "band specific RSSI thresholds for scheduled scan");
+	ext_feat_case(EXT_KEY_ID, "Extended Key ID support");
+	ext_feat_case(STA_TX_PWR, "TX power control per station");
+	ext_feat_case(SAE_OFFLOAD, "SAE offload support");
+	ext_feat_case(VLAN_OFFLOAD, "VLAN offload support");
+	ext_feat_case(AQL,
+		      "Airtime Queue Limits (AQL)");
+	ext_feat_case(BEACON_PROTECTION, "beacon protection support");
+	ext_feat_case(CONTROL_PORT_NO_PREAUTH, "disable pre-auth over nl80211 control port support");
+	ext_feat_case(PROTECTED_TWT, "protected Target Wake Time (TWT) support");
+	ext_feat_case(DEL_IBSS_STA, "deletion of IBSS station support");
+	ext_feat_case(MULTICAST_REGISTRATIONS, "mgmt frame registration for multicast");
+	ext_feat_case(BEACON_PROTECTION_CLIENT, "beacon prot. for clients support");
+	ext_feat_case(SCAN_FREQ_KHZ, "scan on kHz frequency support");
+	ext_feat_case(CONTROL_PORT_OVER_NL80211_TX_STATUS, "tx status for nl80211 control port support");
+	ext_feat_case(OPERATING_CHANNEL_VALIDATION, "Operating Channel Validation (OCV) support");
+	ext_feat_case(4WAY_HANDSHAKE_AP_PSK, "AP mode PSK offload support");
+	ext_feat_case(SAE_OFFLOAD_AP, "AP mode SAE authentication offload support");
+	ext_feat_case(FILS_DISCOVERY, "FILS discovery frame transmission support");
+	ext_feat_case(UNSOL_BCAST_PROBE_RESP,
+		      "unsolicated broadcast probe response transmission support");
+	ext_feat_case(BEACON_RATE_HE, "HE beacon rate support (AP/mesh)");
+	ext_feat_case(SECURE_LTF, "secure LTF measurement protocol support");
+	ext_feat_case(SECURE_RTT, "secure RTT measurement protocol support");
+	ext_feat_case(PROT_RANGE_NEGO_AND_MEASURE,
+		      "support for MFP in range measurement negotiation/procedure");
+	ext_feat_case(BSS_COLOR, "BSS coloring support");
+	ext_feat_case(FILS_CRYPTO_OFFLOAD, "FILS crypto offload");
+	ext_feat_case(RADAR_BACKGROUND, "Radar background support");
+	}
 }
-#define ext_feat_print(tb, name, desc)	\
-	_ext_feat_print(tb, NL80211_EXT_FEATURE_##name, #name, desc)
 
 static int print_phy_handler(struct nl_msg *msg, void *arg)
 {
@@ -625,97 +715,15 @@ broken_combination:
 
 	if (tb_msg[NL80211_ATTR_EXT_FEATURES]) {
 		struct nlattr *tb = tb_msg[NL80211_ATTR_EXT_FEATURES];
+		enum nl80211_ext_feature_index feat;
 
 		printf("\tSupported extended features:\n");
 
-		ext_feat_print(tb, VHT_IBSS, "VHT-IBSS");
-		ext_feat_print(tb, RRM, "RRM");
-		ext_feat_print(tb, MU_MIMO_AIR_SNIFFER, "MU-MIMO sniffer");
-		ext_feat_print(tb, SCAN_START_TIME, "scan start timestamp");
-		ext_feat_print(tb, BSS_PARENT_TSF,
-			       "BSS last beacon/probe TSF");
-		ext_feat_print(tb, SET_SCAN_DWELL, "scan dwell setting");
-		ext_feat_print(tb, BEACON_RATE_LEGACY,
-			       "legacy beacon rate setting");
-		ext_feat_print(tb, BEACON_RATE_HT, "HT beacon rate setting");
-		ext_feat_print(tb, BEACON_RATE_VHT, "VHT beacon rate setting");
-		ext_feat_print(tb, FILS_STA,
-			       "STA FILS (Fast Initial Link Setup)");
-		ext_feat_print(tb, MGMT_TX_RANDOM_TA,
-			       "randomized TA while not associated");
-		ext_feat_print(tb, MGMT_TX_RANDOM_TA_CONNECTED,
-			       "randomized TA while associated");
-		ext_feat_print(tb, SCHED_SCAN_RELATIVE_RSSI,
-			       "sched_scan for BSS with better RSSI report");
-		ext_feat_print(tb, CQM_RSSI_LIST,
-			       "multiple CQM_RSSI_THOLD records");
-		ext_feat_print(tb, FILS_SK_OFFLOAD,
-			       "FILS shared key authentication offload");
-		ext_feat_print(tb, 4WAY_HANDSHAKE_STA_PSK,
-			       "4-way handshake with PSK in station mode");
-		ext_feat_print(tb, 4WAY_HANDSHAKE_STA_1X,
-			       "4-way handshake with 802.1X in station mode");
-		ext_feat_print(tb, FILS_MAX_CHANNEL_TIME,
-			       "FILS max channel attribute override with dwell time");
-		ext_feat_print(tb, ACCEPT_BCAST_PROBE_RESP,
-			       "accepts broadcast probe response");
-		ext_feat_print(tb, OCE_PROBE_REQ_HIGH_TX_RATE,
-			       "probe request TX at high rate (at least 5.5Mbps)");
-		ext_feat_print(tb, OCE_PROBE_REQ_DEFERRAL_SUPPRESSION,
-			       "probe request tx deferral and suppression");
-		ext_feat_print(tb, MFP_OPTIONAL,
-			       "MFP_OPTIONAL value in ATTR_USE_MFP");
-		ext_feat_print(tb, LOW_SPAN_SCAN, "low span scan");
-		ext_feat_print(tb, LOW_POWER_SCAN, "low power scan");
-		ext_feat_print(tb, HIGH_ACCURACY_SCAN, "high accuracy scan");
-		ext_feat_print(tb, DFS_OFFLOAD, "DFS offload");
-		ext_feat_print(tb, CONTROL_PORT_OVER_NL80211,
-			       "control port over nl80211");
-		ext_feat_print(tb, ACK_SIGNAL_SUPPORT,
-			       "ack signal level support");
-		ext_feat_print(tb, TXQS, "FQ-CoDel-enabled intermediate TXQs");
-		ext_feat_print(tb, SCAN_RANDOM_SN,
-			       "use random sequence numbers in scans");
-		ext_feat_print(tb, SCAN_MIN_PREQ_CONTENT,
-			       "use probe request with only rate IEs in scans");
-		ext_feat_print(tb, CAN_REPLACE_PTK0,
-			       "can safely replace PTK 0 when rekeying");
-		ext_feat_print(tb, ENABLE_FTM_RESPONDER,
-			       "enable FTM (Fine Time Measurement) responder");
-		ext_feat_print(tb, AIRTIME_FAIRNESS,
-			       "airtime fairness scheduling");
-		ext_feat_print(tb, AP_PMKSA_CACHING,
-			       "PMKSA caching supported in AP mode");
-		ext_feat_print(tb, SCHED_SCAN_BAND_SPECIFIC_RSSI_THOLD,
-			       "band specific RSSI thresholds for scheduled scan");
-		ext_feat_print(tb, EXT_KEY_ID, "Extended Key ID support");
-		ext_feat_print(tb, STA_TX_PWR, "TX power control per station");
-		ext_feat_print(tb, SAE_OFFLOAD, "SAE offload support");
-		ext_feat_print(tb, VLAN_OFFLOAD, "VLAN offload support");
-		ext_feat_print(tb, AQL,
-			       "Airtime Queue Limits (AQL)");
-		ext_feat_print(tb, BEACON_PROTECTION, "beacon protection support");
-		ext_feat_print(tb, CONTROL_PORT_NO_PREAUTH, "disable pre-auth over nl80211 control port support");
-		ext_feat_print(tb, PROTECTED_TWT, "protected Target Wake Time (TWT) support");
-		ext_feat_print(tb, DEL_IBSS_STA, "deletion of IBSS station support");
-		ext_feat_print(tb, MULTICAST_REGISTRATIONS, "mgmt frame registration for multicast");
-		ext_feat_print(tb, BEACON_PROTECTION_CLIENT, "beacon prot. for clients support");
-		ext_feat_print(tb, SCAN_FREQ_KHZ, "scan on kHz frequency support");
-		ext_feat_print(tb, CONTROL_PORT_OVER_NL80211_TX_STATUS, "tx status for nl80211 control port support");
-		ext_feat_print(tb, OPERATING_CHANNEL_VALIDATION, "Operating Channel Validation (OCV) support");
-		ext_feat_print(tb, 4WAY_HANDSHAKE_AP_PSK, "AP mode PSK offload support");
-		ext_feat_print(tb, SAE_OFFLOAD_AP, "AP mode SAE authentication offload support");
-		ext_feat_print(tb, FILS_DISCOVERY, "FILS discovery frame transmission support");
-		ext_feat_print(tb, UNSOL_BCAST_PROBE_RESP,
-			       "unsolicated broadcast probe response transmission support");
-		ext_feat_print(tb, BEACON_RATE_HE, "HE beacon rate support (AP/mesh)");
-		ext_feat_print(tb, SECURE_LTF, "secure LTF measurement protocol support");
-		ext_feat_print(tb, SECURE_RTT, "secure RTT measurement protocol support");
-		ext_feat_print(tb, PROT_RANGE_NEGO_AND_MEASURE,
-			       "support for MFP in range measurement negotiation/procedure");
-		ext_feat_print(tb, BSS_COLOR, "BSS coloring support");
-		ext_feat_print(tb, FILS_CRYPTO_OFFLOAD, "FILS crypto offload");
-		ext_feat_print(tb, RADAR_BACKGROUND, "Radar background support");
+		for (feat = 0; feat < NUM_NL80211_EXT_FEATURES; feat++) {
+			if (!ext_feature_isset(nla_data(tb), nla_len(tb), feat))
+				continue;
+			ext_feat_print(feat);
+		}
 	}
 
 	if (tb_msg[NL80211_ATTR_COALESCE_RULE]) {
