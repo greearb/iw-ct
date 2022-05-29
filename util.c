@@ -471,6 +471,7 @@ enum nl80211_chan_width str_to_bw(const char *str)
 		{ .name = "80", .val = NL80211_CHAN_WIDTH_80, },
 		{ .name = "80+80", .val = NL80211_CHAN_WIDTH_80P80, },
 		{ .name = "160", .val = NL80211_CHAN_WIDTH_160, },
+		{ .name = "320", .val = NL80211_CHAN_WIDTH_320, },
 	};
 	unsigned int i;
 
