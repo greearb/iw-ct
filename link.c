@@ -13,9 +13,10 @@
 #include "iw.h"
 
 struct link_result {
-	uint8_t bssid[8];
+	uint8_t sta_addr[8];
 	bool link_found;
 	bool anything_found;
+	bool mld;
 };
 
 static struct link_result lr = { .link_found = false };
@@ -37,7 +38,9 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 		[NL80211_BSS_STATUS] = { .type = NLA_U32 },
 	};
 	struct link_result *result = arg;
-	char mac_addr[20], dev[20];
+	char mac_addr[20], dev[20], link_addr[20];
+	int link_id = -1;
+	const char *indent = "\t";
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
 		  genlmsg_attrlen(gnlh, 0), NULL);
@@ -62,9 +65,44 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 	mac_addr_n2a(mac_addr, nla_data(bss[NL80211_BSS_BSSID]));
 	if_indextoname(nla_get_u32(tb[NL80211_ATTR_IFINDEX]), dev);
 
+	if (bss[NL80211_BSS_MLO_LINK_ID])
+		link_id = nla_get_u8(bss[NL80211_BSS_MLO_LINK_ID]);
+
+	if (bss[NL80211_BSS_MLD_ADDR]) {
+		mac_addr_n2a(link_addr, nla_data(bss[NL80211_BSS_BSSID]));
+		indent = "\t\t";
+
+		if (result->mld) {
+			if (memcmp(result->sta_addr,
+				   nla_data(bss[NL80211_BSS_MLD_ADDR]), 6)) {
+				mac_addr_n2a(mac_addr, nla_data(bss[NL80211_BSS_MLD_ADDR]));
+				printf("!! inconsistent MLD address information (%s)\n",
+				       mac_addr);
+			}
+		} else {
+			mac_addr_n2a(mac_addr, nla_data(bss[NL80211_BSS_MLD_ADDR]));
+			result->mld = true;
+			memcpy(result->sta_addr,
+			       nla_data(bss[NL80211_BSS_MLD_ADDR]), 6);
+			if (nla_get_u32(bss[NL80211_BSS_STATUS]) == NL80211_BSS_STATUS_ASSOCIATED) {
+				printf("Connected to %s (on %s)\n", mac_addr, dev);
+			}
+
+			if (bss[NL80211_BSS_INFORMATION_ELEMENTS])
+				print_ies(nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
+					  nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
+					  false, PRINT_LINK_MLO_MLD);
+		}
+	} else {
+		memcpy(result->sta_addr, nla_data(bss[NL80211_BSS_BSSID]), 6);
+	}
+
 	switch (nla_get_u32(bss[NL80211_BSS_STATUS])) {
 	case NL80211_BSS_STATUS_ASSOCIATED:
-		printf("Connected to %s (on %s)\n", mac_addr, dev);
+		if (result->mld)
+			printf("\tLink %d BSSID %s\n", link_id, link_addr);
+		else
+			printf("Connected to %s (on %s)\n", mac_addr, dev);
 		break;
 	case NL80211_BSS_STATUS_AUTHENTICATED:
 		printf("Authenticated with %s (on %s)\n", mac_addr, dev);
@@ -81,10 +119,10 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 	if (bss[NL80211_BSS_INFORMATION_ELEMENTS])
 		print_ies(nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
 			  nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
-			  false, PRINT_LINK);
+			  false, result->mld ? PRINT_LINK_MLO_LINK : PRINT_LINK);
 
 	if (bss[NL80211_BSS_FREQUENCY])
-		printf("\tfreq: %d\n",
+		printf("%sfreq: %d\n", indent,
 			nla_get_u32(bss[NL80211_BSS_FREQUENCY]));
 
 	if (nla_get_u32(bss[NL80211_BSS_STATUS]) != NL80211_BSS_STATUS_ASSOCIATED)
@@ -92,7 +130,6 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 
 	/* only in the assoc case do we want more info from station get */
 	result->link_found = true;
-	memcpy(result->bssid, nla_data(bss[NL80211_BSS_BSSID]), 6);
 	return NL_SKIP;
 }
 
@@ -250,7 +287,7 @@ static int handle_link(struct nl80211_state *state,
 		NULL,
 		NULL,
 	};
-	char bssid_buf[3*6];
+	char addr_buf[3*6];
 	int err;
 
 	link_argv[0] = argv[0];
@@ -264,15 +301,18 @@ static int handle_link(struct nl80211_state *state,
 		return 0;
 	}
 
-	mac_addr_n2a(bssid_buf, lr.bssid);
-	bssid_buf[17] = '\0';
+	mac_addr_n2a(addr_buf, lr.sta_addr);
+	addr_buf[17] = '\0';
+
+	if (lr.mld)
+		printf("MLD %s stats:\n", addr_buf);
 
 	station_argv[0] = argv[0];
-	station_argv[3] = bssid_buf;
+	station_argv[3] = addr_buf;
 	return handle_cmd(state, id, 4, station_argv);
 }
 TOPLEVEL(link, NULL, 0, 0, CIB_NETDEV, handle_link,
-	 "Print information about the current link, if any.");
+	 "Print information about the current connection, if any.");
 HIDDEN(link, get_sta, "<mac-addr>", NL80211_CMD_GET_STATION, 0,
 	CIB_NETDEV, handle_link_sta);
 HIDDEN(link, get_bss, NULL, NL80211_CMD_GET_SCAN, NLM_F_DUMP,

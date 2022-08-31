@@ -242,6 +242,8 @@ const char *get_status_str(uint16_t status);
 enum print_ie_type {
 	PRINT_SCAN,
 	PRINT_LINK,
+	PRINT_LINK_MLO_MLD,
+	PRINT_LINK_MLO_LINK,
 };
 
 #define BIT(x) (1ULL<<(x))

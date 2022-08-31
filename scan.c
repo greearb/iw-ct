@@ -1717,7 +1717,8 @@ static void print_ie(const struct ie_print *p, const uint8_t type, uint8_t len,
 }
 
 static const struct ie_print ieprinters[] = {
-	[0] = { "SSID", print_ssid, 0, 32, BIT(PRINT_SCAN) | BIT(PRINT_LINK), },
+	[0] = { "SSID", print_ssid, 0, 32,
+		 BIT(PRINT_SCAN) | BIT(PRINT_LINK) | BIT(PRINT_LINK_MLO_MLD), },
 	[1] = { "Supported rates", print_supprates, 0, 255, BIT(PRINT_SCAN), },
 	[3] = { "DS Parameter set", print_ds, 1, 1, BIT(PRINT_SCAN), },
 	[5] = { "TIM", print_tim, 4, 255, BIT(PRINT_SCAN), },
