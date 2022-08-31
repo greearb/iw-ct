@@ -181,7 +181,7 @@ static int print_link_sta(struct nl_msg *msg, void *arg)
 			fprintf(stderr, "failed to parse nested bss parameters!\n");
 		} else {
 			char *delim = "";
-			printf("\n\tbss flags:\t");
+			printf("\tbss flags: ");
 			if (binfo[NL80211_STA_BSS_PARAM_CTS_PROT]) {
 				printf("CTS-protection");
 				delim = " ";
@@ -192,9 +192,9 @@ static int print_link_sta(struct nl_msg *msg, void *arg)
 			}
 			if (binfo[NL80211_STA_BSS_PARAM_SHORT_SLOT_TIME])
 				printf("%sshort-slot-time", delim);
-			printf("\n\tdtim period:\t%d",
+			printf("\n\tdtim period: %d",
 			       nla_get_u8(binfo[NL80211_STA_BSS_PARAM_DTIM_PERIOD]));
-			printf("\n\tbeacon int:\t%d",
+			printf("\n\tbeacon int: %d",
 			       nla_get_u16(binfo[NL80211_STA_BSS_PARAM_BEACON_INTERVAL]));
 			printf("\n");
 		}
