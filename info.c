@@ -197,7 +197,7 @@ static void __print_ftm_capability(struct nlattr *ftm_capa)
 	if (tb[NL80211_PMSR_FTM_CAPA_ATTR_PREAMBLES]) {
 #define PRINT_PREAMBLE(P, V) \
 	do { \
-		if (P | NL80211_PREAMBLE_##V) \
+		if (P & BIT(NL80211_PREAMBLE_##V)) \
 			printf(" " #V); \
 	} while (0)
 
@@ -215,7 +215,7 @@ static void __print_ftm_capability(struct nlattr *ftm_capa)
 	if (tb[NL80211_PMSR_FTM_CAPA_ATTR_BANDWIDTHS]) {
 #define PRINT_BANDWIDTH(B, V) \
 	do { \
-		if (B | NL80211_CHAN_WIDTH_##V) \
+		if (B & BIT(NL80211_CHAN_WIDTH_##V)) \
 			printf(" " #V); \
 	} while (0)
 
