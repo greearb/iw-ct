@@ -484,7 +484,7 @@ enum nl80211_chan_width str_to_bw(const char *str)
 }
 
 static int parse_freqs(struct chandef *chandef, int argc, char **argv,
-		       int *parsed)
+		       int *parsed, bool freq_in_khz)
 {
 	uint32_t freq;
 	char *end;
@@ -537,7 +537,13 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
 		return 1;
 	*parsed += 1;
 
-	chandef->center_freq1 = freq;
+	if (freq_in_khz) {
+		chandef->center_freq1 = freq / 1000;
+		chandef->center_freq1_offset = freq % 1000;
+	} else {
+		chandef->center_freq1 = freq;
+		chandef->center_freq1_offset = 0;
+	}
 
 	if (!need_cf2)
 		return 0;
@@ -551,7 +557,11 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
 	freq = strtoul(argv[2], &end, 10);
 	if (*end)
 		return 1;
-	chandef->center_freq2 = freq;
+
+	if (freq_in_khz)
+		chandef->center_freq2 = freq / 1000;
+	else
+		chandef->center_freq2 = freq;
 
 	*parsed += 1;
 
@@ -568,6 +578,7 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
  * @argv: Array of string arguments
  * @parsed: Pointer to return the number of used arguments, or NULL to error
  *          out if any argument is left unused.
+ * @freq_in_khz: Boolean whether to parse the frequency in kHz or default as MHz
  *
  * The given chandef structure will be filled in from the command line
  * arguments. argc/argv will be updated so that further arguments from the
@@ -591,7 +602,7 @@ static int parse_freqs(struct chandef *chandef, int argc, char **argv,
  * Return: Number of used arguments, zero or negative error number otherwise
  */
 int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
-		   int *parsed)
+		   int *parsed, bool freq_in_khz)
 {
 	char *end;
 	static const struct chanmode chanmode[] = {
@@ -631,9 +642,30 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		  .width = NL80211_CHAN_WIDTH_320,
 		  .freq1_diff = 0,
 		  .chantype = -1 },
+		{ .name = "1MHz",
+		  .width = NL80211_CHAN_WIDTH_1,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
+		{ .name = "2MHz",
+		  .width = NL80211_CHAN_WIDTH_2,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
+		{ .name = "4MHz",
+		  .width = NL80211_CHAN_WIDTH_4,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
+		{ .name = "8MHz",
+		  .width = NL80211_CHAN_WIDTH_8,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
+		{ .name = "16MHz",
+		  .width = NL80211_CHAN_WIDTH_16,
+		  .freq1_diff = 0,
+		  .chantype = -1 },
+
 	};
 	const struct chanmode *chanmode_selected = NULL;
-	unsigned int freq;
+	unsigned int freq, freq_offset = 0;
 	unsigned int i;
 	int _parsed = 0;
 	int res = 0;
@@ -643,7 +675,14 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 
 	if (!argv[0])
 		goto out;
+
 	freq = strtoul(argv[0], &end, 10);
+
+	if (freq_in_khz) {
+		freq_offset = freq % 1000;
+		freq = freq / 1000;
+	}
+
 	if (*end) {
 		res = 1;
 		goto out;
@@ -660,8 +699,10 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		freq = ieee80211_channel_to_frequency(freq, band);
 	}
 	chandef->control_freq = freq;
+	chandef->control_freq_offset = freq_offset;
 	/* Assume 20MHz NOHT channel for now. */
 	chandef->center_freq1 = freq;
+	chandef->center_freq1_offset = freq_offset;
 
 	/* Try to parse HT mode definitions */
 	if (argc > 1) {
@@ -674,9 +715,20 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		}
 	}
 
+	/* Set channel width's default value */
+	if (chandef->control_freq < 1000)
+		chandef->width = NL80211_CHAN_WIDTH_16;
+	else
+		chandef->width = NL80211_CHAN_WIDTH_20_NOHT;
+
 	/* channel mode given, use it and return. */
 	if (chanmode_selected) {
 		chandef->center_freq1 = get_cf1(chanmode_selected, freq);
+
+		/* For non-S1G frequency */
+		if (chandef->center_freq1 > 1000)
+			chandef->center_freq1_offset = 0;
+
 		chandef->width = chanmode_selected->width;
 		goto out;
 	}
@@ -685,7 +737,7 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 	if (chan)
 		goto out;
 
-	res = parse_freqs(chandef, argc - 1, argv + 1, &_parsed);
+	res = parse_freqs(chandef, argc - 1, argv + 1, &_parsed, freq_in_khz);
 
  out:
 	/* Error out if parsed is NULL. */
@@ -701,6 +753,9 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 int put_chandef(struct nl_msg *msg, struct chandef *chandef)
 {
 	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_FREQ, chandef->control_freq);
+	NLA_PUT_U32(msg,
+		    NL80211_ATTR_WIPHY_FREQ_OFFSET,
+		    chandef->control_freq_offset);
 	NLA_PUT_U32(msg, NL80211_ATTR_CHANNEL_WIDTH, chandef->width);
 
 	switch (chandef->width) {
@@ -732,6 +787,11 @@ int put_chandef(struct nl_msg *msg, struct chandef *chandef)
 		NLA_PUT_U32(msg,
 			    NL80211_ATTR_CENTER_FREQ1,
 			    chandef->center_freq1);
+
+	if (chandef->center_freq1_offset)
+		NLA_PUT_U32(msg,
+			    NL80211_ATTR_CENTER_FREQ1_OFFSET,
+			    chandef->center_freq1_offset);
 
 	if (chandef->center_freq2)
 		NLA_PUT_U32(msg,

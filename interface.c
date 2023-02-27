@@ -701,7 +701,7 @@ static int handle_chanfreq(struct nl80211_state *state, struct nl_msg *msg,
 	int parsed;
 	char *end;
 
-	res = parse_freqchan(&chandef, chan, argc, argv, &parsed);
+	res = parse_freqchan(&chandef, chan, argc, argv, &parsed, false);
 	if (res)
 		return res;
 

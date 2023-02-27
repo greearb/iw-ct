@@ -485,7 +485,7 @@ static int join_mesh(struct nl80211_state *state,
 		int err, parsed;
 
 		err = parse_freqchan(&chandef, false, argc - 1, argv + 1,
-				     &parsed);
+				     &parsed, false);
 		if (err)
 			return err;
 

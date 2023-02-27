@@ -191,7 +191,7 @@ static int handle_freq(struct nl80211_state *state, struct nl_msg *msg,
 	struct chandef chandef;
 	int res;
 
-	res = parse_freqchan(&chandef, false, argc, argv, NULL);
+	res = parse_freqchan(&chandef, false, argc, argv, NULL, false);
 	if (res)
 		return res;
 
@@ -209,6 +209,31 @@ COMMAND(set, freq,
 	"<control freq> [5|10|20|40|80|80+80|160] [<center1_freq> [<center2_freq>]]",
 	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_freq, NULL);
 
+static int handle_freq_khz(struct nl80211_state *state, struct nl_msg *msg,
+		       int argc, char **argv,
+		       enum id_input id)
+{
+	struct chandef chandef;
+	int res;
+
+	res = parse_freqchan(&chandef, false, argc, argv, NULL, true);
+	if (res)
+		return res;
+
+	return put_chandef(msg, &chandef);
+}
+
+COMMAND(set, freq_khz,
+	"<freq> [1MHz|2MHz|4MHz|8MHz|16MHz]\n"
+	"<control freq> [1|2|4|8|16] [<center1_freq> [<center2_freq>]]",
+	NL80211_CMD_SET_WIPHY, 0, CIB_PHY, handle_freq_khz,
+	"Set frequency in kHz the hardware is using\n"
+	"configuration.");
+COMMAND(set, freq_khz,
+	"<freq> [1MHz|2MHz|4MHz|8MHz|16MHz]\n"
+	"<control freq> [1|2|4|8|16] [<center1_freq> [<center2_freq>]]",
+	NL80211_CMD_SET_WIPHY, 0, CIB_NETDEV, handle_freq_khz, NULL);
+
 static int handle_chan(struct nl80211_state *state, struct nl_msg *msg,
 		       int argc, char **argv,
 		       enum id_input id)
@@ -216,7 +241,7 @@ static int handle_chan(struct nl80211_state *state, struct nl_msg *msg,
 	struct chandef chandef;
 	int res;
 
-	res = parse_freqchan(&chandef, true, argc, argv, NULL);
+	res = parse_freqchan(&chandef, true, argc, argv, NULL, false);
 	if (res)
 		return res;
 
@@ -288,9 +313,9 @@ static int handle_cac_trigger(struct nl80211_state *state,
 		return 1;
 
 	if (strcmp(argv[0], "channel") == 0) {
-		res = parse_freqchan(&chandef, true, argc - 1, argv + 1, NULL);
+		res = parse_freqchan(&chandef, true, argc - 1, argv + 1, NULL, false);
 	} else if (strcmp(argv[0], "freq") == 0) {
-		res = parse_freqchan(&chandef, false, argc - 1, argv + 1, NULL);
+		res = parse_freqchan(&chandef, false, argc - 1, argv + 1, NULL, false);
 	} else {
 		return 1;
 	}
@@ -334,9 +359,9 @@ static int handle_cac(struct nl80211_state *state,
 		return 1;
 
 	if (strcmp(argv[2], "channel") == 0) {
-		err = parse_freqchan(&chandef, true, argc - 3, argv + 3, NULL);
+		err = parse_freqchan(&chandef, true, argc - 3, argv + 3, NULL, false);
 	} else if (strcmp(argv[2], "freq") == 0) {
-		err = parse_freqchan(&chandef, false, argc - 3, argv + 3, NULL);
+		err = parse_freqchan(&chandef, false, argc - 3, argv + 3, NULL, false);
 	} else {
 		err = 1;
 	}

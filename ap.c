@@ -28,7 +28,7 @@ static int handle_start_ap(struct nl80211_state *state,
 	argc--;
 
 	/* chandef */
-	res = parse_freqchan(&chandef, false, argc, argv, &parsed);
+	res = parse_freqchan(&chandef, false, argc, argv, &parsed, false);
 	if (res)
 		return res;
 	argc -= parsed;
