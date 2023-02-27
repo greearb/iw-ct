@@ -224,6 +224,7 @@ void print_vht_info(__u32 capa, const __u8 *mcs);
 void print_he_capability(const uint8_t *ie, int len);
 void print_he_info(struct nlattr *nl_iftype);
 void print_eht_info(struct nlattr *nl_iftype, int band);
+void print_s1g_capability(const uint8_t *caps);
 
 char *channel_width_name(enum nl80211_chan_width width);
 const char *iftype_name(enum nl80211_iftype iftype);
@@ -261,6 +262,9 @@ int get_cf1(const struct chanmode *chanmode, unsigned long freq);
 
 int parse_random_mac_addr(struct nl_msg *msg, char *addrs);
 
+char *s1g_ss_max_support(__u8 maxss);
+char *s1g_ss_min_support(__u8 minss);
+
 #define SCHED_SCAN_OPTIONS "[interval <in_msecs> | scan_plans [<interval_secs:iterations>*] <interval_secs>] "	\
 	"[delay <in_secs>] [freqs <freq>+] [matches [ssid <ssid>]+]] [active [ssid <ssid>]+|passive] "	\
 	"[randomise[=<addr>/<mask>]] [coloc] [flush]"
@@ -274,6 +278,7 @@ char *hex2bin(const char *hex, char *buf);
 int set_bitrates(struct nl_msg *msg, int argc, char **argv,
 		 enum nl80211_attrs attr);
 
+int calc_s1g_ch_center_freq(__u8 ch_index, __u8 s1g_oper_class);
 
 /* sections */
 DECLARE_SECTION(ap);

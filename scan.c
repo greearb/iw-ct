@@ -1675,6 +1675,101 @@ static void print_mesh_conf(const uint8_t type, uint8_t len,
 		printf("\t\t\t Mesh Power Save Level\n");
 }
 
+static void print_s1g_capa(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
+{
+	printf("\n");
+	print_s1g_capability(data);
+}
+
+static void print_short_beacon_int(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
+{
+	printf(" %d\n", (data[1] << 8) | data[0]);
+}
+
+static void print_s1g_oper(const uint8_t type, uint8_t len,
+			    const uint8_t *data,
+			    const struct print_ies_data *ie_buffer)
+{
+	int oper_ch_width, prim_ch_width;
+	int prim_ch_width_subfield = data[0] & 0x1;
+
+	prim_ch_width = 2;
+
+	/* B1-B4 BSS channel width subfield */
+	switch ((data[0] >> 1) & 0xf) {
+	case 0:
+		oper_ch_width = 1;
+		prim_ch_width = 1;
+		if (!prim_ch_width_subfield) {
+			oper_ch_width = -1;
+			prim_ch_width = -1;
+		}
+	break;
+	case 1:
+		oper_ch_width = 2;
+		if (prim_ch_width_subfield)
+			prim_ch_width = 1;
+		break;
+	case 3:
+		oper_ch_width = 4;
+		if (prim_ch_width_subfield)
+			prim_ch_width = 1;
+		break;
+	case 7:
+		oper_ch_width = 8;
+		if (prim_ch_width_subfield)
+			prim_ch_width = 1;
+		break;
+	case 15:
+		oper_ch_width = 16;
+		if (prim_ch_width_subfield)
+			prim_ch_width = 1;
+		break;
+	default:
+		oper_ch_width = -1;
+		prim_ch_width = -1;
+		break;
+	}
+
+	printf("\n");
+	printf("\t\tChannel width:\n");
+	if (oper_ch_width == -1 || prim_ch_width == -1) {
+		printf("\t\t\tBSS primary channel width: invalid\n");
+		printf("\t\t\tBSS operating channel width: invalid\n");
+	} else {
+		printf("\t\t\tBSS primary channel width: %d MHz\n", prim_ch_width);
+		printf("\t\t\tBSS operating channel width: %d MHz\n", oper_ch_width);
+	}
+	if (data[0] & BIT(5))
+		printf("\t\t\t1 MHz primary channel located at the lower side of 2 MHz\n");
+	else
+		printf("\t\t\t1 MHz primary channel located at the upper side of 2 MHz\n");
+
+	if (data[0] & BIT(7))
+		printf("\t\t\tMCS 10 not recommended\n");
+
+	printf("\t\t* operating class: %d\n", data[1]);
+	printf("\t\t* primary channel number: %d\n", data[2]);
+
+	printf("\t\t* channel index: %d\n", data[3]);
+
+	printf("\t\tMax S1G MCS Map:\n");
+	printf("\t\t\tFor 1 SS: %s\n", s1g_ss_max_support((data[4] >> 2) & 0x3));
+	printf("\t\t\tFor 2 SS: %s\n", s1g_ss_max_support((data[4] >> 6) & 0x3));
+	printf("\t\t\tFor 3 SS: %s\n", s1g_ss_max_support((data[5] >> 2) & 0x3));
+	printf("\t\t\tFor 4 SS: %s\n", s1g_ss_max_support((data[5] >> 6) & 0x3));
+
+	printf("\t\tMin S1G MCS Map:\n");
+	printf("\t\t\tFor 1 SS: %s\n", s1g_ss_min_support(data[4] & 0x3));
+	printf("\t\t\tFor 2 SS: %s\n", s1g_ss_min_support((data[4] >> 4) & 0x3));
+	printf("\t\t\tFor 3 SS: %s\n", s1g_ss_min_support(data[5] & 0x3));
+	printf("\t\t\tFor 4 SS: %s\n", s1g_ss_min_support((data[5] >> 4) & 0x3));
+}
+
 struct ie_print {
 	const char *name;
 	void (*print)(const uint8_t type, uint8_t len, const uint8_t *data,
@@ -1748,6 +1843,9 @@ static const struct ie_print ieprinters[] = {
 	[108] = { "802.11u Advertisement", print_11u_advert, 0, 255, BIT(PRINT_SCAN), },
 	[111] = { "802.11u Roaming Consortium", print_11u_rcon, 2, 255, BIT(PRINT_SCAN), },
 	[195] = { "Transmit Power Envelope", print_tx_power_envelope, 2, 5, BIT(PRINT_SCAN), },
+	[214] = { "Short beacon interval", print_short_beacon_int, 2, 2, BIT(PRINT_SCAN), },
+	[217] = { "S1G capabilities", print_s1g_capa, 15, 15, BIT(PRINT_SCAN), },
+	[232] = { "S1G operation", print_s1g_oper, 6, 6, BIT(PRINT_SCAN), },
 };
 
 static void print_wifi_wpa(const uint8_t type, uint8_t len, const uint8_t *data,
@@ -2326,7 +2424,8 @@ void print_ies(unsigned char *ie, int ielen, bool unknown,
 	while (ielen >= 2 && ielen - 2 >= ie[1]) {
 		if (ie[0] < ARRAY_SIZE(ieprinters) &&
 		    ieprinters[ie[0]].name &&
-		    ieprinters[ie[0]].flags & BIT(ptype)) {
+		    ieprinters[ie[0]].flags & BIT(ptype) &&
+			    ie[1] > 0) {
 			print_ie(&ieprinters[ie[0]],
 				 ie[0], ie[1], ie + 2, &ie_buffer);
 		} else if (ie[0] == 221 /* vendor */) {
@@ -2419,6 +2518,7 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 	static struct nla_policy bss_policy[NL80211_BSS_MAX + 1] = {
 		[NL80211_BSS_TSF] = { .type = NLA_U64 },
 		[NL80211_BSS_FREQUENCY] = { .type = NLA_U32 },
+		[NL80211_BSS_FREQUENCY_OFFSET] = { .type = NLA_U32 },
 		[NL80211_BSS_BSSID] = { },
 		[NL80211_BSS_BEACON_INTERVAL] = { .type = NLA_U16 },
 		[NL80211_BSS_CAPABILITY] = { .type = NLA_U16 },
@@ -2491,7 +2591,12 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 	}
 	if (bss[NL80211_BSS_FREQUENCY]) {
 		int freq = nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
-		printf("\tfreq: %d\n", freq);
+		if (bss[NL80211_BSS_FREQUENCY_OFFSET])
+			printf("\tfreq: %d.%d\n", freq,
+			    nla_get_u32(bss[NL80211_BSS_FREQUENCY_OFFSET]));
+		else
+			printf("\tfreq: %d\n", freq);
+
 		if (freq > 45000)
 			is_dmg = true;
 	}
