@@ -199,6 +199,8 @@ int ieee80211_channel_to_frequency(int chan, enum nl80211_band band)
 
 int ieee80211_frequency_to_channel(int freq)
 {
+	if (freq < 1000)
+		return 0;
 	/* see 802.11-2007 17.3.8.3.2 and Annex J */
 	if (freq == 2484)
 		return 14;
