@@ -1593,7 +1593,8 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	nla_parse(tb, NL80211_BAND_IFTYPE_ATTR_MAX,
 		  nla_data(nl_iftype), nla_len(nl_iftype), NULL);
 
-	if (!tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES])
+	if (!tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES] ||
+	    !tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MAC])
 		return;
 
 	printf("\t\tEHT Iftypes: ");
