@@ -166,6 +166,10 @@ static void ext_feat_print(enum nl80211_ext_feature_index idx)
 	ext_feat_case(BSS_COLOR, "BSS coloring support");
 	ext_feat_case(FILS_CRYPTO_OFFLOAD, "FILS crypto offload");
 	ext_feat_case(RADAR_BACKGROUND, "Radar background support");
+	ext_feat_case(POWERED_ADDR_CHANGE, "can change MAC address while up");
+	ext_feat_case(PUNCT, "preamble puncturing in AP mode");
+	ext_feat_case(SECURE_NAN, "secure NAN support");
+	ext_feat_case(AUTH_AND_DEAUTH_RANDOM_TA, "random auth/deauth transmitter address");
 	}
 }
 
