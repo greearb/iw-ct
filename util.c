@@ -1647,6 +1647,7 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	__u8 ppet[31] = { 0 };
 	__u16 he_phy_cap[6] = { 0 };
 	size_t len, mcs_len = 0, ppet_len = 0;
+	bool did_one = false;
 
 	nla_parse(tb, NL80211_BAND_IFTYPE_ATTR_MAX,
 		  nla_data(nl_iftype), nla_len(nl_iftype), NULL);
@@ -1655,11 +1656,8 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	    !tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MAC])
 		return;
 
-	printf("\t\tEHT Iftypes: ");
-	print_iftype_line(tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES]);
-	printf("\n");
-
 	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MAC]) {
+		did_one = true;
 		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MAC]);
 		if (len > sizeof(mac_cap))
 			len = sizeof(mac_cap);
@@ -1669,6 +1667,7 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	}
 
 	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PHY]) {
+		did_one = true;
 		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PHY]);
 
 		if (len > sizeof(phy_cap))
@@ -1680,6 +1679,7 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	}
 
 	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MCS_SET]) {
+		did_one = true;
 		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_MCS_SET]);
 		if (len > sizeof(mcs_set))
 			len = sizeof(mcs_set);
@@ -1692,6 +1692,7 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	}
 
 	if (tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PPE]) {
+		did_one = true;
 		len = nla_len(tb[NL80211_BAND_IFTYPE_ATTR_EHT_CAP_PPE]);
 		if (len > sizeof(ppet))
 			len = sizeof(ppet);
@@ -1710,6 +1711,13 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 		       nla_data(tb[NL80211_BAND_IFTYPE_ATTR_HE_CAP_PHY]),
 		       len);
 	}
+
+	if (!did_one)
+		return;
+
+	printf("\t\tEHT Iftypes: ");
+	print_iftype_line(tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES]);
+	printf("\n");
 
 	__print_eht_capa(band, mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len,
 			 he_phy_cap, true);
