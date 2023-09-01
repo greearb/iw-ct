@@ -18,6 +18,7 @@ CFLAGS += -Wall -Wextra -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-a
 CFLAGS += -Werror-implicit-function-declaration -Wsign-compare -Wno-unused-parameter
 CFLAGS += -Wdeclaration-after-statement
 CFLAGS += $(CFLAGS_EVAL)
+CFLAGS += $(EXTRA_CFLAGS)
 
 _OBJS := $(sort $(patsubst %.c,%.o,$(wildcard *.c)))
 VERSION_OBJS := $(filter-out version.o, $(_OBJS))
