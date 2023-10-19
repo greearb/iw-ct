@@ -241,6 +241,16 @@ void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen)
 		pos += snprintf(pos, buflen - (pos - buf), " 160MHz");
 	if (rinfo[NL80211_RATE_INFO_320_MHZ_WIDTH])
 		pos += snprintf(pos, buflen - (pos - buf), " 320MHz");
+	if (rinfo[NL80211_RATE_INFO_1_MHZ_WIDTH])
+		pos += snprintf(pos, buflen - (pos - buf), " 1MHz");
+	if (rinfo[NL80211_RATE_INFO_2_MHZ_WIDTH])
+		pos += snprintf(pos, buflen - (pos - buf), " 2MHz");
+	if (rinfo[NL80211_RATE_INFO_4_MHZ_WIDTH])
+		pos += snprintf(pos, buflen - (pos - buf), " 4MHz");
+	if (rinfo[NL80211_RATE_INFO_8_MHZ_WIDTH])
+		pos += snprintf(pos, buflen - (pos - buf), " 8MHz");
+	if (rinfo[NL80211_RATE_INFO_16_MHZ_WIDTH])
+		pos += snprintf(pos, buflen - (pos - buf), " 16MHz");
 	if (rinfo[NL80211_RATE_INFO_SHORT_GI])
 		pos += snprintf(pos, buflen - (pos - buf), " short GI");
 	if (rinfo[NL80211_RATE_INFO_VHT_NSS])

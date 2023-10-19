@@ -29,6 +29,7 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 	static struct nla_policy bss_policy[NL80211_BSS_MAX + 1] = {
 		[NL80211_BSS_TSF] = { .type = NLA_U64 },
 		[NL80211_BSS_FREQUENCY] = { .type = NLA_U32 },
+		[NL80211_BSS_FREQUENCY_OFFSET] = { .type = NLA_U32 },
 		[NL80211_BSS_BSSID] = { },
 		[NL80211_BSS_BEACON_INTERVAL] = { .type = NLA_U16 },
 		[NL80211_BSS_CAPABILITY] = { .type = NLA_U16 },
@@ -41,6 +42,7 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 	char mac_addr[20], dev[20], link_addr[20];
 	int link_id = -1;
 	const char *indent = "\t";
+	int freq_offset = 0;
 
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
 		  genlmsg_attrlen(gnlh, 0), NULL);
@@ -121,9 +123,12 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 			  nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
 			  false, result->mld ? PRINT_LINK_MLO_LINK : PRINT_LINK);
 
+	if (bss[NL80211_BSS_FREQUENCY_OFFSET])
+		freq_offset = nla_get_u32(bss[NL80211_BSS_FREQUENCY_OFFSET]);
+
 	if (bss[NL80211_BSS_FREQUENCY])
-		printf("%sfreq: %d\n", indent,
-			nla_get_u32(bss[NL80211_BSS_FREQUENCY]));
+		printf("%sfreq: %d.%d\n", indent,
+			nla_get_u32(bss[NL80211_BSS_FREQUENCY]), freq_offset);
 
 	if (nla_get_u32(bss[NL80211_BSS_STATUS]) != NL80211_BSS_STATUS_ASSOCIATED)
 		return NL_SKIP;
