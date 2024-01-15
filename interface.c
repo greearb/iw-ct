@@ -385,6 +385,13 @@ static void print_channel(struct nlattr **tb)
 		if (tb[NL80211_ATTR_CENTER_FREQ2])
 			printf(", center2: %d MHz",
 				nla_get_u32(tb[NL80211_ATTR_CENTER_FREQ2]));
+
+		if (tb[NL80211_ATTR_PUNCT_BITMAP]) {
+			uint32_t punct = nla_get_u32(tb[NL80211_ATTR_PUNCT_BITMAP]);
+
+			if (punct)
+				printf(", punctured: 0x%x", punct);
+		}
 	} else if (tb[NL80211_ATTR_WIPHY_CHANNEL_TYPE]) {
 		enum nl80211_channel_type channel_type;
 
