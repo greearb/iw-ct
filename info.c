@@ -398,7 +398,7 @@ static int print_phy_handler(struct nl_msg *msg, void *arg)
 						    tb_band[NL80211_BAND_ATTR_IFTYPE_DATA],
 						    rem_band) {
 					print_he_info(nl_iftype);
-					print_eht_info(nl_iftype, last_band);
+					print_eht_info(nl_iftype);
 				}
 			}
 			if (tb_band[NL80211_BAND_ATTR_FREQS]) {

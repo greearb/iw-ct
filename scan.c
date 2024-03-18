@@ -2384,12 +2384,40 @@ static void print_he_capa(const uint8_t type, uint8_t len, const uint8_t *data,
 	print_he_capability(data, len);
 }
 
+static void print_eht_capa(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct print_ies_data *ie_buffer)
+{
+	bool is_he = false;
+	const __u16 he_phy_cap[6] = { 0 };
+	unsigned char *ie = ie_buffer->ie;
+	int ielen = ie_buffer->ielen;
+
+	while (ielen >= 2 && ielen >= ie[1]) {
+		if (ie[0] == 255 && ie[2] == 35) {
+			is_he = true;
+			break;
+		}
+		ielen -= ie[1] + 2;
+		ie += ie[1] + 2;
+	}
+
+	if (is_he) {
+		memcpy(&((__u8 *)he_phy_cap)[0],
+		       ie + 9, 12);
+	}
+
+	printf("\n");
+	print_eht_capability(data, len, he_phy_cap);
+}
+
 static const struct ie_print ext_printers[] = {
 	[35] = { "HE capabilities", print_he_capa, 21, 54, BIT(PRINT_SCAN), },
+	[108] = { "EHT capabilties", print_eht_capa, 13, 30, BIT(PRINT_SCAN), },
 };
 
 static void print_extension(unsigned char len, unsigned char *ie,
-			    bool unknown, enum print_ie_type ptype)
+			    bool unknown, enum print_ie_type ptype,
+			    const struct print_ies_data *ie_buffer)
 {
 	unsigned char tag;
 
@@ -2401,7 +2429,7 @@ static void print_extension(unsigned char len, unsigned char *ie,
 	tag = ie[0];
 	if (tag < ARRAY_SIZE(ext_printers) && ext_printers[tag].name &&
 	    ext_printers[tag].flags & BIT(ptype)) {
-		print_ie(&ext_printers[tag], tag, len - 1, ie + 1, NULL);
+		print_ie(&ext_printers[tag], tag, len - 1, ie + 1, ie_buffer);
 		return;
 	}
 
@@ -2435,7 +2463,7 @@ void print_ies(unsigned char *ie, int ielen, bool unknown,
 		} else if (ie[0] == 221 /* vendor */) {
 			print_vendor(ie[1], ie + 2, unknown, ptype);
 		} else if (ie[0] == 255 /* extension */) {
-			print_extension(ie[1], ie + 2, unknown, ptype);
+			print_extension(ie[1], ie + 2, unknown, ptype, &ie_buffer);
 		} else if (unknown) {
 			int i;
 
@@ -2639,8 +2667,7 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 				       nla_len(ies)))))
 			printf("\tInformation elements from Probe Response "
 			       "frame:\n");
-		print_ies(nla_data(ies), nla_len(ies),
-			  params->unknown, params->type);
+		print_ies(nla_data(ies), nla_len(ies), params->unknown, params->type);
 	}
 	if (bss[NL80211_BSS_BEACON_IES] && show--) {
 		printf("\tInformation elements from Beacon frame:\n");

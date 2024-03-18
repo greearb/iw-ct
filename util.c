@@ -1508,17 +1508,15 @@ void print_he_info(struct nlattr *nl_iftype)
 			true);
 }
 
-static void __print_eht_capa(int band,
-			     const __u8 *mac_cap,
+static void __print_eht_capa(const __u8 *mac_cap,
 			     const __u32 *phy_cap,
 			     const __u8 *mcs_set, size_t mcs_len,
 			     const __u8 *ppet, size_t ppet_len,
 			     const __u16 *he_phy_cap,
 			     bool indent)
 {
-	unsigned int i;
+	size_t i;
 	const char *pre = indent ? "\t" : "";
-	const char *mcs[] = { "0-7", "8-9", "10-11", "12-13"};
 
 	#define PRINT_EHT_CAP(_var, _idx, _bit, _str) \
 	do { \
@@ -1533,6 +1531,7 @@ static void __print_eht_capa(int band,
 	} while (0)
 
 	#define PRINT_EHT_MAC_CAP(...) PRINT_EHT_CAP(mac_cap, __VA_ARGS__)
+	#define PRINT_EHT_MAC_CAP_MASK(...) PRINT_EHT_CAP_MASK(mac_cap, __VA_ARGS__)
 	#define PRINT_EHT_PHY_CAP(...) PRINT_EHT_CAP(phy_cap, __VA_ARGS__)
 	#define PRINT_EHT_PHY_CAP_MASK(...) PRINT_EHT_CAP_MASK(phy_cap, __VA_ARGS__)
 
@@ -1541,10 +1540,19 @@ static void __print_eht_capa(int band,
 		printf("%02x", mac_cap[i]);
 	printf("):\n");
 
-	PRINT_EHT_MAC_CAP(0, 0, "NSEP priority access Supported");
+	PRINT_EHT_MAC_CAP(0, 0, "EPCS Priority Access Supported");
 	PRINT_EHT_MAC_CAP(0, 1, "EHT OM Control Supported");
-	PRINT_EHT_MAC_CAP(0, 2, "Triggered TXOP Sharing Supported");
-	PRINT_EHT_MAC_CAP(0, 3, "ARR Supported");
+	PRINT_EHT_MAC_CAP(0, 2, "Triggered TXOP Sharing Mode 1 Supported");
+	PRINT_EHT_MAC_CAP(0, 3, "Triggered TXOP Sharing Mode 2 Supported");
+	PRINT_EHT_MAC_CAP(0, 4, "Restricted TWP Supported");
+	PRINT_EHT_MAC_CAP(0, 5, "SCS Traffic Description Supported");
+	PRINT_EHT_MAC_CAP_MASK(0, 6, 0x3, "Maximum MPDU Length");
+
+	PRINT_EHT_MAC_CAP(1, 1, "Maximum A-MPDU Length Exponent Extension");
+	PRINT_EHT_MAC_CAP(1, 2, "EHT TRS Supported");
+	PRINT_EHT_MAC_CAP(1, 3, "TXOP Return In TXOP Sharing Mode 2 Supported");
+	PRINT_EHT_MAC_CAP(1, 4, "Two BQRs Supported");
+	PRINT_EHT_MAC_CAP_MASK(1, 5, 0x3, "EHT Link Adaptation Supported");
 
 	printf("%s\t\tEHT PHY Capabilities: (0x", pre);
 	for (i = 0; i < 8; i++)
@@ -1557,13 +1565,13 @@ static void __print_eht_capa(int band,
 	PRINT_EHT_PHY_CAP(0, 4, "Partial Bandwidth UL MU-MIMO");
 	PRINT_EHT_PHY_CAP(0, 5, "SU Beamformer");
 	PRINT_EHT_PHY_CAP(0, 6, "SU Beamformee");
-	PRINT_EHT_PHY_CAP_MASK(0, 7, 0x7, "Beamformee SS (80MHz)");
-	PRINT_EHT_PHY_CAP_MASK(0, 10, 0x7, "Beamformee SS (160MHz)");
-	PRINT_EHT_PHY_CAP_MASK(0, 13, 0x7, "Beamformee SS (320MHz)");
+	PRINT_EHT_PHY_CAP_MASK(0, 7, 0x7, "Beamformee SS <= 80MHz");
+	PRINT_EHT_PHY_CAP_MASK(0, 10, 0x7, "Beamformee SS = 160MHz");
+	PRINT_EHT_PHY_CAP_MASK(0, 13, 0x7, "Beamformee SS = 320MHz");
 
-	PRINT_EHT_PHY_CAP_MASK(0, 16, 0x7, "Number Of Sounding Dimensions (80MHz)");
-	PRINT_EHT_PHY_CAP_MASK(0, 19, 0x7, "Number Of Sounding Dimensions (160MHz)");
-	PRINT_EHT_PHY_CAP_MASK(0, 22, 0x7, "Number Of Sounding Dimensions (320MHz)");
+	PRINT_EHT_PHY_CAP_MASK(0, 16, 0x7, "Number Of Sounding Dimensions <= 80MHz");
+	PRINT_EHT_PHY_CAP_MASK(0, 19, 0x7, "Number Of Sounding Dimensions = 160MHz");
+	PRINT_EHT_PHY_CAP_MASK(0, 22, 0x7, "Number Of Sounding Dimensions = 320MHz");
 	PRINT_EHT_PHY_CAP(0, 25, "Ng = 16 SU Feedback");
 	PRINT_EHT_PHY_CAP(0, 26, "Ng = 16 MU Feedback");
 	PRINT_EHT_PHY_CAP(0, 27, "Codebook size (4, 2) SU Feedback");
@@ -1573,9 +1581,9 @@ static void __print_eht_capa(int band,
 	PRINT_EHT_PHY_CAP(0, 31, "Triggered CQI Feedback");
 
 	PRINT_EHT_PHY_CAP(1, 0, "Partial Bandwidth DL MU-MIMO");
-	PRINT_EHT_PHY_CAP(1, 1, "PSR-Based SR Support");
-	PRINT_EHT_PHY_CAP(1, 2, "Power Boost Factor Support");
-	PRINT_EHT_PHY_CAP(1, 3, "EHT MU PPDU With 4 EHT-LTF And 0.8 µs GI");
+	PRINT_EHT_PHY_CAP(1, 1, "EHT PSR-Based SR Supported");
+	PRINT_EHT_PHY_CAP(1, 2, "Power Boost Factor Supported");
+	PRINT_EHT_PHY_CAP(1, 3, "EHT MU PPDU With 4x EHT-LTF And 0.8 µs GI");
 	PRINT_EHT_PHY_CAP_MASK(1, 4, 0xf, "Max Nc");
 	PRINT_EHT_PHY_CAP(1, 8, "Non-Triggered CQI Feedback");
 
@@ -1584,48 +1592,52 @@ static void __print_eht_capa(int band,
 	PRINT_EHT_PHY_CAP(1, 11, "PPE Thresholds Present");
 	PRINT_EHT_PHY_CAP_MASK(1, 12, 0x3, "Common Nominal Packet Padding");
 	PRINT_EHT_PHY_CAP_MASK(1, 14, 0x1f, "Maximum Number Of Supported EHT-LTFs");
-	PRINT_EHT_PHY_CAP_MASK(1, 19, 0xf, "Support of MCS 15");
-	PRINT_EHT_PHY_CAP(1, 23, "Support Of EHT DUP In 6 GHz");
-	PRINT_EHT_PHY_CAP(1, 24, "Support For 20MHz Rx NDP With Wider Bandwidth");
-	PRINT_EHT_PHY_CAP(1, 25, "Non-OFDMA UL MU-MIMO (80MHz)");
-	PRINT_EHT_PHY_CAP(1, 26, "Non-OFDMA UL MU-MIMO (160MHz)");
-	PRINT_EHT_PHY_CAP(1, 27, "Non-OFDMA UL MU-MIMO (320MHz)");
-	PRINT_EHT_PHY_CAP(1, 28, "MU Beamformer (80MHz)");
-	PRINT_EHT_PHY_CAP(1, 29, "MU Beamformer (160MHz)");
-	PRINT_EHT_PHY_CAP(1, 30, "MU Beamformer (320MHz)");
+	PRINT_EHT_PHY_CAP_MASK(1, 19, 0xf, "MCS 15 Supported");
+	PRINT_EHT_PHY_CAP(1, 23, "EHT DUP (MCS 14) In 6 GHz Supported");
+	PRINT_EHT_PHY_CAP(1, 24, "20 MHz Operating STA Receiving NDP With Wider BW Supported");
+	PRINT_EHT_PHY_CAP(1, 25, "Non-OFDMA UL MU-MIMO <= 80MHz");
+	PRINT_EHT_PHY_CAP(1, 26, "Non-OFDMA UL MU-MIMO = 160MHz");
+	PRINT_EHT_PHY_CAP(1, 27, "Non-OFDMA UL MU-MIMO = 320MHz");
+	PRINT_EHT_PHY_CAP(1, 28, "MU Beamformer (BW <= 80MHz)");
+	PRINT_EHT_PHY_CAP(1, 29, "MU Beamformer (BW = 160MHz)");
+	PRINT_EHT_PHY_CAP(1, 30, "MU Beamformer (BW = 320MHz)");
+	PRINT_EHT_PHY_CAP(1, 31, "TB Sounding Feedback Rate Limit");
+
+	PRINT_EHT_PHY_CAP(2, 0, "Rx 1024-QAM In Wider Bandwidth DL OFDMA Supported");
+	PRINT_EHT_PHY_CAP(2, 1, "Rx 4096-QAM In Wider Bandwidth DL OFDMA Supported");
 
 	printf("%s\t\tEHT MCS/NSS: (0x", pre);
 	for (i = 0; i < mcs_len; i++)
 		printf("%02x", ((__u8 *)mcs_set)[i]);
 	printf("):\n");
 
-	if (!(he_phy_cap[0] & ((BIT(2) | BIT(3) | BIT(4)) << 8))){
+	/*if (!(he_phy_cap[0] & ((BIT(2) | BIT(3) | BIT(4)) << 8))){
 		for (i = 0; i < 4; i++)
 			printf("%s\t\tEHT bw=20 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
 			       pre, mcs[i],
 			       mcs_set[i] & 0xf, mcs_set[i] >> 4);
-	} else {
-		if (he_phy_cap[0] & (BIT(2) << 8)) {
-			for (i = 0; i < 3; i++)
-				printf("%s\t\tEHT bw <= 80 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
-				       pre, mcs[i + 1],
-				       mcs_set[i] & 0xf, mcs_set[i] >> 4);
-		}
-		mcs_set += 3;
+        }*/
 
-		if (he_phy_cap[0] & (BIT(3) << 8)) {
-			for (i = 0; i < 3; i++)
-				printf("%s\t\tEHT bw=160 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
-				       pre, mcs[i + 1],
-				       mcs_set[i] & 0xf, mcs_set[i] >> 4);
-		}
+	for (i = 0; i < 3; i++) {
+		char *bw[] = { "<= 80", "160", "320" };
+		char *mcs[] = { "0-9", "10-11", "12-13" };
+		int j;
 
-		mcs_set += 3;
-		if (band == NL80211_BAND_6GHZ && (phy_cap[0] & BIT(1))) {
-			for (i = 0; i < 3; i++)
-				printf("%s\t\tEHT bw=320 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
-				       pre, mcs[i + 1],
-				       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+		if ((i * 3 + 2) * sizeof(mcs_set[0]) >= mcs_len)
+		   break;
+
+		printf("%s\t\tEHT MCS and NSS set %s MHz\n", pre, bw[i]);
+		for (j = 0; j < 6; j++) {
+			__u8 nss = mcs_set[(i * 3) + j / 2];
+			nss >>= (j % 2) * 4;
+			nss &= 0xF;
+
+			printf("%s\t\t\t%s Max NSS that supports MCS %s: ",
+			      pre, j % 2 ? "TX" : "RX", mcs[j / 2]);
+			if (nss == 0)
+				printf("not supported\n");
+			else
+			   printf("%d streams\n", nss);
 		}
 	}
 
@@ -1638,7 +1650,7 @@ static void __print_eht_capa(int band,
 	}
 }
 
-void print_eht_info(struct nlattr *nl_iftype, int band)
+void print_eht_info(struct nlattr *nl_iftype)
 {
 	struct nlattr *tb[NL80211_BAND_IFTYPE_ATTR_MAX + 1];
 	__u8 mac_cap[2] = { 0 };
@@ -1719,7 +1731,7 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	print_iftype_line(tb[NL80211_BAND_IFTYPE_ATTR_IFTYPES]);
 	printf("\n");
 
-	__print_eht_capa(band, mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len,
+	__print_eht_capa(mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len,
 			 he_phy_cap, true);
 }
 
@@ -1739,6 +1751,25 @@ void print_he_capability(const uint8_t *ie, int len)
 	mcs_len = len - i;
 
 	__print_he_capa(mac_cap, phy_cap - 1, mcs_set, mcs_len, NULL, 0, false);
+}
+
+void print_eht_capability(const uint8_t *ie, int len, const __u16 *he_phy_cap)
+{
+	const void *mac_cap, *phy_cap, *mcs_set;
+	int mcs_len;
+	int i = 0;
+
+	mac_cap = &ie[i];
+	i += 3;
+
+	phy_cap = &ie[i];
+	i += 8;
+
+	mcs_set = &ie[i];
+	mcs_len = len - i;
+
+	__print_eht_capa(mac_cap, phy_cap - 1, mcs_set, mcs_len, NULL, 0,
+			 he_phy_cap, false);
 }
 
 void iw_hexdump(const char *prefix, const __u8 *buf, size_t size)
