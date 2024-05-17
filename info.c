@@ -173,6 +173,7 @@ static void ext_feat_print(enum nl80211_ext_feature_index idx)
 	ext_feat_case(OWE_OFFLOAD, "OWE DH element handling offload (client)");
 	ext_feat_case(OWE_OFFLOAD_AP, "OWE DH element handling offload (AP)");
 	ext_feat_case(DFS_CONCURRENT, "DFS channel use under concurrent DFS master");
+	ext_feat_case(SPP_AMSDU_SUPPORT, "SPP A-MSDU support");
 	}
 }
 
