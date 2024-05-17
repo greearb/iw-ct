@@ -752,8 +752,12 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		_parsed++;
 	}
 
-	/* Error out if parsed is NULL. */
-	if (!parsed && _parsed != argc)
+	/*
+	 * Either this must consume all args, or users must pass a
+	 * valid pointer as 'parsed' and use it to know how many of
+	 * the arguments this function consumed.
+	 */
+	if (_parsed != argc && !parsed)
 		return 1;
 
 	if (parsed)
