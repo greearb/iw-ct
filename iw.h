@@ -106,6 +106,7 @@ struct chandef {
 	unsigned int center_freq1;
 	unsigned int center_freq1_offset;
 	unsigned int center_freq2;
+	unsigned int punctured;
 };
 
 #define ARRAY_SIZE(ar) (sizeof(ar)/sizeof(ar[0]))
@@ -210,8 +211,8 @@ unsigned char *parse_hex(char *hex, size_t *outlen);
 
 int parse_keys(struct nl_msg *msg, char **argv[], int *argc);
 
-#define _PARSE_FREQ_ARGS_OPT1 "<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz|320MHz]"
-#define _PARSE_FREQ_ARGS_OPT2 "<control freq> [5|10|20|40|80|80+80|160|320] [<center1_freq> [<center2_freq>]]"
+#define _PARSE_FREQ_ARGS_OPT1 "<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz|320MHz] [punct <bitmap>]"
+#define _PARSE_FREQ_ARGS_OPT2 "<control freq> [5|10|20|40|80|80+80|160|320] [<center1_freq> [<center2_freq>]] [punct <bitmap>]"
 #define PARSE_FREQ_ARGS(pfx, sfx) \
 	pfx _PARSE_FREQ_ARGS_OPT1 sfx "\n" \
 	pfx _PARSE_FREQ_ARGS_OPT2 sfx
@@ -221,7 +222,7 @@ int parse_keys(struct nl_msg *msg, char **argv[], int *argc);
 	pfx _PARSE_FREQ_KHZ_ARGS_OPT1 sfx "\n" \
 	pfx _PARSE_FREQ_KHZ_ARGS_OPT2 sfx
 #define PARSE_CHAN_ARGS(pfx) \
-	pfx "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz|320MHz]"
+	pfx "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz|320MHz] [punct <bitmap>]"
 int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		    int *parsed, bool freq_in_khz);
 enum nl80211_chan_width str_to_bw(const char *str);

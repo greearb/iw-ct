@@ -735,13 +735,23 @@ int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		goto out;
 	}
 
-	/* This was a only a channel definition, nothing further may follow. */
+	/* This was a only a channel definition, only puncturing may follow */
 	if (chan)
 		goto out;
 
 	res = parse_freqs(chandef, argc - 1, argv + 1, &_parsed, freq_in_khz);
 
  out:
+	if (!freq_in_khz && argc > _parsed && strcmp(argv[_parsed], "punct") == 0) {
+		_parsed++;
+		if (argc <= _parsed)
+			return 1;
+		chandef->punctured = strtoul(argv[_parsed], &end, 10);
+		if (*end)
+			return 1;
+		_parsed++;
+	}
+
 	/* Error out if parsed is NULL. */
 	if (!parsed && _parsed != argc)
 		return 1;
@@ -799,6 +809,9 @@ int put_chandef(struct nl_msg *msg, struct chandef *chandef)
 		NLA_PUT_U32(msg,
 			    NL80211_ATTR_CENTER_FREQ2,
 			    chandef->center_freq2);
+
+	if (chandef->punctured)
+		NLA_PUT_U32(msg, NL80211_ATTR_PUNCT_BITMAP, chandef->punctured);
 
 	return 0;
 
