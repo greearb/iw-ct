@@ -209,6 +209,19 @@ int parse_hex_mask(char *hexmask, unsigned char **result, size_t *result_len,
 unsigned char *parse_hex(char *hex, size_t *outlen);
 
 int parse_keys(struct nl_msg *msg, char **argv[], int *argc);
+
+#define _PARSE_FREQ_ARGS_OPT1 "<freq> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz|320MHz]"
+#define _PARSE_FREQ_ARGS_OPT2 "<control freq> [5|10|20|40|80|80+80|160|320] [<center1_freq> [<center2_freq>]]"
+#define PARSE_FREQ_ARGS(pfx, sfx) \
+	pfx _PARSE_FREQ_ARGS_OPT1 sfx "\n" \
+	pfx _PARSE_FREQ_ARGS_OPT2 sfx
+#define _PARSE_FREQ_KHZ_ARGS_OPT1 "<freq in KHz> [1MHz|2MHz|4MHz|8MHz|16MHz]"
+#define _PARSE_FREQ_KHZ_ARGS_OPT2 "<control freq in KHz> [1|2|4|8|16] [<center1_freq> [<center2_freq>]]"
+#define PARSE_FREQ_KHZ_ARGS(pfx, sfx) \
+	pfx _PARSE_FREQ_KHZ_ARGS_OPT1 sfx "\n" \
+	pfx _PARSE_FREQ_KHZ_ARGS_OPT2 sfx
+#define PARSE_CHAN_ARGS(pfx) \
+	pfx "<channel> [NOHT|HT20|HT40+|HT40-|5MHz|10MHz|80MHz|160MHz|320MHz]"
 int parse_freqchan(struct chandef *chandef, bool chan, int argc, char **argv,
 		    int *parsed, bool freq_in_khz);
 enum nl80211_chan_width str_to_bw(const char *str);
