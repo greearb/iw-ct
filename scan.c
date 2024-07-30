@@ -2384,8 +2384,16 @@ static void print_he_capa(const uint8_t type, uint8_t len, const uint8_t *data,
 	print_he_capability(data, len);
 }
 
+static void print_he_oper(const uint8_t type, uint8_t len, const uint8_t *data,
+			  const struct print_ies_data *ie_buffer)
+{
+	printf("\n");
+	print_he_operation(data, len);
+}
+
 static const struct ie_print ext_printers[] = {
 	[35] = { "HE capabilities", print_he_capa, 21, 54, BIT(PRINT_SCAN), },
+	[36] = { "HE Operation", print_he_oper, 6, 15, BIT(PRINT_SCAN), },
 };
 
 static void print_extension(unsigned char len, unsigned char *ie,

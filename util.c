@@ -1750,6 +1750,109 @@ void print_he_capability(const uint8_t *ie, int len)
 	__print_he_capa(mac_cap, phy_cap - 1, mcs_set, mcs_len, NULL, 0, false);
 }
 
+void print_he_operation(const uint8_t *ie, int len)
+{
+	uint8_t oper_parameters[3] = {ie[0], ie[1], ie[2] };
+	uint8_t bss_color = ie[3];
+	uint16_t nss_mcs_set = *(uint16_t*)(&ie[4]);
+	uint8_t vht_oper_present = oper_parameters[1] & 0x40;
+	uint8_t co_hosted_bss_present = oper_parameters[1] & 0x80;
+	uint8_t uhb_operation_info_present = oper_parameters[2] & 0x02;
+	uint8_t offset = 6;
+
+	printf("\t\tHE Operation Parameters: (0x%02x%02x%02x)\n",
+	       oper_parameters[2], oper_parameters[1], oper_parameters[0]);
+	printf("\t\t\tDefault PE Duration: %hhu\n", oper_parameters[0] & 0x07);
+	if (oper_parameters[0] & 0x08)
+		printf("\t\t\tTWT Required\n");
+
+	printf("\t\t\tTXOP Duration RTS Threshold: %hu\n",
+	       (*(uint16_t*)(oper_parameters)) >> 4 & 0x03ff);
+	if (oper_parameters[1] & 0x40)
+		printf("\t\t\tVHT Operation Information Present\n");
+
+	if (oper_parameters[1] & 0x80)
+		printf("\t\t\tCo-Hosted BSS\n");
+
+	if (oper_parameters[2] & 0x01)
+		printf("\t\t\tER SU Disable\n");
+
+	if (oper_parameters[2] & 0x02)
+		printf("\t\t\t6 GHz Operation Information Present\n");
+
+	printf("\t\tBSS Color: %hhu\n", bss_color & 0x3F);
+	if (bss_color & 0x40)
+		printf("\t\tPartial BSS Color\n");
+
+	if (bss_color & 0x80)
+		printf("\t\tBSS Color Disabled\n");
+
+	printf("\t\tBasic HE-MCS NSS Set: 0x%04x\n", nss_mcs_set);
+	for (int k = 0; k < 8; k++) {
+		__u16 mcs = nss_mcs_set;
+
+		mcs >>= k * 2;
+		mcs &= 0x3;
+		printf("\t\t\t%d streams: ", k + 1);
+		if (mcs == 3)
+			printf("not supported\n");
+		else
+			printf("MCS 0-%d\n", 7 + (mcs * 2));
+	}
+
+	if (vht_oper_present) {
+		if (len - offset < 3) {
+			printf("\t\tVHT Operation Info: Invalid\n");
+			return;
+		}
+
+		printf("\t\tVHT Operation Info: 0x%02x%02x%02x\n",
+		       ie[offset + 2], ie[offset + 1], ie[offset + 0]);
+		offset += 3;
+	}
+
+	if (co_hosted_bss_present) {
+		if (len - offset < 1) {
+			printf("\t\tMax Co-Hosted BSSID: Invalid\n");
+			return;
+		}
+
+		printf("\t\tMax Co-Hosted BSSID: %hhu\n", ie[offset]);
+		offset += 1;
+	}
+
+	if (uhb_operation_info_present) {
+		if (len - offset < 5) {
+			printf("\t\t6 GHz Operation Info: Invalid\n");
+			return;
+		} else {
+			const uint8_t control = ie[offset + 1];
+
+			printf("\t\t6 Ghz Operation Information: 0x");
+			for (uint8_t i = 0; i < 5; i++)
+				printf("%02x", ie[offset + i]);
+
+			printf("\n");
+			printf("\t\t\tPrimary Channel: %hhu\n", ie[offset]);
+			printf("\t\t\tChannel Width: ");
+			switch (control & 0x3) {
+				case 0: printf("20 MHz\n"); break;
+				case 1: printf("40 MHz\n"); break;
+				case 2: printf("80 MHz\n"); break;
+				case 3: printf("80+80 or 160 MHz\n"); break;
+			}
+
+			if (control & 0x4)
+				printf("\t\t\tDuplicate Beacon: True\n");
+
+			printf("\t\t\tRegulatory Info: %hhu\n", (control >> 3) & 0xf);
+			printf("\t\t\tCenter Frequency Segment 0: %hhu\n", ie[offset+2]);
+			printf("\t\t\tCenter Frequency Segment 1: %hhu\n", ie[offset+3]);
+			printf("\t\t\tMinimum Rate: %hhu\n", ie[offset+4]);
+		}
+	}
+}
+
 void iw_hexdump(const char *prefix, const __u8 *buf, size_t size)
 {
 	size_t i;
