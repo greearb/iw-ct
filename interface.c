@@ -490,6 +490,11 @@ static int print_iface_handler(struct nl_msg *msg, void *arg)
 				printf("\n%s\t   ", indent);
 				print_channel(tb);
 			}
+			if (tb[NL80211_ATTR_WIPHY_TX_POWER_LEVEL]) {
+				int32_t txp = nla_get_u32(tb[NL80211_ATTR_WIPHY_TX_POWER_LEVEL]);
+
+				printf("\n%s\t   txpower %d.%.2d dBm", indent, txp / 100, txp % 100);
+			}
 			printf("\n");
 		}
 	}
