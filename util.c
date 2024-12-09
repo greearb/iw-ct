@@ -1535,7 +1535,6 @@ static void __print_eht_capa(int band,
 {
 	unsigned int i;
 	const char *pre = indent ? "\t" : "";
-	const char *mcs[] = { "0-7", "8-9", "10-11", "12-13"};
 
 	#define PRINT_EHT_CAP(_var, _idx, _bit, _str) \
 	do { \
@@ -1550,6 +1549,7 @@ static void __print_eht_capa(int band,
 	} while (0)
 
 	#define PRINT_EHT_MAC_CAP(...) PRINT_EHT_CAP(mac_cap, __VA_ARGS__)
+	#define PRINT_EHT_MAC_CAP_MASK(...) PRINT_EHT_CAP_MASK(mac_cap, __VA_ARGS__)
 	#define PRINT_EHT_PHY_CAP(...) PRINT_EHT_CAP(phy_cap, __VA_ARGS__)
 	#define PRINT_EHT_PHY_CAP_MASK(...) PRINT_EHT_CAP_MASK(phy_cap, __VA_ARGS__)
 
@@ -1558,13 +1558,22 @@ static void __print_eht_capa(int band,
 		printf("%02x", mac_cap[i]);
 	printf("):\n");
 
-	PRINT_EHT_MAC_CAP(0, 0, "NSEP priority access Supported");
+	PRINT_EHT_MAC_CAP(0, 0, "EPCS Priority Access Supported");
 	PRINT_EHT_MAC_CAP(0, 1, "EHT OM Control Supported");
-	PRINT_EHT_MAC_CAP(0, 2, "Triggered TXOP Sharing Supported");
-	PRINT_EHT_MAC_CAP(0, 3, "ARR Supported");
+	PRINT_EHT_MAC_CAP(0, 2, "Triggered TXOP Sharing Mode 1 Supported");
+	PRINT_EHT_MAC_CAP(0, 3, "Triggered TXOP Sharing Mode 2 Supported");
+	PRINT_EHT_MAC_CAP(0, 4, "Restricted TWP Supported");
+	PRINT_EHT_MAC_CAP(0, 5, "SCS Traffic Description Supported");
+	PRINT_EHT_MAC_CAP_MASK(0, 6, 0x3, "Maximum MPDU Length");
 
-	printf("%s\t\tEHT PHY Capabilities: (0x", pre);
-	for (i = 0; i < 8; i++)
+	PRINT_EHT_MAC_CAP(1, 1, "Maximum A_MPDU Length Exponent Extension");
+	PRINT_EHT_MAC_CAP(1, 2, "EHT TRS Supported");
+	PRINT_EHT_MAC_CAP(1, 3, "TXOP Return In TXOP Sharing Mode 2 Supported");
+	PRINT_EHT_MAC_CAP(1, 4, "Two BQRs Supported");
+	PRINT_EHT_MAC_CAP_MASK(1, 5, 0x3, "EHT Link Adaptation Supported");
+
+	printf("%s\t\tEHT PHY Capabilities (0x", pre);
+	for (i = 0; i < 9; i++)
 		printf("%02x", ((__u8 *)phy_cap)[i]);
 	printf("):\n");
 
@@ -1610,39 +1619,54 @@ static void __print_eht_capa(int band,
 	PRINT_EHT_PHY_CAP(1, 28, "MU Beamformer (80MHz)");
 	PRINT_EHT_PHY_CAP(1, 29, "MU Beamformer (160MHz)");
 	PRINT_EHT_PHY_CAP(1, 30, "MU Beamformer (320MHz)");
+	PRINT_EHT_PHY_CAP(1, 31, "TB Sounding Feedback Rate Limit");
 
-	printf("%s\t\tEHT MCS/NSS: (0x", pre);
-	for (i = 0; i < mcs_len; i++)
-		printf("%02x", ((__u8 *)mcs_set)[i]);
-	printf("):\n");
+	PRINT_EHT_PHY_CAP(2, 0, "Rx 1024-QAM In Wider Bandwidth DL OFDMA Supported");
+	PRINT_EHT_PHY_CAP(2, 1, "Rx 4096-QAM In Wider Bandwidth DL OFDMA Supported");
 
 	if (!(he_phy_cap[0] & ((BIT(2) | BIT(3) | BIT(4)) << 8))){
-		for (i = 0; i < 4; i++)
-			printf("%s\t\tEHT bw=20 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
-			       pre, mcs[i],
-			       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+		static const char * const mcs[] = { "0-7", "8-9", "10-11", "12-13" };
+
+		printf("%s\t\tEHT-MCS Map (20 Mhz Non-AP STA)\n", pre);
+		for (i = 0; i < 4; i++) {
+			printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
+			       pre, mcs[i], mcs_set[i] & 0xf);
+			printf("%s\t\t\tTx Max NSS for MCS %s: %u\n",
+			       pre, mcs[i], mcs_set[i] >> 4);
+		}
 	} else {
+		static const char * const mcs[] = { "0-9", "10-11", "12-13"};
+
 		if (he_phy_cap[0] & (BIT(2) << 8)) {
-			for (i = 0; i < 3; i++)
-				printf("%s\t\tEHT bw <= 80 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
-				       pre, mcs[i + 1],
-				       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+			printf("%s\t\tEHT-MCS Map (BW <= 80)\n", pre);
+			for (i = 0; i < 3; i++) {
+				printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
+				       pre, mcs[i], mcs_set[i] & 0xf);
+				printf("%s\t\t\tTx Max NSS for MCS %s: %u\n",
+				       pre, mcs[i], mcs_set[i] >> 4);
+			}
 		}
 		mcs_set += 3;
 
 		if (he_phy_cap[0] & (BIT(3) << 8)) {
-			for (i = 0; i < 3; i++)
-				printf("%s\t\tEHT bw=160 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
-				       pre, mcs[i + 1],
-				       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+			printf("%s\t\tEHT-MCS Map (BW = 160)\n", pre);
+			for (i = 0; i < 3; i++) {
+				printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
+				       pre, mcs[i], mcs_set[i] & 0xf);
+				printf("%s\t\t\tTx Max NSS for MCS %s: %u\n",
+				       pre, mcs[i], mcs_set[i] >> 4);
+			}
 		}
 
 		mcs_set += 3;
 		if (band == NL80211_BAND_6GHZ && (phy_cap[0] & BIT(1))) {
-			for (i = 0; i < 3; i++)
-				printf("%s\t\tEHT bw=320 MHz, max NSS for MCS %s: Rx=%u, Tx=%u\n",
-				       pre, mcs[i + 1],
-				       mcs_set[i] & 0xf, mcs_set[i] >> 4);
+			printf("%s\t\tEHT-MCS Map (BW = 320)\n", pre);
+			for (i = 0; i < 3; i++) {
+				printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
+				       pre, mcs[i], mcs_set[i] & 0xf);
+				printf("%s\t\t\tTx Max NSS for MCS %s: %u\n",
+				       pre, mcs[i], mcs_set[i] >> 4);
+			}
 		}
 	}
 
@@ -1738,6 +1762,27 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 
 	__print_eht_capa(band, mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len,
 			 he_phy_cap, true);
+}
+
+void print_eht_capability(const uint8_t *ie, int len, const uint8_t *he_cap)
+{
+	const void *mac_cap, *phy_cap, *mcs_set, *he_phy_cap;
+	int mcs_len;
+	int i = 0;
+
+	mac_cap = &ie[i];
+	i += 2;
+
+	phy_cap = &ie[i];
+	i += 9;
+
+	mcs_set = &ie[i];
+	mcs_len = len - i;
+
+	he_phy_cap = &he_cap[6];
+
+	__print_eht_capa(NL80211_BAND_6GHZ, mac_cap, phy_cap, mcs_set, mcs_len,
+			 NULL, 0, he_phy_cap - 1, false);
 }
 
 void print_he_capability(const uint8_t *ie, int len)
