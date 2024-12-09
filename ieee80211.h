@@ -99,6 +99,7 @@ enum elem_id {
 enum elem_id_ext {
 	EID_EXT_HE_CAPABILITY		= 35,
 	EID_EXT_HE_OPERATION		= 36,
+	EID_EXT_EHT_CAPABILITY		= 108,
 };
 
 #define SUITE(oui, id)  (((oui) << 8) | (id))

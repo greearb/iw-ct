@@ -556,6 +556,7 @@ static void tab_on_first(bool *first)
 
 struct ie_context {
 	bool is_vht_cap;
+	const uint8_t *he_cap;
 };
 
 static void print_ssid(const uint8_t type, uint8_t len, const uint8_t *data,
@@ -2393,12 +2394,21 @@ static void print_he_oper(const uint8_t type, uint8_t len, const uint8_t *data,
 	print_he_operation(data, len);
 }
 
+static void print_eht_capa(const uint8_t type, uint8_t len,
+			   const uint8_t *data, const struct ie_context *ctx)
+{
+	printf("\n");
+	print_eht_capability(data, len, ctx->he_cap);
+}
+
 static const struct ie_print ext_printers[] = {
 	[EID_EXT_HE_CAPABILITY] = { "HE capabilities", print_he_capa, 21, 54, BIT(PRINT_SCAN), },
 	[EID_EXT_HE_OPERATION] = { "HE Operation", print_he_oper, 6, 15, BIT(PRINT_SCAN), },
+	[EID_EXT_EHT_CAPABILITY] = { "EHT capabilities", print_eht_capa, 13, 30, BIT(PRINT_SCAN), },
 };
 
 static void print_extension(unsigned char len, unsigned char *ie,
+			    const struct ie_context *ctx,
 			    bool unknown, enum print_ie_type ptype)
 {
 	unsigned char tag;
@@ -2411,7 +2421,7 @@ static void print_extension(unsigned char len, unsigned char *ie,
 	tag = ie[0];
 	if (tag < ARRAY_SIZE(ext_printers) && ext_printers[tag].name &&
 	    ext_printers[tag].flags & BIT(ptype)) {
-		print_ie(&ext_printers[tag], tag, len - 1, ie + 1, NULL);
+		print_ie(&ext_printers[tag], tag, len - 1, ie + 1, ctx);
 		return;
 	}
 
@@ -2441,6 +2451,13 @@ static void init_context(struct ie_context *ctx,
 		case EID_VHT_CAPABILITY:
 			ctx->is_vht_cap = true;
 			break;
+		case EID_EXTENSION:
+			switch (pos[2]) {
+			case EID_EXT_HE_CAPABILITY:
+				ctx->he_cap = pos + 3;
+				break;
+			}
+			break;
 		}
 
 		remaining -= pos[1] + 2;
@@ -2468,7 +2485,7 @@ void print_ies(unsigned char *ie, int ielen, bool unknown,
 		} else if (ie[0] == 221 /* vendor */) {
 			print_vendor(ie[1], ie + 2, unknown, ptype);
 		} else if (ie[0] == 255 /* extension */) {
-			print_extension(ie[1], ie + 2, unknown, ptype);
+			print_extension(ie[1], ie + 2, &ctx, unknown, ptype);
 		} else if (unknown) {
 			int i;
 
