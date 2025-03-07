@@ -1122,9 +1122,9 @@ static const struct vht_nss_ratio nss_ratio_tbl[3][4] = {
 			.bw_80_80 = 4,
 		},
 		/* chan_width == 2, ext_nss_bw == 1 */
-		{},
+		{0},
 		/* chan_width == 2, ext_nss_bw == 2 */
-		{},
+		{0},
 		/* chan_width == 2, ext_nss_bw == 3 */
 		{
 			.valid = true,
@@ -1864,6 +1864,7 @@ void print_he_operation(const uint8_t *ie, int len)
 	uint8_t co_hosted_bss_present = oper_parameters[1] & 0x80;
 	uint8_t uhb_operation_info_present = oper_parameters[2] & 0x02;
 	uint8_t offset = 6;
+	int k;
 
 	printf("\t\tHE Operation Parameters: (0x%02x%02x%02x)\n",
 	       oper_parameters[2], oper_parameters[1], oper_parameters[0]);
@@ -1883,7 +1884,7 @@ void print_he_operation(const uint8_t *ie, int len)
 		printf("\t\t\tER SU Disable\n");
 
 	if (oper_parameters[2] & 0x02)
-		printf("\t\t\t6 GHz Operation Information Present\n");
+	printf("\t\t\t6 GHz Operation Information Present\n");
 
 	printf("\t\tBSS Color: %hhu\n", bss_color & 0x3F);
 	if (bss_color & 0x40)
@@ -1893,7 +1894,7 @@ void print_he_operation(const uint8_t *ie, int len)
 		printf("\t\tBSS Color Disabled\n");
 
 	printf("\t\tBasic HE-MCS NSS Set: 0x%04x\n", nss_mcs_set);
-	for (int k = 0; k < 8; k++) {
+	for (k = 0; k < 8; k++) {
 		__u16 mcs = nss_mcs_set;
 
 		mcs >>= k * 2;
@@ -1932,9 +1933,10 @@ void print_he_operation(const uint8_t *ie, int len)
 			return;
 		} else {
 			const uint8_t control = ie[offset + 1];
+			uint8_t i;
 
 			printf("\t\t6 GHz Operation Information: 0x");
-			for (uint8_t i = 0; i < 5; i++)
+			for (i = 0; i < 5; i++)
 				printf("%02x", ie[offset + i]);
 
 			printf("\n");
@@ -2020,6 +2022,7 @@ void print_eht_operation(const uint8_t *ie, int len)
 	uint8_t oper_parameters = ie[0];
 	uint8_t disabled_subchannel_info_present = oper_parameters & 0x02;
 	uint8_t eht_operation_info_present = oper_parameters & 0x01;
+	uint8_t i;
 
 	printf("\t\tEHT Operation Parameters: (0x%02x)\n",
 	       oper_parameters);
@@ -2034,7 +2037,7 @@ void print_eht_operation(const uint8_t *ie, int len)
 	       (oper_parameters >> 4 & 3));
 
 	printf("\t\tBasic EHT-MCS And Nss Set: 0x");
-	for (uint8_t i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 		printf("%02x", ie[1 + i]);
 
 	printf("\n");
@@ -2053,7 +2056,7 @@ void print_eht_operation(const uint8_t *ie, int len)
 		}
 
 		printf("\t\tEHT Operation Info: 0x");
-		for (uint8_t i = 0; i < eht_operation_info_len; i++)
+		for (i = 0; i < eht_operation_info_len; i++)
 			printf("%02x", ie[offset + i]);
 
 		printf("\n");

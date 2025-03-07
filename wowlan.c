@@ -107,7 +107,7 @@ static int wowlan_parse_tcp_file(struct nl_msg *msg, const char *fn)
 			free(mask);
 			free(pat);
 		} else if (strncmp(buf, "data.seq=", 9) == 0) {
-			struct nl80211_wowlan_tcp_data_seq seq = {};
+			struct nl80211_wowlan_tcp_data_seq seq = {0};
 			char *len, *offs, *start;
 
 			len = buf + 9;
