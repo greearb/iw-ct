@@ -555,6 +555,7 @@ static void tab_on_first(bool *first)
 }
 
 struct ie_context {
+	bool from_ap;
 	bool is_vht_cap;
 	const uint8_t *he_cap;
 };
@@ -2398,7 +2399,7 @@ static void print_eht_capa(const uint8_t type, uint8_t len,
 			   const uint8_t *data, const struct ie_context *ctx)
 {
 	printf("\n");
-	print_eht_capability(data, len, ctx->he_cap);
+	print_eht_capability(data, len, ctx->he_cap, ctx->from_ap);
 }
 
 static const struct ie_print ext_printers[] = {
@@ -2436,7 +2437,7 @@ static void print_extension(unsigned char len, unsigned char *ie,
 }
 
 static void init_context(struct ie_context *ctx,
-			 unsigned char *ie, int ielen)
+			 unsigned char *ie, int ielen, bool from_ap)
 {
 	unsigned char *pos = ie;
 	int remaining = ielen;
@@ -2445,6 +2446,8 @@ static void init_context(struct ie_context *ctx,
 
 	if (!ie || !ielen)
 		return;
+
+	ctx->from_ap = from_ap;
 
 	while (remaining >= 2 && remaining - 2 >= pos[1]) {
 		switch (pos[0]) {
@@ -2466,14 +2469,14 @@ static void init_context(struct ie_context *ctx,
 }
 
 void print_ies(unsigned char *ie, int ielen, bool unknown,
-	       enum print_ie_type ptype)
+	       enum print_ie_type ptype, bool from_ap)
 {
 	struct ie_context ctx;
 
 	if (!ie)
 		return;
 
-	init_context(&ctx, ie, ielen);
+	init_context(&ctx, ie, ielen, from_ap);
 
 	while (ielen >= 2 && ielen - 2 >= ie[1]) {
 		if (ie[0] < ARRAY_SIZE(ieprinters) &&
@@ -2690,13 +2693,13 @@ static int print_bss_handler(struct nl_msg *msg, void *arg)
 			printf("\tInformation elements from Probe Response "
 			       "frame:\n");
 		print_ies(nla_data(ies), nla_len(ies),
-			  params->unknown, params->type);
+			  params->unknown, params->type, true);
 	}
 	if (bss[NL80211_BSS_BEACON_IES] && show--) {
 		printf("\tInformation elements from Beacon frame:\n");
 		print_ies(nla_data(bss[NL80211_BSS_BEACON_IES]),
 			  nla_len(bss[NL80211_BSS_BEACON_IES]),
-			  params->unknown, params->type);
+			  params->unknown, params->type, true);
 	}
 
 	return NL_SKIP;

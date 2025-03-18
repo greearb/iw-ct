@@ -1531,6 +1531,7 @@ static void __print_eht_capa(int band,
 			     const __u8 *mcs_set, size_t mcs_len,
 			     const __u8 *ppet, size_t ppet_len,
 			     const __u16 *he_phy_cap,
+			     bool from_ap,
 			     bool indent)
 {
 	unsigned int i;
@@ -1624,10 +1625,14 @@ static void __print_eht_capa(int band,
 	PRINT_EHT_PHY_CAP(2, 0, "Rx 1024-QAM In Wider Bandwidth DL OFDMA Supported");
 	PRINT_EHT_PHY_CAP(2, 1, "Rx 4096-QAM In Wider Bandwidth DL OFDMA Supported");
 
-	if (!(he_phy_cap[0] & ((BIT(2) | BIT(3) | BIT(4)) << 8))){
+	if (!from_ap &&
+	    !(he_phy_cap[0] & ((BIT(1) | BIT(2) | BIT(3) | BIT(4)) << 8))) {
 		static const char * const mcs[] = { "0-7", "8-9", "10-11", "12-13" };
 
-		printf("%s\t\tEHT-MCS Map (20 Mhz Non-AP STA)\n", pre);
+		printf("%s\t\tEHT-MCS Map (20 Mhz Non-AP STA) (0x", pre);
+		for (i = 0; i < 3; i++)
+			printf("%02x", ((__u8 *)mcs_set)[i]);
+		printf("):\n");
 		for (i = 0; i < 4; i++) {
 			printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
 			       pre, mcs[i], mcs_set[i] & 0xf);
@@ -1637,8 +1642,19 @@ static void __print_eht_capa(int band,
 	} else {
 		static const char * const mcs[] = { "0-9", "10-11", "12-13"};
 
-		if (he_phy_cap[0] & (BIT(2) << 8)) {
-			printf("%s\t\tEHT-MCS Map (BW <= 80)\n", pre);
+		/* Bit 1 corresponds to 2.4Ghz 40Mhz support
+		 * Bit 2 corresponds to 5/6Ghz 40 and 80Mhz support
+		 * If no Channel Width bits are set, but we are an AP, we use
+		 * this MCS logic also.
+		 */
+		if (he_phy_cap[0] & ((BIT(1) | BIT(2)) << 8) ||
+		    (from_ap && !(he_phy_cap[0] & ((BIT(1) | BIT(2) | BIT(3) | BIT(4)) << 8)))) {
+
+			printf("%s\t\tEHT-MCS Map (BW <= 80): (0x", pre);
+			for (i = 0; i < 3; i++)
+			   printf("%02x", ((__u8 *)mcs_set)[i]);
+			printf("):\n");
+
 			for (i = 0; i < 3; i++) {
 				printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
 				       pre, mcs[i], mcs_set[i] & 0xf);
@@ -1649,7 +1665,11 @@ static void __print_eht_capa(int band,
 		mcs_set += 3;
 
 		if (he_phy_cap[0] & (BIT(3) << 8)) {
-			printf("%s\t\tEHT-MCS Map (BW = 160)\n", pre);
+			printf("%s\t\tEHT-MCS Map (BW = 160): (0x", pre);
+			for (i = 0; i < 3; i++)
+				printf("%02x", ((__u8 *)mcs_set)[i]);
+			printf("):\n");
+
 			for (i = 0; i < 3; i++) {
 				printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
 				       pre, mcs[i], mcs_set[i] & 0xf);
@@ -1660,7 +1680,11 @@ static void __print_eht_capa(int band,
 
 		mcs_set += 3;
 		if (band == NL80211_BAND_6GHZ && (phy_cap[0] & BIT(1))) {
-			printf("%s\t\tEHT-MCS Map (BW = 320)\n", pre);
+			printf("%s\t\tEHT-MCS Map (BW = 320): (0x", pre);
+			for (i = 0; i < 3; i++)
+				printf("%02x", ((__u8 *)mcs_set)[i]);
+			printf("):\n");
+
 			for (i = 0; i < 3; i++) {
 				printf("%s\t\t\tRx Max NSS for MCS %s: %u\n",
 				       pre, mcs[i], mcs_set[i] & 0xf);
@@ -1761,10 +1785,11 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 	printf("\n");
 
 	__print_eht_capa(band, mac_cap, phy_cap, mcs_set, mcs_len, ppet, ppet_len,
-			 he_phy_cap, true);
+			 he_phy_cap, true, false);
 }
 
-void print_eht_capability(const uint8_t *ie, int len, const uint8_t *he_cap)
+void print_eht_capability(const uint8_t *ie, int len, const uint8_t *he_cap,
+			  bool from_ap)
 {
 	const void *mac_cap, *phy_cap, *mcs_set, *he_phy_cap;
 	int mcs_len;
@@ -1782,7 +1807,7 @@ void print_eht_capability(const uint8_t *ie, int len, const uint8_t *he_cap)
 	he_phy_cap = &he_cap[6];
 
 	__print_eht_capa(NL80211_BAND_6GHZ, mac_cap, phy_cap, mcs_set, mcs_len,
-			 NULL, 0, he_phy_cap - 1, false);
+			 NULL, 0, he_phy_cap - 1, from_ap, false);
 }
 
 void print_he_capability(const uint8_t *ie, int len)
