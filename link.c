@@ -93,7 +93,7 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 			if (bss[NL80211_BSS_INFORMATION_ELEMENTS])
 				print_ies(nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
 					  nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
-					  false, PRINT_LINK_MLO_MLD);
+					  false, PRINT_LINK_MLO_MLD, false);
 		}
 	} else {
 		memcpy(result->sta_addr, nla_data(bss[NL80211_BSS_BSSID]), 6);
@@ -121,7 +121,8 @@ static int link_bss_handler(struct nl_msg *msg, void *arg)
 	if (bss[NL80211_BSS_INFORMATION_ELEMENTS])
 		print_ies(nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
 			  nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS]),
-			  false, result->mld ? PRINT_LINK_MLO_LINK : PRINT_LINK);
+			  false, result->mld ? PRINT_LINK_MLO_LINK : PRINT_LINK,
+			  false);
 
 	if (bss[NL80211_BSS_FREQUENCY_OFFSET])
 		freq_offset = nla_get_u32(bss[NL80211_BSS_FREQUENCY_OFFSET]);

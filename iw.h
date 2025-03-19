@@ -277,7 +277,7 @@ enum print_ie_type {
 #define BIT(x) (1ULL<<(x))
 
 void print_ies(unsigned char *ie, int ielen, bool unknown,
-	       enum print_ie_type ptype);
+	       enum print_ie_type ptype, bool from_ap);
 
 void parse_bitrate(struct nlattr *bitrate_attr, char *buf, int buflen);
 void iw_hexdump(const char *prefix, const __u8 *data, size_t len);
