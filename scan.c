@@ -887,6 +887,18 @@ static void print_auth(const uint8_t *data)
 		case 18:
 			printf("OWE");
 			break;
+		case 19:
+			printf("FT/PSK/SHA-384");
+			break;
+		case 20:
+			printf("PSK/SHA-384");
+			break;
+		case 24:
+			printf("SAE-EXT-KEY");
+			break;
+		case 25:
+			printf("FT/SAE-EXT-KEY");
+			break;
 		default:
 			printf("%.02x-%.02x-%.02x:%d",
 				data[0], data[1] ,data[2], data[3]);
