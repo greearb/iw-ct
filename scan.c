@@ -809,6 +809,18 @@ static void print_cipher(const uint8_t *data)
 		case 8:
 			printf("GCMP");
 			break;
+		case 9:
+			printf("GCMP-256");
+			break;
+		case 11:
+			printf("BIP-GMAC-128");
+			break;
+		case 12:
+			printf("BIP-GMAC-256");
+			break;
+		case 13:
+			printf("BIP-CMAC-256");
+			break;
 		default:
 			printf("%.02x-%.02x-%.02x:%d",
 				data[0], data[1] ,data[2], data[3]);
