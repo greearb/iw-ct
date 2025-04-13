@@ -1192,11 +1192,11 @@ void print_vht_info(__u32 capa, const __u8 *mcs)
 		case 2: printf("160 MHz, 80+80 MHz\n"); break;
 		}
 	} else {
-		print_nss_ratio("20Mhz", false, nss_tbl->bw_20);
-		print_nss_ratio("40Mhz", false, nss_tbl->bw_40);
-		print_nss_ratio("80Mhz", false, nss_tbl->bw_80);
-		print_nss_ratio("160Mhz", false, nss_tbl->bw_160);
-		print_nss_ratio("80+80Mhz", false, nss_tbl->bw_80_80);
+		print_nss_ratio("20MHz", false, nss_tbl->bw_20);
+		print_nss_ratio("40MHz", false, nss_tbl->bw_40);
+		print_nss_ratio("80MHz", false, nss_tbl->bw_80);
+		print_nss_ratio("160MHz", false, nss_tbl->bw_160);
+		print_nss_ratio("80+80MHz", false, nss_tbl->bw_80_80);
 		printf("\n");
 	}
 
@@ -1352,11 +1352,11 @@ static void __print_he_capa(const __u16 *mac_cap,
 	PRINT_HE_PHY_CAP(2, 7, "SU Beamformer");
 	PRINT_HE_PHY_CAP(2, 8, "SU Beamformee");
 	PRINT_HE_PHY_CAP(2, 9, "MU Beamformer");
-	PRINT_HE_PHY_CAP_MASK(2, 10, 0x7, "Beamformee STS <= 80Mhz");
-	PRINT_HE_PHY_CAP_MASK(2, 13, 0x7, "Beamformee STS > 80Mhz");
+	PRINT_HE_PHY_CAP_MASK(2, 10, 0x7, "Beamformee STS <= 80MHz");
+	PRINT_HE_PHY_CAP_MASK(2, 13, 0x7, "Beamformee STS > 80MHz");
 
-	PRINT_HE_PHY_CAP_MASK(3, 0, 0x7, "Sounding Dimensions <= 80Mhz");
-	PRINT_HE_PHY_CAP_MASK(3, 3, 0x7, "Sounding Dimensions > 80Mhz");
+	PRINT_HE_PHY_CAP_MASK(3, 0, 0x7, "Sounding Dimensions <= 80MHz");
+	PRINT_HE_PHY_CAP_MASK(3, 3, 0x7, "Sounding Dimensions > 80MHz");
 	PRINT_HE_PHY_CAP(3, 6, "Ng = 16 SU Feedback");
 	PRINT_HE_PHY_CAP(3, 7, "Ng = 16 MU Feedback");
 	PRINT_HE_PHY_CAP(3, 8, "Codebook Size SU Feedback");
@@ -1899,7 +1899,7 @@ void print_he_operation(const uint8_t *ie, int len)
 		} else {
 			const uint8_t control = ie[offset + 1];
 
-			printf("\t\t6 Ghz Operation Information: 0x");
+			printf("\t\t6 GHz Operation Information: 0x");
 			for (uint8_t i = 0; i < 5; i++)
 				printf("%02x", ie[offset + i]);
 
