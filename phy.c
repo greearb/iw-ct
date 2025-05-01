@@ -738,6 +738,7 @@ static int handle_antenna(struct nl80211_state *state,
 {
 	char *end;
 	uint32_t tx_ant = 0, rx_ant = 0;
+	signed char radio_id = -1;
 
 	if (argc == 1 && strcmp(argv[0], "all") == 0) {
 		tx_ant = 0xffffffff;
@@ -747,28 +748,39 @@ static int handle_antenna(struct nl80211_state *state,
 		if (*end)
 			return 1;
 	}
-	else if (argc == 2) {
+	else if (argc >= 2) {
 		tx_ant = strtoul(argv[0], &end, 0);
 		if (*end)
 			return 1;
 		rx_ant = strtoul(argv[1], &end, 0);
 		if (*end)
 			return 1;
+
+		if (argc >= 3) {
+			radio_id = strtol(argv[2], &end, 0);
+			if (*end)
+				return 1;
+		}
 	} else
 		return 1;
 
 	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_ANTENNA_TX, tx_ant);
 	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_ANTENNA_RX, rx_ant);
 
+	if (radio_id != -1)
+		NLA_PUT_S8(msg, NL80211_ATTR_WIPHY_RADIO_INDEX, radio_id);
+
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(set, antenna, "<bitmap> | all | <tx bitmap> <rx bitmap>",
+COMMAND(set, antenna, "<bitmap> | all | <tx bitmap> <rx bitmap> <radio-id>",
 	NL80211_CMD_SET_WIPHY, 0, CIB_PHY, handle_antenna,
 	"Set a bitmap of allowed antennas to use for TX and RX.\n"
-	"The driver may reject antenna configurations it cannot support.");
+	"The driver may reject antenna configurations it cannot support.\n"
+	"The radio-id is only used for wiphys that have multiple underlying\n"
+	"radios.");
 
 static int handle_set_txq(struct nl80211_state *state,
 			  struct nl_msg *msg,
