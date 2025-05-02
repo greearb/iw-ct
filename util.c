@@ -1538,22 +1538,31 @@ static void __print_eht_capa(int band,
 	unsigned int i;
 	const char *pre = indent ? "\t" : "";
 
-	#define PRINT_EHT_CAP(_var, _idx, _bit, _str) \
+	#define PRINT_EHT_MAC_CAP(_idx, _bit, _str) \
 	do { \
-		if (_var[_idx] & BIT(_bit)) \
+		if (mac_cap[_idx] & BIT(_bit)) \
 			printf("%s\t\t\t" _str "\n", pre); \
 	} while (0)
 
-	#define PRINT_EHT_CAP_MASK(_var, _idx, _shift, _mask, _str) \
+	#define PRINT_EHT_MAC_CAP_MASK(_idx, _shift, _mask, _str) \
 	do { \
-		if ((_var[_idx] >> _shift) & _mask) \
-			printf("%s\t\t\t" _str ": %d\n", pre, (_var[_idx] >> _shift) & _mask); \
+		if ((mac_cap[_idx] >> _shift) & _mask) \
+			printf("%s\t\t\t" _str ": %d\n", pre, \
+			       (mac_cap[_idx] >> _shift) & _mask); \
 	} while (0)
 
-	#define PRINT_EHT_MAC_CAP(...) PRINT_EHT_CAP(mac_cap, __VA_ARGS__)
-	#define PRINT_EHT_MAC_CAP_MASK(...) PRINT_EHT_CAP_MASK(mac_cap, __VA_ARGS__)
-	#define PRINT_EHT_PHY_CAP(...) PRINT_EHT_CAP(phy_cap, __VA_ARGS__)
-	#define PRINT_EHT_PHY_CAP_MASK(...) PRINT_EHT_CAP_MASK(phy_cap, __VA_ARGS__)
+	#define PRINT_EHT_PHY_CAP(_idx, _bit, _str) \
+	do { \
+		if (le32toh(phy_cap[_idx]) & BIT(_bit)) \
+			printf("%s\t\t\t" _str "\n", pre); \
+	} while (0)
+
+	#define PRINT_EHT_PHY_CAP_MASK(_idx, _shift, _mask, _str) \
+	do { \
+		if ((le32toh(phy_cap[_idx]) >> _shift) & _mask) \
+			printf("%s\t\t\t" _str ": %d\n", pre, \
+			       (le32toh(phy_cap[_idx]) >> _shift) & _mask); \
+	} while (0)
 
 	printf("%s\t\tEHT MAC Capabilities (0x", pre);
 	for (i = 0; i < 2; i++)
@@ -1627,7 +1636,7 @@ static void __print_eht_capa(int band,
 	PRINT_EHT_PHY_CAP(2, 1, "Rx 4096-QAM In Wider Bandwidth DL OFDMA Supported");
 
 	if (!from_ap &&
-	    !(he_phy_cap[0] & ((BIT(1) | BIT(2) | BIT(3) | BIT(4)) << 8))) {
+	    !(le16toh(he_phy_cap[0]) & ((BIT(1) | BIT(2) | BIT(3) | BIT(4)) << 8))) {
 		static const char * const mcs[] = { "0-7", "8-9", "10-11", "12-13" };
 
 		printf("%s\t\tEHT-MCS Map (20 MHz Non-AP STA) (0x", pre);
@@ -1649,8 +1658,9 @@ static void __print_eht_capa(int band,
 		 * If no Channel Width bits are set, but we are an AP, we use
 		 * this MCS logic also.
 		 */
-		if (he_phy_cap[0] & ((BIT(1) | BIT(2)) << 8) ||
-		    (from_ap && !(he_phy_cap[0] & ((BIT(1) | BIT(2) | BIT(3) | BIT(4)) << 8)))) {
+		if (le16toh(he_phy_cap[0]) & ((BIT(1) | BIT(2)) << 8) ||
+		    (from_ap && !(le16toh(he_phy_cap[0]) &
+		    ((BIT(1) | BIT(2) | BIT(3) | BIT(4)) << 8)))) {
 			printf("%s\t\tEHT-MCS Map (BW <= 80) (0x", pre);
 			for (i = 0; i < 3; i++)
 				printf("%02x", ((__u8 *)mcs_set)[i]);
@@ -1665,7 +1675,7 @@ static void __print_eht_capa(int band,
 		}
 		mcs_set += 3;
 
-		if (he_phy_cap[0] & (BIT(3) << 8)) {
+		if (le16toh(he_phy_cap[0]) & (BIT(3) << 8)) {
 			printf("%s\t\tEHT-MCS Map (BW = 160) (0x", pre);
 			for (i = 0; i < 3; i++)
 				printf("%02x", ((__u8 *)mcs_set)[i]);
@@ -1680,7 +1690,7 @@ static void __print_eht_capa(int band,
 		}
 
 		mcs_set += 3;
-		if (band == NL80211_BAND_6GHZ && (phy_cap[0] & BIT(1))) {
+		if (band == NL80211_BAND_6GHZ && (le32toh(phy_cap[0]) & BIT(1))) {
 			printf("%s\t\tEHT-MCS Map (BW = 320) (0x", pre);
 			for (i = 0; i < 3; i++)
 				printf("%02x", ((__u8 *)mcs_set)[i]);
@@ -1695,7 +1705,7 @@ static void __print_eht_capa(int band,
 		}
 	}
 
-	if (ppet && ppet_len && (phy_cap[1] & BIT(11))) {
+	if (ppet && ppet_len && (le32toh(phy_cap[1]) & BIT(11))) {
 		printf("%s\t\tEHT PPE Thresholds ", pre);
 		for (i = 0; i < ppet_len; i++)
 			if (ppet[i])
