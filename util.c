@@ -1630,7 +1630,7 @@ static void __print_eht_capa(int band,
 	    !(he_phy_cap[0] & ((BIT(1) | BIT(2) | BIT(3) | BIT(4)) << 8))) {
 		static const char * const mcs[] = { "0-7", "8-9", "10-11", "12-13" };
 
-		printf("%s\t\tEHT-MCS Map (20 Mhz Non-AP STA) (0x", pre);
+		printf("%s\t\tEHT-MCS Map (20 MHz Non-AP STA) (0x", pre);
 		for (i = 0; i < mcs_len; i++)
 			printf("%02x", ((__u8 *)mcs_set)[i]);
 		printf("):\n");
@@ -1644,8 +1644,8 @@ static void __print_eht_capa(int band,
 	} else {
 		static const char * const mcs[] = { "0-9", "10-11", "12-13"};
 
-		/* Bit 1 corresponds to 2.4Ghz 40Mhz support
-		 * Bit 2 corresponds to 5/6Ghz 40 and 80Mhz support
+		/* Bit 1 corresponds to 2.4GHz 40MHz support
+		 * Bit 2 corresponds to 5/6GHz 40 and 80MHz support
 		 * If no Channel Width bits are set, but we are an AP, we use
 		 * this MCS logic also.
 		 */
