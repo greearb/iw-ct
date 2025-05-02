@@ -2426,10 +2426,18 @@ static void print_eht_capa(const uint8_t type, uint8_t len,
 	print_eht_capability(data, len, ctx->he_cap, ctx->from_ap);
 }
 
+static void print_eht_oper(const uint8_t type, uint8_t len, const uint8_t *data,
+			   const struct ie_context *ctx)
+{
+	printf("\n");
+	print_eht_operation(data, len);
+}
+
 static const struct ie_print ext_printers[] = {
 	[EID_EXT_HE_CAPABILITY] = { "HE capabilities", print_he_capa, 21, 54, BIT(PRINT_SCAN), },
 	[EID_EXT_HE_OPERATION] = { "HE Operation", print_he_oper, 6, 15, BIT(PRINT_SCAN), },
 	[EID_EXT_EHT_CAPABILITY] = { "EHT capabilities", print_eht_capa, 13, 30, BIT(PRINT_SCAN), },
+	[EID_EXT_EHT_OPERATION] = { "EHT Operation", print_eht_oper, 5, 10, BIT(PRINT_SCAN), },
 };
 
 static void print_extension(unsigned char len, unsigned char *ie,
