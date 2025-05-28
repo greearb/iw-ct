@@ -247,6 +247,7 @@ void print_he_operation(const uint8_t *ie, int len);
 void print_he_info(struct nlattr *nl_iftype);
 void print_eht_capability(const uint8_t *ie, int len, const uint8_t *he_cap,
 			  bool from_ap);
+void print_multi_link(const uint8_t *ie, int len);
 void print_eht_operation(const uint8_t *ie, int len);
 void print_eht_info(struct nlattr *nl_iftype, int band);
 void print_s1g_capability(const uint8_t *caps);

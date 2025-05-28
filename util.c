@@ -1944,6 +1944,65 @@ void print_he_operation(const uint8_t *ie, int len)
 	}
 }
 
+void print_multi_link(const uint8_t *ie, int len)
+{
+	uint16_t eml_capa = 0;
+	uint16_t mld_capa = 0;
+
+	uint16_t presence_bitmap = (ie[1] << 8) | ie[0];
+	bool link_id_info_present      = presence_bitmap & 0x0010;
+	bool bss_param_change_present  = presence_bitmap & 0x0020;
+	bool medium_sync_delay_present = presence_bitmap & 0x0040;
+	bool eml_capabilities_present  = presence_bitmap & 0x0080;
+	bool mld_capabilities_present  = presence_bitmap & 0x0100;
+
+	uint8_t common_info_len = ie[2] - 1;  // Account for length value includes byte storing length
+	uint8_t offset = 3;
+
+	char mld_mac[20];
+	mac_addr_n2a(mld_mac, (void*)ie+offset);
+	printf("\t\tMLD MAC: %s\n", mld_mac);
+	offset += 6;
+
+	// Link ID Info
+	if (offset < common_info_len && link_id_info_present) {
+		printf("\t\tLink ID: %d\n", ie[offset] & 0xF);
+		offset += 1;
+	}
+
+	// BSS Parameters Change Count
+	if (offset < common_info_len && bss_param_change_present)
+		offset += 1;
+
+	// Medium Synchronization Delay Information
+	if (offset < common_info_len && medium_sync_delay_present)
+		offset += 2;
+
+	// EML Capabilities
+	if (offset < common_info_len && eml_capabilities_present) {
+		eml_capa = (ie[offset+1] << 8) | ie[offset];
+		printf("\t\t\tEML Capabilities: 0x%04x\n", eml_capa);
+
+		if (eml_capa & 0x0001)
+			printf("\t\t\t\tEMLSR Support\n");
+		if (eml_capa & 0x0080)
+			printf("\t\t\t\tEMLMR Support\n");
+
+		offset += 2;
+	}
+
+	// MLD Capabilities and Operations
+	if (offset < common_info_len && mld_capabilities_present) {
+		mld_capa = (ie[offset+1] << 8) | ie[offset];
+		printf("\t\t\tMLD Capabilities and Operations: 0x%04x\n", mld_capa);
+
+		// This is zero-indexed (i.e. 0 means 1 simulataneous link, 1 means 2, etc)
+		printf("\t\t\t\tMaximum Number of Simulatenous Links: %d\n", mld_capa & 0xF);
+
+		offset += 2;
+	}
+}
+
 void print_eht_operation(const uint8_t *ie, int len)
 {
 	uint8_t oper_parameters = ie[0];
