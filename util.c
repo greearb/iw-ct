@@ -1098,9 +1098,9 @@ static const struct vht_nss_ratio nss_ratio_tbl[3][4] = {
 			.bw_80_80 = 4,
 		},
 		/* chan_width == 2, ext_nss_bw == 1 */
-		{},
+		{0},
 		/* chan_width == 2, ext_nss_bw == 2 */
-		{},
+		{0},
 		/* chan_width == 2, ext_nss_bw == 3 */
 		{
 			.valid = true,
@@ -2008,6 +2008,7 @@ void print_eht_operation(const uint8_t *ie, int len)
 	uint8_t oper_parameters = ie[0];
 	uint8_t disabled_subchannel_info_present = oper_parameters & 0x02;
 	uint8_t eht_operation_info_present = oper_parameters & 0x01;
+	uint8_t i;
 
 	printf("\t\tEHT Operation Parameters: (0x%02x)\n",
 	       oper_parameters);
@@ -2022,7 +2023,7 @@ void print_eht_operation(const uint8_t *ie, int len)
 	       (oper_parameters >> 4 & 3));
 
 	printf("\t\tBasic EHT-MCS And Nss Set: 0x");
-	for (uint8_t i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 		printf("%02x", ie[1 + i]);
 
 	printf("\n");
@@ -2041,7 +2042,7 @@ void print_eht_operation(const uint8_t *ie, int len)
 		}
 
 		printf("\t\tEHT Operation Info: 0x");
-		for (uint8_t i = 0; i < eht_operation_info_len; i++)
+		for (i = 0; i < eht_operation_info_len; i++)
 			printf("%02x", ie[offset + i]);
 
 		printf("\n");
