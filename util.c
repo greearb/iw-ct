@@ -1826,23 +1826,31 @@ void print_eht_info(struct nlattr *nl_iftype, int band)
 void print_eht_capability(const uint8_t *ie, int len, const uint8_t *he_cap,
 			  bool from_ap)
 {
-	const void *mac_cap, *phy_cap, *mcs_set, *he_phy_cap;
+	const void *mac_cap, *mcs_set;
 	int mcs_len;
 	int i = 0;
+	/* Make a local copy so we don't have memory u32 alignment issues */
+	__u32 phy_cap[2] = { 0 };
+	__u16 he_phy_cap[6] = { 0 };
 
 	mac_cap = &ie[i];
 	i += 2;
 
-	phy_cap = &ie[i];
+	memcpy(phy_cap, &ie[i], sizeof(phy_cap));
 	i += 9;
 
 	mcs_set = &ie[i];
 	mcs_len = len - i;
 
-	he_phy_cap = &he_cap[6];
+	/* The HE PHY Cap is only 88 bits long (5.5 bytes), where the first segment
+	* of information is contained within the first octet, while the remaining
+	* segments are in 16bit segments (offset by the initial 8 bits). We need
+	* to copy at (-1) in order to maintain that the first octet is in the lower
+	* octet of the first "byte" (le) to maintain spec consistency */
+	memcpy(he_phy_cap, &he_cap[6] - 1, sizeof(he_phy_cap));
 
 	__print_eht_capa(NL80211_BAND_6GHZ, mac_cap, phy_cap, mcs_set, mcs_len,
-			 NULL, 0, he_phy_cap - 1, from_ap, false);
+			 NULL, 0, he_phy_cap, from_ap, false);
 }
 
 void print_he_capability(const uint8_t *ie, int len)
