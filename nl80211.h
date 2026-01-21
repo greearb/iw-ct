@@ -42,6 +42,37 @@
 
 #include <linux/types.h>
 
+/* Candela hacker space. */
+#define CANDELA_VENDOR_ID 0xCD1A
+struct ct_assoc_info {
+#define CT_ASSOC_DISABLE_TWT    (1<<0)
+#define CT_ASSOC_DISABLE_160MHZ (1<<1)
+#define CT_ASSOC_DISABLE_OFDMA  (1<<2)
+#define CT_ASSOC_DISABLE_320MHZ (1<<3)
+#define CT_ASSOC_IGNORE_EDCA    (1<<4)
+#define CT_ASSOC_DISABLE_40MHZ  (1<<5)
+#define CT_ASSOC_DISABLE_80MHZ  (1<<6)
+#define CT_ASSOC_DISABLE_HT     (1<<7)
+#define CT_ASSOC_DISABLE_VHT    (1<<8)
+#define CT_ASSOC_DISABLE_HE     (1<<9)
+#define CT_ASSOC_DISABLE_EHT    (1<<10)
+      __u32 flags;
+      __u32 pad32[7]; /* room to grow */
+} __attribute__((packed));
+
+#define CT_PREQ_DISABLE_HT (1<<0)
+#define CT_PREQ_DISABLE_VHT (1<<1)
+#define CT_PREQ_DISABLE_HE (1<<2)
+#define CT_PREQ_DISABLE_EHT (1<<3)
+#define CT_PREQ_DISABLE_40 (1<<4)
+#define CT_PREQ_DISABLE_80 (1<<5)
+#define CT_PREQ_DISABLE_160 (1<<6)
+#define CT_PREQ_DISABLE_320 (1<<7)
+struct ct_preq_info {
+      __u32 flags;
+      __u32 pad32[7]; /* room to grow */
+} __attribute__((packed));
+
 #define NL80211_GENL_NAME "nl80211"
 
 #define NL80211_MULTICAST_GROUP_CONFIG		"config"
@@ -3763,6 +3794,7 @@ enum nl80211_he_ltf {
  * @NL80211_RATE_INFO_HE_RU_ALLOC_484: 484-tone RU allocation
  * @NL80211_RATE_INFO_HE_RU_ALLOC_996: 996-tone RU allocation
  * @NL80211_RATE_INFO_HE_RU_ALLOC_2x996: 2x996-tone RU allocation
+ * @NL80211_RATE_INFO_HE_RU_ALLOC_LAST: internal use
  */
 enum nl80211_he_ru_alloc {
 	NL80211_RATE_INFO_HE_RU_ALLOC_26,
@@ -3772,6 +3804,7 @@ enum nl80211_he_ru_alloc {
 	NL80211_RATE_INFO_HE_RU_ALLOC_484,
 	NL80211_RATE_INFO_HE_RU_ALLOC_996,
 	NL80211_RATE_INFO_HE_RU_ALLOC_2x996,
+	NL80211_RATE_INFO_HE_RU_ALLOC_LAST /* new entries before this */
 };
 
 /**
@@ -6741,6 +6774,12 @@ enum nl80211_feature_flags {
  *	(signaling and payload protected) A-MSDUs and this shall be advertised
  *	in the RSNXE.
  *
+ * @NL80211_EXT_FEATURE_ETHTOOL_VDEV_STATS: The driver uses the alternate
+ *    ethtool string stat block which include per-vdev accumulator stats.
+ *    This flag is intended for use with IEEE802.11ac and older radios.
+ *    NOTE: This feature will only work if CONFIG_MAC80211_DEBUG_STA_COUNTERS
+ *    is set in the build configuration.
+ *
  * @NL80211_EXT_FEATURE_BEACON_RATE_EHT: Driver supports beacon rate
  *	configuration (AP/mesh) with EHT rates.
  *
@@ -6819,6 +6858,7 @@ enum nl80211_ext_feature_index {
 	NL80211_EXT_FEATURE_OWE_OFFLOAD_AP,
 	NL80211_EXT_FEATURE_DFS_CONCURRENT,
 	NL80211_EXT_FEATURE_SPP_AMSDU_SUPPORT,
+	NL80211_EXT_FEATURE_ETHTOOL_VDEV_STATS,
 	NL80211_EXT_FEATURE_BEACON_RATE_EHT,
 
 	/* add new features before the definition below */

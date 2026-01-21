@@ -174,6 +174,7 @@ static void ext_feat_print(enum nl80211_ext_feature_index idx)
 	ext_feat_case(OWE_OFFLOAD_AP, "OWE DH element handling offload (AP)");
 	ext_feat_case(DFS_CONCURRENT, "DFS channel use under concurrent DFS master");
 	ext_feat_case(SPP_AMSDU_SUPPORT, "SPP A-MSDU support");
+        ext_feat_case(ETHTOOL_VDEV_STATS, "Ethtool vdev stats");
 	ext_feat_case(BEACON_RATE_EHT, "EHT beacon rate support (AP/mesh)");
 	}
 }
