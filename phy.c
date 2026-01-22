@@ -767,8 +767,13 @@ static int handle_antenna(struct nl80211_state *state,
 	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_ANTENNA_TX, tx_ant);
 	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_ANTENNA_RX, rx_ant);
 
-	if (radio_id != -1)
+	/*printf("tx_ant: %d  rx_ant: %d  radio_id: %d RADIO_IDX: %d CT: %d\n",
+	       tx_ant, rx_ant, radio_id, NL80211_ATTR_WIPHY_RADIO_INDEX,
+	       NL80211_ATTR_WIPHY_RADIO_INDEX_CT);*/
+	if (radio_id != -1) {
 		NLA_PUT_S8(msg, NL80211_ATTR_WIPHY_RADIO_INDEX, radio_id);
+		NLA_PUT_S8(msg, NL80211_ATTR_WIPHY_RADIO_INDEX_CT, radio_id); /* backwards compat for CT 6.15 kernel */
+	}
 
 	return 0;
 
