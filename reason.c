@@ -61,6 +61,9 @@ static const char *reason_table[] = {
 	[64] = "MAC address already exists in MBSS",
 	[65] = "Mesh channel switch regulatory requirement.",
 	[66] = "Mesh channel switch unspecified.",
+
+	/* CT Hack land */
+	[120] = "Local internal disconnect to clean up state for pending association.",
 };
 
 const char *get_reason_str(uint16_t reason)
