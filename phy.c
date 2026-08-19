@@ -772,7 +772,9 @@ static int handle_antenna(struct nl80211_state *state,
 	       NL80211_ATTR_WIPHY_RADIO_INDEX_CT);*/
 	if (radio_id != -1) {
 		NLA_PUT_S8(msg, NL80211_ATTR_WIPHY_RADIO_INDEX, radio_id);
-		NLA_PUT_S8(msg, NL80211_ATTR_WIPHY_RADIO_INDEX_CT, radio_id); /* backwards compat for CT 6.15 kernel */
+		/* REMOVED: Collides with NL80211_ATTR_UHR_CAPABILITY.
+		 * OLD COMMENT: backwards compat for CT 6.15 kernel */
+		// NLA_PUT_S8(msg, NL80211_ATTR_WIPHY_RADIO_INDEX_CT, radio_id);
 	}
 
 	return 0;
